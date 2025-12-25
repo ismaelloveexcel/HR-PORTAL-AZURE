@@ -3,6 +3,10 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 import json
+from io import BytesIO
+from models import init_db, get_db, AuditTrail, ChangeRequest
+
+init_db()
 
 st.set_page_config(
     page_title="Medical Insurance Verification | Baynunah",
@@ -548,7 +552,6 @@ SESSION_TIMEOUT_JS = f"""
 
 DATA_FILE = "attached_assets/Medical_Insurance_Data.csv"
 JOB_DATA_FILE = "attached_assets/job_data.csv"
-CHANGES_FILE = "attached_assets/correction_requests.json"
 
 @st.cache_data
 def load_job_data():
@@ -567,17 +570,17 @@ def load_data():
 def save_data(df):
     df.to_csv(DATA_FILE, index=False, encoding='utf-8-sig')
 
-def load_changes():
-    if os.path.exists(CHANGES_FILE):
-        with open(CHANGES_FILE, 'r') as f:
-            return json.load(f)
-    return []
-
-def save_change_request(change_data):
-    changes = load_changes()
-    changes.append(change_data)
-    with open(CHANGES_FILE, 'w') as f:
-        json.dump(changes, f, indent=2)
+def check_session_timeout():
+    if 'last_activity' in st.session_state:
+        last_activity = st.session_state['last_activity']
+        if isinstance(last_activity, str):
+            last_activity = datetime.fromisoformat(last_activity)
+        elapsed = (datetime.now() - last_activity).total_seconds() / 60
+        if elapsed > SESSION_TIMEOUT_MINUTES:
+            st.session_state.clear()
+            return True
+    st.session_state['last_activity'] = datetime.now().isoformat()
+    return False
 
 def get_employee_data(df, staff_number):
     return df[df['Staff Number'] == staff_number]
@@ -780,6 +783,166 @@ def format_emirates_id(eid):
     if len(eid_str) == 15:
         return f"{eid_str[:3]}-{eid_str[3:7]}-{eid_str[7:14]}-{eid_str[14]}"
     return eid_str
+
+def validate_emirates_id(eid):
+    if not eid:
+        return True, ""
+    eid_str = str(eid).replace(' ', '').replace('-', '')
+    if len(eid_str) != 15:
+        return False, "Emirates ID must be 15 digits"
+    if not eid_str.isdigit():
+        return False, "Emirates ID must contain only numbers"
+    if not eid_str.startswith('784'):
+        return False, "Emirates ID must start with 784"
+    return True, ""
+
+def validate_date_of_birth(dob_str):
+    if not dob_str:
+        return True, ""
+    try:
+        if '/' in dob_str:
+            parts = dob_str.split('/')
+            if len(parts) == 3:
+                day, month, year = int(parts[0]), int(parts[1]), int(parts[2])
+                if year < 100:
+                    year += 1900 if year > 25 else 2000
+                dob = datetime(year, month, day)
+            else:
+                return False, "Invalid date format. Use DD/MM/YYYY"
+        else:
+            return False, "Invalid date format. Use DD/MM/YYYY"
+        
+        today = datetime.now()
+        if dob > today:
+            return False, "Date of birth cannot be in the future"
+        
+        age = (today - dob).days / 365.25
+        if age > 120:
+            return False, "Date of birth seems too old (over 120 years)"
+        if age < 0:
+            return False, "Invalid date of birth"
+        
+        return True, ""
+    except (ValueError, IndexError):
+        return False, "Invalid date format. Use DD/MM/YYYY"
+
+def log_audit_trail(action, staff_number, member_number, field, old_value, new_value, user_type="employee"):
+    try:
+        db = get_db()
+        if db:
+            audit_entry = AuditTrail(
+                action=action,
+                staff_number=staff_number,
+                member_number=str(member_number) if member_number else "",
+                field=field,
+                old_value=str(old_value) if old_value else "",
+                new_value=str(new_value) if new_value else "",
+                user_type=user_type
+            )
+            db.add(audit_entry)
+            db.commit()
+            db.close()
+    except Exception as e:
+        print(f"Audit logging error: {e}")
+
+def save_change_request_db(staff_number, member_number, member_name, changes, remarks):
+    try:
+        db = get_db()
+        if db:
+            for change in changes:
+                request = ChangeRequest(
+                    staff_number=staff_number,
+                    member_number=str(member_number) if member_number else "",
+                    member_name=member_name,
+                    field=change.get("field", ""),
+                    old_value=change.get("old", ""),
+                    new_value=change.get("new", ""),
+                    remarks=remarks,
+                    status="pending_approval"
+                )
+                db.add(request)
+            db.commit()
+            db.close()
+            return True
+    except Exception as e:
+        print(f"Change request save error: {e}")
+    return False
+
+def get_pending_requests():
+    try:
+        db = get_db()
+        if db:
+            requests = db.query(ChangeRequest).filter(ChangeRequest.status == "pending_approval").all()
+            db.close()
+            return requests
+    except Exception as e:
+        print(f"Error fetching pending requests: {e}")
+    return []
+
+def approve_change_request(request_id, admin_name, notes=""):
+    try:
+        db = get_db()
+        if db:
+            request = db.query(ChangeRequest).filter(ChangeRequest.id == request_id).first()
+            if request:
+                request.status = "approved"
+                request.reviewed_by = admin_name
+                request.reviewed_at = datetime.now()
+                request.review_notes = notes
+                db.commit()
+                
+                log_audit_trail(
+                    "change_approved",
+                    request.staff_number,
+                    request.member_number,
+                    request.field,
+                    request.old_value,
+                    request.new_value,
+                    "admin"
+                )
+                db.close()
+                return True
+    except Exception as e:
+        print(f"Approve error: {e}")
+    return False
+
+def reject_change_request(request_id, admin_name, notes=""):
+    try:
+        db = get_db()
+        if db:
+            request = db.query(ChangeRequest).filter(ChangeRequest.id == request_id).first()
+            if request:
+                request.status = "rejected"
+                request.reviewed_by = admin_name
+                request.reviewed_at = datetime.now()
+                request.review_notes = notes
+                db.commit()
+                
+                log_audit_trail(
+                    "change_rejected",
+                    request.staff_number,
+                    request.member_number,
+                    request.field,
+                    request.old_value,
+                    "",
+                    "admin"
+                )
+                db.close()
+                return True
+    except Exception as e:
+        print(f"Reject error: {e}")
+    return False
+
+def get_audit_trail(limit=100):
+    try:
+        db = get_db()
+        if db:
+            audits = db.query(AuditTrail).order_by(AuditTrail.timestamp.desc()).limit(limit).all()
+            db.close()
+            return audits
+    except Exception as e:
+        print(f"Error fetching audit trail: {e}")
+    return []
 
 def render_covered_members(employee_data):
     st.markdown("""
@@ -1044,10 +1207,26 @@ def render_correction_form(employee_data, staff_number):
                     direct_inputs["Passport number"] = new_passport
         
         if direct_inputs:
-            if st.button("💾 Save Missing Information", type="primary", key="save_direct"):
+            validation_errors = []
+            if "National Identity" in direct_inputs:
+                valid, msg = validate_emirates_id(direct_inputs["National Identity"])
+                if not valid:
+                    validation_errors.append(f"Emirates ID: {msg}")
+            if "Date Of Birth" in direct_inputs:
+                valid, msg = validate_date_of_birth(direct_inputs["Date Of Birth"])
+                if not valid:
+                    validation_errors.append(f"Date of Birth: {msg}")
+            
+            if validation_errors:
+                for err in validation_errors:
+                    st.error(err)
+            
+            if st.button("💾 Save Missing Information", type="primary", key="save_direct", disabled=len(validation_errors) > 0):
                 df = load_data()
                 for field, value in direct_inputs.items():
+                    old_val = df.loc[df['Member Number'] == member_number, field].iloc[0] if field in df.columns else ""
                     df.loc[df['Member Number'] == member_number, field] = value
+                    log_audit_trail("data_added", staff_number, member_number, field, old_val, value, "employee")
                 df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
                 df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
                 save_data(df)
@@ -1136,18 +1315,27 @@ def render_correction_form(employee_data, staff_number):
         
         submit_disabled = not remarks.strip()
         
-        if st.button("📤 Submit Change Request", type="secondary", disabled=submit_disabled):
-            change_request = {
-                "staff_number": staff_number,
-                "member_number": member_number,
-                "member_name": selected_member,
-                "changes": [{"field": c["field"], "old": c["old"], "new": c["new"]} for c in change_requests],
-                "remarks": remarks,
-                "submitted_at": datetime.now().isoformat(),
-                "status": "pending_approval"
-            }
+        change_validation_errors = []
+        for change in change_requests:
+            if change["field"] == "Emirates ID":
+                valid, msg = validate_emirates_id(change["new"])
+                if not valid:
+                    change_validation_errors.append(f"Emirates ID: {msg}")
+            if change["field"] == "Date of Birth":
+                valid, msg = validate_date_of_birth(change["new"])
+                if not valid:
+                    change_validation_errors.append(f"Date of Birth: {msg}")
+        
+        if change_validation_errors:
+            for err in change_validation_errors:
+                st.error(err)
+        
+        if st.button("📤 Submit Change Request", type="secondary", disabled=submit_disabled or len(change_validation_errors) > 0):
+            changes_list = [{"field": c["field"], "old": c["old"], "new": c["new"]} for c in change_requests]
+            save_change_request_db(staff_number, member_number, selected_member, changes_list, remarks)
             
-            save_change_request(change_request)
+            for change in changes_list:
+                log_audit_trail("change_requested", staff_number, member_number, change["field"], change["old"], change["new"], "employee")
             
             df = load_data()
             df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
@@ -1200,18 +1388,230 @@ def render_dashboard():
         </div>
         """, unsafe_allow_html=True)
 
+def generate_excel_report():
+    df = load_data()
+    output = BytesIO()
+    
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        principals = df[df['Relation'] == 'PRINCIPAL'].copy()
+        principals['Confirmed'] = principals['EmployeeConfirmed'].apply(lambda x: 'Yes' if pd.notna(x) and str(x).strip() else 'No')
+        
+        completion_summary = principals.groupby('Confirmed').size().reset_index(name='Count')
+        completion_summary.to_excel(writer, sheet_name='Completion Overview', index=False)
+        
+        not_confirmed = principals[principals['Confirmed'] == 'No'][['Staff Number', 'Principal Name']].copy()
+        not_confirmed.columns = ['Staff Number', 'Employee Name']
+        not_confirmed.to_excel(writer, sheet_name='Pending Verification', index=False)
+        
+        missing_data = []
+        for _, row in df.iterrows():
+            missing_fields = []
+            if not format_field(row.get('National Identity')):
+                missing_fields.append('Emirates ID')
+            if not format_field(row.get('Passport number')):
+                missing_fields.append('Passport')
+            if not format_field(row.get('Visa Unified Number')):
+                missing_fields.append('Visa Unified Number')
+            if missing_fields:
+                name = format_field(row.get('Member Full Name')) or f"{format_field(row.get('Member First Name')) or ''} {format_field(row.get('Member Last Name')) or ''}".strip()
+                missing_data.append({
+                    'Staff Number': row['Staff Number'],
+                    'Member Name': name,
+                    'Relation': row['Relation'],
+                    'Missing Fields': ', '.join(missing_fields)
+                })
+        
+        if missing_data:
+            pd.DataFrame(missing_data).to_excel(writer, sheet_name='Missing Data', index=False)
+        
+        pending_requests = get_pending_requests()
+        if pending_requests:
+            requests_data = [{
+                'ID': r.id,
+                'Staff Number': r.staff_number,
+                'Member': r.member_name,
+                'Field': r.field,
+                'Old Value': r.old_value,
+                'New Value': r.new_value,
+                'Submitted': r.submitted_at.strftime('%d/%m/%Y %H:%M') if r.submitted_at else '',
+                'Remarks': r.remarks
+            } for r in pending_requests]
+            pd.DataFrame(requests_data).to_excel(writer, sheet_name='Pending Change Requests', index=False)
+    
+    output.seek(0)
+    return output
+
+def render_admin_portal():
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <span class="header-title">🔐 Admin Portal</span>
+            </div>
+            <div class="header-right">
+                <span class="policy-badge">Medical Insurance {}</span>
+            </div>
+        </div>
+    </div>
+    """.format(POLICY_YEAR), unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([8, 1])
+    with col2:
+        if st.button("Sign Out", key="admin_signout"):
+            st.session_state.clear()
+            st.rerun()
+    
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 Pending Approvals", "📊 Statistics", "📜 Audit Trail", "📥 Export Reports"])
+    
+    with tab1:
+        st.subheader("Pending Change Requests")
+        pending = get_pending_requests()
+        
+        if not pending:
+            st.info("No pending change requests.")
+        else:
+            for request in pending:
+                with st.expander(f"#{request.id} - {request.member_name} - {request.field}"):
+                    st.write(f"**Staff Number:** {request.staff_number}")
+                    st.write(f"**Field:** {request.field}")
+                    st.write(f"**Current Value:** {request.old_value}")
+                    st.write(f"**Requested Value:** {request.new_value}")
+                    st.write(f"**Remarks:** {request.remarks}")
+                    st.write(f"**Submitted:** {request.submitted_at.strftime('%d/%m/%Y %H:%M') if request.submitted_at else 'N/A'}")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("✅ Approve", key=f"approve_{request.id}"):
+                            if approve_change_request(request.id, st.session_state.get('admin_name', 'Admin')):
+                                st.success("Approved!")
+                                st.rerun()
+                    with col2:
+                        if st.button("❌ Reject", key=f"reject_{request.id}"):
+                            if reject_change_request(request.id, st.session_state.get('admin_name', 'Admin')):
+                                st.warning("Rejected")
+                                st.rerun()
+    
+    with tab2:
+        st.subheader("Verification Statistics")
+        df = load_data()
+        principals = df[df['Relation'] == 'PRINCIPAL']
+        
+        total = len(principals)
+        confirmed = len(principals[principals['EmployeeConfirmed'].notna() & (principals['EmployeeConfirmed'] != '')])
+        pending_count = total - confirmed
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Employees", total)
+        with col2:
+            st.metric("Confirmed", confirmed, delta=f"{confirmed/total*100:.1f}%" if total > 0 else "0%")
+        with col3:
+            st.metric("Pending", pending_count)
+        
+        if total > 0:
+            st.progress(confirmed / total)
+        
+        st.subheader("Missing Data Summary")
+        missing_eid = len(df[df['National Identity'].isna() | (df['National Identity'] == '')])
+        missing_passport = len(df[df['Passport number'].isna() | (df['Passport number'] == '')])
+        missing_visa = len(df[df['Visa Unified Number'].isna() | (df['Visa Unified Number'] == '')])
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Missing Emirates ID", missing_eid)
+        with col2:
+            st.metric("Missing Passport", missing_passport)
+        with col3:
+            st.metric("Missing Visa Number", missing_visa)
+    
+    with tab3:
+        st.subheader("Audit Trail")
+        audits = get_audit_trail(50)
+        
+        if not audits:
+            st.info("No audit entries found.")
+        else:
+            audit_data = [{
+                'Timestamp': a.timestamp.strftime('%d/%m/%Y %H:%M') if a.timestamp else '',
+                'Action': a.action,
+                'Staff': a.staff_number,
+                'Field': a.field,
+                'Old Value': a.old_value[:30] + '...' if len(a.old_value) > 30 else a.old_value,
+                'New Value': a.new_value[:30] + '...' if len(a.new_value) > 30 else a.new_value,
+                'User': a.user_type
+            } for a in audits]
+            st.dataframe(pd.DataFrame(audit_data), use_container_width=True)
+    
+    with tab4:
+        st.subheader("Export Reports")
+        st.write("Generate comprehensive Excel reports for HR review.")
+        
+        if st.button("📊 Generate Excel Report", type="primary"):
+            excel_file = generate_excel_report()
+            st.download_button(
+                label="📥 Download Report",
+                data=excel_file,
+                file_name=f"insurance_verification_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+def render_admin_login():
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-placeholder">🔐</div>
+            <h1>Admin Portal</h1>
+            <p>Medical Insurance Verification System</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        admin_password = st.text_input("Admin Password", type="password", key="admin_password")
+        admin_name = st.text_input("Your Name", placeholder="Enter your name", key="admin_name_input")
+        
+        if st.button("Login", type="primary", use_container_width=True):
+            expected_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+            if admin_password == expected_password and admin_name:
+                st.session_state['admin_authenticated'] = True
+                st.session_state['admin_name'] = admin_name
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
+
 def main():
+    query_params = st.query_params
+    is_admin = query_params.get('admin') == 'true'
+    
     if 'authenticated' not in st.session_state:
         st.session_state['authenticated'] = False
+    if 'admin_authenticated' not in st.session_state:
+        st.session_state['admin_authenticated'] = False
     
-    if check_link_expired():
-        render_expired_page()
-        return
+    if st.session_state['authenticated'] or st.session_state['admin_authenticated']:
+        if check_session_timeout():
+            st.warning("Your session has expired due to inactivity. Please log in again.")
+            st.stop()
     
-    if st.session_state['authenticated']:
-        render_dashboard()
+    if is_admin:
+        if st.session_state['admin_authenticated']:
+            render_admin_portal()
+        else:
+            render_admin_login()
     else:
-        render_login()
+        if check_link_expired():
+            render_expired_page()
+            return
+        
+        if st.session_state['authenticated']:
+            render_dashboard()
+        else:
+            render_login()
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,7 @@ A secure employee self-service portal for medical insurance renewal verification
 
 ## Current State
 - **Status**: Complete and functional
-- **Last Updated**: December 24, 2025
+- **Last Updated**: December 25, 2025
 - **Policy Year**: 2026
 - **Verification Deadline**: January 31, 2026
 
@@ -14,30 +14,38 @@ A secure employee self-service portal for medical insurance renewal verification
 ### Layout Sections
 1. **Header** - Company logo placeholder, title, Policy Year badge
 2. **Employee Snapshot** (Read-only) - Employee Number, Name, Job Title, Department
-3. **Covered Members** - List of all dependents with key details (DOB, Gender, Nationality, Emirates ID, Passport)
-4. **Confirmation** - Two-path workflow (Confirm or Request Correction)
-5. **Correction Request** - Conditionally visible form with change tracking
+3. **Covered Members** - All members with detailed fields (Gender, DOB, Nationality, Marital Status, Emirates ID, Visa Unified Number, Passport)
+4. **Confirmation** - Two-path workflow (Confirm or Update Information)
+5. **Update Form** - Two-path data entry:
+   - Direct input for missing data (saved immediately)
+   - Change requests for existing data (requires admin approval)
 6. **Submission Status** - Success messages
 
-### Two-Path Workflow
-- **Path A: Confirmation** - Employee confirms all information is accurate
-- **Path B: Correction Request** - Employee submits change requests with:
-  - Editable fields (Name, DOB, Relationship, Emirates ID, Passport)
-  - Mandatory remarks field
-  - Auto-capture of old value → new value with timestamp
+### Two-Path Data Entry Workflow
+- **Direct Input**: Missing fields (Emirates ID, Passport, Visa, etc.) can be added immediately
+- **Change Request**: Modifying existing data requires HR approval
+- Validation: Emirates ID format (784-XXXX-XXXXXXX-X), Date of Birth realistic checks
+
+### Admin Portal (Access via ?admin=true)
+- **Pending Approvals**: Review and approve/reject change requests
+- **Statistics**: Verification completion rates, missing data summary
+- **Audit Trail**: Complete log of all data changes
+- **Export Reports**: Excel download with completion overview, pending items, missing data
 
 ### Security Features
 - Session timeout (15 minutes of inactivity)
 - Link expiration after deadline date
 - Principal's DOB locked (used for authentication)
+- Admin portal password protected
 
 ## Project Structure
 ```
 /
 ├── app.py                 # Main Streamlit application
+├── models.py              # SQLAlchemy database models
 ├── attached_assets/
-│   ├── Medical_Insurance_-_Workings_*.csv   # Employee data
-│   └── correction_requests.json              # Change requests log
+│   ├── Medical_Insurance_Data.csv   # Employee data
+│   └── job_data.csv                 # Job titles/departments
 ├── .streamlit/
 │   └── config.toml        # Streamlit server configuration
 └── replit.md              # This documentation
@@ -45,15 +53,24 @@ A secure employee self-service portal for medical insurance renewal verification
 
 ## Technical Details
 - **Framework**: Streamlit
+- **Database**: PostgreSQL (for audit trail, change requests)
 - **Port**: 5000
-- **Data Storage**: CSV file + JSON for correction requests
+- **Data Storage**: CSV for employee data, PostgreSQL for audit/requests
 - **Authentication**: Staff Number + Date of Birth validation
+
+## Database Tables
+- `audit_trail`: Logs all data changes with timestamps
+- `change_requests`: Stores pending change requests for admin review
 
 ## Configuration
 Located at top of app.py:
 - `POLICY_YEAR` - Current policy year (2026)
 - `RENEWAL_DEADLINE` - Cutoff date for verification
 - `SESSION_TIMEOUT_MINUTES` - Inactivity timeout (15 min)
+
+Environment Variables:
+- `ADMIN_PASSWORD` - Admin portal password (default: admin2026)
+- `DATABASE_URL` - PostgreSQL connection string
 
 ## Sample Staff Numbers for Testing
 - BAYN00008 (Mohammad Ismael Sudally) - DOB: 16/05/1988
@@ -66,6 +83,14 @@ Located at top of app.py:
 streamlit run app.py --server.port 5000
 ```
 
+## Admin Portal Access
+Navigate to the app URL with `?admin=true` parameter:
+```
+https://your-app-url/?admin=true
+```
+Login with the ADMIN_PASSWORD and your name.
+
 ## Future Enhancements (Not Yet Implemented)
+- Email reminder system for incomplete verifications
 - SharePoint List integration (writeback)
 - Power Automate email trigger for HR notifications
