@@ -936,35 +936,61 @@ def render_confirmation_section(employee_data, staff_number):
 
 def render_correction_form(employee_data, staff_number):
     dependents = employee_data[employee_data['Relation'] != 'PRINCIPAL']
+    principal = employee_data[employee_data['Relation'] == 'PRINCIPAL'].iloc[0]
     
-    if dependents.empty:
-        st.info("No dependents found. Only dependents can be edited through this form.")
+    principal_eid = format_field(principal.get('National Identity')) or ""
+    principal_passport = format_field(principal.get('Passport number')) or ""
+    principal_has_missing = not principal_eid or not principal_passport
+    
+    editable_members = []
+    
+    if principal_has_missing:
+        principal_name = format_field(principal.get('Member Full Name')) or f"{format_field(principal.get('Member First Name')) or ''} {format_field(principal.get('Member Middle Name')) or ''} {format_field(principal.get('Member Last Name')) or ''}".strip()
+        principal_name = ' '.join(principal_name.split())
+        editable_members.append({
+            "label": f"PRINCIPAL (Self): {principal_name}",
+            "row": principal,
+            "is_principal": True
+        })
+    
+    for _, member in dependents.iterrows():
+        relation = member['Relation']
+        name = format_field(member.get('Member Full Name')) or f"{format_field(member.get('Member First Name')) or ''} {format_field(member.get('Member Middle Name')) or ''} {format_field(member.get('Member Last Name')) or ''}".strip()
+        name = ' '.join(name.split())
+        editable_members.append({
+            "label": f"{relation}: {name}",
+            "row": member,
+            "is_principal": False
+        })
+    
+    if not editable_members:
+        st.info("No corrections available. All information is complete.")
         return
     
     st.markdown("""
     <div class="glass-card">
         <div class="card-title">📝 Correction Request</div>
         <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
-            Select a dependent and specify the corrections needed below.
+            Select a member and specify the corrections needed below.
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    member_options = []
-    for _, member in dependents.iterrows():
-        relation = member['Relation']
-        name = format_field(member.get('Member Full Name')) or f"{format_field(member.get('Member First Name')) or ''} {format_field(member.get('Member Middle Name')) or ''} {format_field(member.get('Member Last Name')) or ''}".strip()
-        name = ' '.join(name.split())
-        member_options.append(f"{relation}: {name}")
-    
-    selected_member = st.selectbox("Select Dependent to Correct", member_options, key="selected_member")
+    member_options = [m["label"] for m in editable_members]
+    selected_member = st.selectbox("Select Member to Correct", member_options, key="selected_member")
     
     selected_idx = member_options.index(selected_member)
-    member_row = dependents.iloc[selected_idx]
+    member_info = editable_members[selected_idx]
+    member_row = member_info["row"]
+    is_principal = member_info["is_principal"]
     member_number = member_row['Member Number']
     
     st.markdown('<p class="section-label" style="margin-top: 20px;">Fields to Correct</p>', unsafe_allow_html=True)
-    st.caption("Only fill in fields that need correction. Leave others empty.")
+    
+    if is_principal:
+        st.caption("As the principal, you can only add missing Emirates ID or Passport information.")
+    else:
+        st.caption("Only fill in fields that need correction. Leave others empty.")
     
     changes = []
     
@@ -974,25 +1000,29 @@ def render_correction_form(employee_data, staff_number):
     col1, col2 = st.columns(2)
     
     with col1:
-        new_name = st.text_input("Dependent Name", value="", placeholder=f"Current: {current_name}", key="corr_name")
-        if new_name and new_name != current_name:
-            changes.append({"field": "Dependent Name", "old": current_name, "new": new_name})
-        
-        current_relation = format_field(member_row.get('Relation')) or ""
-        new_relation = st.selectbox(
-            "Relationship",
-            ["", "SPOUSE", "CHILD"],
-            index=0,
-            key="corr_relation"
-        )
-        if new_relation and new_relation != current_relation:
-            changes.append({"field": "Relationship", "old": current_relation, "new": new_relation})
+        if not is_principal:
+            new_name = st.text_input("Dependent Name", value="", placeholder=f"Current: {current_name}", key="corr_name")
+            if new_name and new_name != current_name:
+                changes.append({"field": "Dependent Name", "old": current_name, "new": new_name})
+            
+            current_relation = format_field(member_row.get('Relation')) or ""
+            new_relation = st.selectbox(
+                "Relationship",
+                ["", "SPOUSE", "CHILD"],
+                index=0,
+                key="corr_relation"
+            )
+            if new_relation and new_relation != current_relation:
+                changes.append({"field": "Relationship", "old": current_relation, "new": new_relation})
+        else:
+            st.text_input("Name", value=current_name, disabled=True, key="corr_name_locked")
     
     with col2:
-        current_dob = format_field(member_row.get('Date Of Birth')) or ""
-        new_dob = st.text_input("Date of Birth (DD/MM/YYYY)", value="", placeholder=f"Current: {current_dob}", key="corr_dob")
-        if new_dob and new_dob != current_dob:
-            changes.append({"field": "Date of Birth", "old": current_dob, "new": new_dob})
+        if not is_principal:
+            current_dob = format_field(member_row.get('Date Of Birth')) or ""
+            new_dob = st.text_input("Date of Birth (DD/MM/YYYY)", value="", placeholder=f"Current: {current_dob}", key="corr_dob")
+            if new_dob and new_dob != current_dob:
+                changes.append({"field": "Date of Birth", "old": current_dob, "new": new_dob})
         
         current_eid = format_field(member_row.get('National Identity')) or ""
         current_passport = format_field(member_row.get('Passport number')) or ""
