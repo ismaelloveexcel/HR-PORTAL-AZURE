@@ -1103,24 +1103,66 @@ def get_audit_trail(limit=100):
         print(f"Error fetching audit trail: {e}")
     return []
 
+def calculate_age(dob_str):
+    if not dob_str or dob_str == "—":
+        return "—"
+    try:
+        for fmt in ["%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y"]:
+            try:
+                dob_date = datetime.strptime(dob_str.split(' ')[0], fmt)
+                today = datetime.now()
+                age = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
+                return str(age)
+            except:
+                continue
+        return "—"
+    except:
+        return "—"
+
+def render_editable_field(label, value, is_missing, field_key, member_number, staff_number, field_column, validation_func=None):
+    editing_key = f"editing_{field_key}"
+    save_key = f"save_{field_key}"
+    
+    if st.session_state.get(editing_key, False):
+        input_val = st.text_input(label, value="", placeholder=f"Enter {label}", key=f"input_{field_key}", label_visibility="collapsed")
+        col_a, col_b = st.columns([1, 1])
+        with col_a:
+            if st.button("✓", key=f"confirm_{field_key}", type="primary"):
+                if input_val and input_val.strip():
+                    valid = True
+                    if validation_func:
+                        valid, msg = validation_func(input_val.strip())
+                        if not valid:
+                            st.error(msg)
+                    if valid:
+                        df = load_data()
+                        old_val = ""
+                        if field_column in df.columns:
+                            old_series = df.loc[df['Member Number'] == member_number, field_column]
+                            if not old_series.empty:
+                                old_val = old_series.iloc[0] if pd.notna(old_series.iloc[0]) else ""
+                        df.loc[df['Member Number'] == member_number, field_column] = input_val.strip()
+                        df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
+                        df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
+                        save_data(df)
+                        log_audit_trail("data_added", staff_number, member_number, label, str(old_val), input_val.strip(), "employee")
+                        st.cache_data.clear()
+                        st.session_state[editing_key] = False
+                        st.session_state[f"saved_{member_number}"] = True
+                        st.rerun()
+        with col_b:
+            if st.button("✕", key=f"cancel_{field_key}"):
+                st.session_state[editing_key] = False
+                st.rerun()
+    else:
+        if is_missing:
+            if st.button(f"⚠ Missing", key=f"edit_{field_key}", type="secondary"):
+                st.session_state[editing_key] = True
+                st.rerun()
+        else:
+            st.markdown(f"<span style='color: #fff; font-weight: 500;'>{value}</span>", unsafe_allow_html=True)
+
 def render_covered_members(employee_data, staff_number):
-    has_any_missing = False
-    for _, member in employee_data.iterrows():
-        eid = format_field(member.get('National Identity'))
-        visa = format_field(member.get('Visa Unified Number'))
-        passport = format_field(member.get('Passport number'))
-        if not eid or not visa or not passport:
-            has_any_missing = True
-            break
-    
-    if has_any_missing:
-        st.markdown("""
-        <div class="missing-banner">
-            <span>⚠️</span>
-            <span>Some members have missing information. Please fill in the required fields below.</span>
-        </div>
-        """, unsafe_allow_html=True)
-    
     for idx, (_, member) in enumerate(employee_data.iterrows()):
         relation = member['Relation']
         badge_class = "badge-principal" if relation == "PRINCIPAL" else ("badge-spouse" if relation == "SPOUSE" else "badge-child")
@@ -1135,7 +1177,8 @@ def render_covered_members(employee_data, staff_number):
         dob = format_field(member.get('Date Of Birth'))
         if dob and ' ' in dob:
             dob = dob.split(' ')[0]
-        dob = dob or "—"
+        dob_display = dob or "—"
+        age = calculate_age(dob)
         
         gender = format_field(member.get('Gender')) or "—"
         nationality = format_field(member.get('Nationality')) or "—"
@@ -1144,117 +1187,77 @@ def render_covered_members(employee_data, staff_number):
         current_visa = format_field(member.get('Visa Unified Number')) or ""
         current_passport = format_field(member.get('Passport number')) or ""
         
-        eid_formatted = format_emirates_id(current_eid) if current_eid else None
-        eid_display = eid_formatted if eid_formatted else '<span class="missing-value">Not provided</span>'
-        visa_display = current_visa if current_visa else '<span class="missing-value">Not provided</span>'
-        passport_display = current_passport if current_passport else '<span class="missing-value">Not provided</span>'
+        eid_formatted = format_emirates_id(current_eid) if current_eid else ""
         
-        has_missing = not current_eid or not current_visa or not current_passport
+        missing_fields = []
+        if not current_eid:
+            missing_fields.append("Emirates ID")
+        if not current_visa:
+            missing_fields.append("Visa Unified Number")
+        if not current_passport:
+            missing_fields.append("Passport")
         
-        save_success_key = f"saved_{idx}_{member_number}"
-        saved_just_now = st.session_state.get(save_success_key, False)
-        if saved_just_now:
-            del st.session_state[save_success_key]
+        saved_key = f"saved_{member_number}"
+        if st.session_state.get(saved_key):
+            st.success("✓ Information saved successfully!")
+            del st.session_state[saved_key]
         
-        st.markdown(f"""
-        <div class="glass-card" style="margin-bottom: 16px;">
-            <div class="member-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                <span class="member-name">{full_name}</span>
-                <span class="member-badge {badge_class}">{relation}</span>
-            </div>
-            <div class="member-details">
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Gender</span>
-                    <span class="member-detail-value">{gender}</span>
-                </div>
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Date of Birth</span>
-                    <span class="member-detail-value">{dob}</span>
-                </div>
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Nationality</span>
-                    <span class="member-detail-value">{nationality}</span>
-                </div>
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Marital Status</span>
-                    <span class="member-detail-value">{marital_status}</span>
-                </div>
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Emirates ID</span>
-                    <span class="member-detail-value">{eid_display}</span>
-                </div>
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Visa Unified No.</span>
-                    <span class="member-detail-value">{visa_display}</span>
-                </div>
-                <div class="member-detail-item">
-                    <span class="member-detail-label">Passport</span>
-                    <span class="member-detail-value">{passport_display}</span>
+        with st.container():
+            st.markdown(f"""
+            <div class="glass-card" style="margin-bottom: 0; padding-bottom: 0;">
+                <div class="member-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span class="member-name" style="font-size: 18px; font-weight: 600; color: #fff; text-transform: uppercase;">{full_name}</span>
+                    <span class="member-badge {badge_class}">{relation}</span>
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if saved_just_now:
-            st.success(f"✓ Information saved successfully!")
-        
-        if has_missing:
-            direct_inputs = {}
-            validation_errors = []
+            """, unsafe_allow_html=True)
             
-            field_labels = {
-                "National Identity": "Emirates ID",
-                "Visa Unified Number": "Visa Unified No.",
-                "Passport number": "Passport"
-            }
+            row1_col1, row1_col2, row1_col3 = st.columns(3)
+            with row1_col1:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>GENDER</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: #fff; font-weight: 500;'>{gender}</span>", unsafe_allow_html=True)
+            with row1_col2:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>DATE OF BIRTH</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: #fff; font-weight: 500;'>{dob_display}</span>", unsafe_allow_html=True)
+            with row1_col3:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>AGE</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: #fff; font-weight: 500;'>{age}</span>", unsafe_allow_html=True)
             
-            col1, col2, col3, col4 = st.columns([1, 1, 1, 0.5])
+            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
             
-            with col1:
-                if not current_eid:
-                    new_eid = st.text_input("Emirates ID", value="", placeholder="Enter Emirates ID", key=f"eid_{idx}_{member_number}")
-                    if new_eid and new_eid.strip():
-                        valid, msg = validate_emirates_id(new_eid.strip())
-                        if not valid:
-                            validation_errors.append(f"Emirates ID: {msg}")
-                        else:
-                            direct_inputs["National Identity"] = new_eid.strip()
+            row2_col1, row2_col2, row2_col3 = st.columns(3)
+            with row2_col1:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>NATIONALITY</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: #fff; font-weight: 500;'>{nationality}</span>", unsafe_allow_html=True)
+            with row2_col2:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>MARITAL STATUS</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: #fff; font-weight: 500;'>{marital_status}</span>", unsafe_allow_html=True)
+            with row2_col3:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>EMIRATES ID</span>", unsafe_allow_html=True)
+                render_editable_field("Emirates ID", eid_formatted, not current_eid, f"eid_{idx}_{member_number}", member_number, staff_number, "National Identity", validate_emirates_id)
             
-            with col2:
-                if not current_visa:
-                    new_visa = st.text_input("Visa Unified No.", value="", placeholder="Enter Visa Number", key=f"visa_{idx}_{member_number}")
-                    if new_visa and new_visa.strip():
-                        direct_inputs["Visa Unified Number"] = new_visa.strip()
+            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
             
-            with col3:
-                if not current_passport:
-                    new_passport = st.text_input("Passport", value="", placeholder="Enter Passport", key=f"passport_{idx}_{member_number}")
-                    if new_passport and new_passport.strip():
-                        direct_inputs["Passport number"] = new_passport.strip()
-            
-            with col4:
+            row3_col1, row3_col2, row3_col3 = st.columns(3)
+            with row3_col1:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>PASSPORT NUMBER</span>", unsafe_allow_html=True)
+                render_editable_field("Passport", current_passport, not current_passport, f"passport_{idx}_{member_number}", member_number, staff_number, "Passport number")
+            with row3_col2:
+                st.markdown("<span style='color: #888; font-size: 11px; text-transform: uppercase;'>VISA UNIFIED NUMBER</span>", unsafe_allow_html=True)
+                render_editable_field("Visa Unified No.", current_visa, not current_visa, f"visa_{idx}_{member_number}", member_number, staff_number, "Visa Unified Number")
+            with row3_col3:
                 st.write("")
-                save_disabled = len(direct_inputs) == 0 or len(validation_errors) > 0
-                if st.button("Save", key=f"save_member_{idx}_{member_number}", type="primary", disabled=save_disabled):
-                    df = load_data()
-                    for field, value in direct_inputs.items():
-                        old_val = ""
-                        if field in df.columns:
-                            old_val_series = df.loc[df['Member Number'] == member_number, field]
-                            if not old_val_series.empty:
-                                old_val = old_val_series.iloc[0] if pd.notna(old_val_series.iloc[0]) else ""
-                        df.loc[df['Member Number'] == member_number, field] = value
-                        log_audit_trail("data_added", staff_number, member_number, field_labels.get(field, field), str(old_val), value, "employee")
-                    df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
-                    df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-                    save_data(df)
-                    st.cache_data.clear()
-                    st.session_state[save_success_key] = True
-                    st.rerun()
             
-            if validation_errors:
-                for err in validation_errors:
-                    st.error(err)
+            if missing_fields:
+                missing_list = ", ".join(missing_fields)
+                st.markdown(f"""
+                <div style="background: rgba(255, 152, 0, 0.15); border-left: 3px solid #ff9800; padding: 12px 16px; margin-top: 16px; border-radius: 4px;">
+                    <span style="color: #ff9800; font-weight: 600;">⚠ Missing Information</span><br>
+                    <span style="color: #ccc; font-size: 13px;">Please provide: {missing_list}</span>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
 def render_confirmation_section(employee_data, staff_number):
     confirmed = employee_data['EmployeeConfirmed'].iloc[0] if 'EmployeeConfirmed' in employee_data.columns else ""
