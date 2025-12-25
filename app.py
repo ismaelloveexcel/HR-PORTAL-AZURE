@@ -1,12 +1,22 @@
 import streamlit as st
 import pandas as pd
 import os
+import base64
 from datetime import datetime, timedelta
 import json
 from io import BytesIO
 from models import init_db, get_db, AuditTrail, ChangeRequest
 
 init_db()
+
+def get_logo_base64():
+    logo_path = "attached_assets/Untitled_design_(7)_1766689233925.gif"
+    if os.path.exists(logo_path):
+        with open(logo_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
+
+LOGO_BASE64 = get_logo_base64()
 
 st.set_page_config(
     page_title="Medical Insurance Verification | Baynunah",
@@ -671,10 +681,11 @@ def render_expired_page():
 def render_login():
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
     
+    logo_html = f'<img src="data:image/gif;base64,{LOGO_BASE64}" alt="Logo" class="login-logo-img">' if LOGO_BASE64 else '<div class="login-logo">🏥</div>'
     st.markdown(f"""
     <div class="login-container">
         <div class="login-header">
-            <img src="attached_assets/Untitled_design_(7)_1766689233925.gif" alt="Logo" class="login-logo-img">
+            {logo_html}
             <h1 class="login-title">Medical Insurance Verification</h1>
             <p class="login-subtitle">Employee Self-Service Portal</p>
             <div class="login-badge">Policy Year {POLICY_YEAR}</div>
@@ -726,11 +737,12 @@ def render_login():
         """, unsafe_allow_html=True)
 
 def render_header(principal_name, staff_number):
+    logo_html = f'<img src="data:image/gif;base64,{LOGO_BASE64}" alt="Logo" class="company-logo-img">' if LOGO_BASE64 else '<div class="company-logo">🏥</div>'
     st.markdown(f"""
     <div class="main-header">
         <div class="header-content">
             <div class="header-left">
-                <img src="attached_assets/Untitled_design_(7)_1766689233925.gif" alt="Logo" class="company-logo-img">
+                {logo_html}
                 <div class="header-title">
                     <h1>Medical Insurance Verification</h1>
                     <div class="subtitle">Employee Self-Service Portal</div>
