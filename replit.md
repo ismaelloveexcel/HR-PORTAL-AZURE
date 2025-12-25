@@ -13,11 +13,11 @@ A secure employee self-service portal for medical insurance renewal verification
 
 ### Layout Sections
 1. **Header** - Company logo placeholder, title, Policy Year badge
-2. **Section 1: Employee Snapshot** (Read-only) - Employee Number, Name, Job Title, Department
-3. **Section 2: Insurance Details** (Read-only) - Provider, Policy Number, Plan Type, Coverage Category, Dependents table
-4. **Section 3: Confirmation** - Two-path workflow
-5. **Section 4: Correction Request** - Conditionally visible form
-6. **Section 5: Submission Status** - Success messages
+2. **Employee Snapshot** (Read-only) - Employee Number, Name, Job Title, Department
+3. **Covered Members** - List of all dependents with key details (DOB, Gender, Nationality, Emirates ID, Passport)
+4. **Confirmation** - Two-path workflow (Confirm or Request Correction)
+5. **Correction Request** - Conditionally visible form with change tracking
+6. **Submission Status** - Success messages
 
 ### Two-Path Workflow
 - **Path A: Confirmation** - Employee confirms all information is accurate
@@ -56,9 +56,9 @@ Located at top of app.py:
 - `SESSION_TIMEOUT_MINUTES` - Inactivity timeout (15 min)
 
 ## Sample Staff Numbers for Testing
-- BAYN00002 (Syed Irfan Zakiuddin) - DOB: 11/03/1979
-- BAYN00003 (Michael Rutman) - DOB: 21/07/1979
-- BAYN00008 - DOB: 16/05/1988
+- BAYN00047 (Alexander Manual Vaz) - DOB: 02/06/1958
+- BAYN00014 (Mahmoud Saeed Mohamed) - DOB: 31/12/1979
+- BAYN00003 (Michael Rutman) - DOB: 19/01/1900
 
 ## Running the Application
 ```bash

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import json
 
 st.set_page_config(
-    page_title="Medical Insurance Renewal - Employee Verification",
+    page_title="Medical Insurance Verification | Baynunah",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -17,7 +17,7 @@ SESSION_TIMEOUT_MINUTES = 15
 
 CUSTOM_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -25,15 +25,16 @@ CUSTOM_CSS = """
     .stDeployButton {display: none;}
     
     .stApp {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f5f5f5;
+        font-family: 'Poppins', sans-serif;
+        background-color: #e8e8e8;
     }
     
     .main-header {
-        background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
-        padding: 20px 30px;
+        background: linear-gradient(135deg, #1a1a5e 0%, #2a2a7e 100%);
+        padding: 25px 35px;
         margin: -80px -80px 30px -80px;
         color: white;
+        border-radius: 0 0 20px 20px;
     }
     
     .header-content {
@@ -49,196 +50,213 @@ CUSTOM_CSS = """
     }
     
     .company-logo {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         background: white;
-        border-radius: 8px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 28px;
+        font-size: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
     .header-title h1 {
         margin: 0;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 600;
+        letter-spacing: 0.5px;
     }
     
     .header-title .subtitle {
-        font-size: 13px;
-        opacity: 0.9;
+        font-size: 12px;
+        opacity: 0.85;
         margin-top: 4px;
+        font-weight: 300;
     }
     
     .policy-badge {
         background: rgba(255,255,255,0.2);
-        padding: 8px 16px;
+        padding: 8px 18px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    .glass-card {
+        background: #fff;
         border-radius: 20px;
-        font-size: 14px;
-        font-weight: 600;
+        padding: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
     }
     
-    .section-card {
-        background: white;
-        border-radius: 8px;
-        padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid #e8e8e8;
-    }
-    
-    .section-title {
-        font-size: 16px;
+    .card-title {
+        color: #1a1a2e;
+        font-size: 13px;
         font-weight: 600;
-        color: #0078d4;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid #0078d4;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
     }
     
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0;
     }
     
-    .info-item {
-        padding: 12px;
-        background: #f8f9fa;
-        border-radius: 6px;
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
     }
     
     .info-label {
-        font-size: 11px;
-        color: #666;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        color: #888;
+        font-size: 0.85em;
+        font-weight: 400;
     }
     
     .info-value {
-        font-size: 15px;
-        color: #1a1a1a;
+        color: #1a1a2e;
+        font-size: 0.85em;
+        font-weight: 500;
+        text-align: right;
+    }
+    
+    .member-card {
+        background: #fafafa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .member-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .member-name {
+        color: #1a1a2e;
+        font-size: 1em;
+        font-weight: 600;
+    }
+    
+    .member-badge {
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.6em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .badge-principal {
+        background: rgba(56, 182, 255, 0.15);
+        color: #38b6ff;
+    }
+    
+    .badge-spouse {
+        background: rgba(236, 72, 153, 0.15);
+        color: #ec4899;
+    }
+    
+    .badge-child {
+        background: rgba(245, 158, 11, 0.15);
+        color: #d97706;
+    }
+    
+    .member-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 20px;
+    }
+    
+    .member-detail-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8em;
+        padding: 4px 0;
+    }
+    
+    .member-detail-label {
+        color: #888;
+    }
+    
+    .member-detail-value {
+        color: #1a1a2e;
         font-weight: 500;
     }
     
-    .info-value.placeholder {
-        color: #999;
+    .missing-value {
+        color: #ff6b6b;
         font-style: italic;
     }
     
-    .dependent-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-    
-    .dependent-table th {
-        background: #f0f0f0;
-        padding: 12px;
-        text-align: left;
-        font-size: 12px;
-        font-weight: 600;
-        color: #444;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .dependent-table td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        font-size: 14px;
-    }
-    
-    .relation-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .badge-principal { background: #0078d4; color: white; }
-    .badge-spouse { background: #d83b01; color: white; }
-    .badge-child { background: #107c10; color: white; }
-    
-    .path-container {
+    .missing-banner {
+        background: rgba(255, 107, 107, 0.08);
+        border-left: 3px solid #ff6b6b;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 16px;
+        margin-bottom: 20px;
         display: flex;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    
-    .path-option {
-        flex: 1;
-        padding: 20px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .path-option:hover {
-        border-color: #0078d4;
-        background: #f8fbff;
-    }
-    
-    .path-option.selected {
-        border-color: #0078d4;
-        background: #f0f7ff;
-    }
-    
-    .path-icon {
-        font-size: 32px;
-        margin-bottom: 10px;
-    }
-    
-    .path-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 5px;
-    }
-    
-    .path-desc {
-        font-size: 13px;
-        color: #666;
+        align-items: center;
+        gap: 10px;
+        color: #d63031;
+        font-size: 0.8em;
     }
     
     .success-message {
-        background: #dff6dd;
-        border: 1px solid #107c10;
-        border-radius: 8px;
-        padding: 20px;
+        background: rgba(56, 182, 255, 0.08);
+        border-radius: 16px;
+        padding: 35px;
         text-align: center;
         margin: 20px 0;
     }
     
     .success-icon {
-        font-size: 48px;
-        margin-bottom: 10px;
+        width: 70px;
+        height: 70px;
+        background: rgba(56, 182, 255, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 32px;
     }
     
     .success-title {
-        font-size: 18px;
+        color: #1a1a2e;
+        font-size: 1.2em;
         font-weight: 600;
-        color: #107c10;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
     }
     
     .success-desc {
-        color: #444;
-        font-size: 14px;
+        color: #888;
+        font-size: 0.85em;
+        line-height: 1.6;
     }
     
     .change-log {
-        background: #fff8e6;
-        border: 1px solid #ffb900;
-        border-radius: 6px;
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        border-radius: 10px;
         padding: 15px;
         margin-top: 15px;
     }
@@ -247,8 +265,8 @@ CUSTOM_CSS = """
         display: flex;
         gap: 10px;
         padding: 8px 0;
-        border-bottom: 1px solid #ffe5a0;
-        font-size: 13px;
+        border-bottom: 1px solid #fef3c7;
+        font-size: 0.85em;
     }
     
     .change-item:last-child {
@@ -256,75 +274,158 @@ CUSTOM_CSS = """
     }
     
     .old-value {
-        color: #d83b01;
+        color: #dc2626;
         text-decoration: line-through;
     }
     
     .new-value {
-        color: #107c10;
+        color: #16a34a;
         font-weight: 500;
     }
     
     .login-container {
-        max-width: 420px;
-        margin: 80px auto;
-        background: white;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        max-width: 450px;
+        margin: 60px auto;
+        text-align: center;
     }
     
     .login-header {
-        text-align: center;
         margin-bottom: 30px;
     }
     
     .login-logo {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #0078d4, #005a9e);
-        border-radius: 16px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #1a1a5e, #2a2a7e);
+        border-radius: 14px;
         margin: 0 auto 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 36px;
+        font-size: 24px;
+        box-shadow: 0 8px 20px rgba(26, 26, 94, 0.2);
+    }
+    
+    .login-title {
+        color: #1a1a2e;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+    }
+    
+    .login-subtitle {
+        color: #888;
+        font-size: 13px;
+        font-weight: 400;
+    }
+    
+    .login-badge {
+        display: inline-block;
+        background: rgba(56, 182, 255, 0.1);
+        color: #38b6ff;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 15px;
     }
     
     .stButton > button {
-        background-color: #0078d4;
+        background: #1a1a5e;
         color: white;
         border: none;
-        padding: 12px 24px;
+        padding: 14px 30px;
         font-weight: 600;
-        border-radius: 6px;
+        font-size: 0.9em;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        border-radius: 30px;
         width: 100%;
-        transition: background-color 0.2s;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
     }
     
     .stButton > button:hover {
-        background-color: #005a9e;
+        background: #2a2a7e;
+        box-shadow: 0 8px 25px rgba(26, 26, 94, 0.3);
+    }
+    
+    .signout-btn button {
+        background: transparent !important;
+        border: 1px solid #ddd !important;
+        color: #666 !important;
+        padding: 8px 20px !important;
+        font-size: 0.75em !important;
+        letter-spacing: 1px !important;
+    }
+    
+    .signout-btn button:hover {
+        background: #f5f5f5 !important;
+        box-shadow: none !important;
+    }
+    
+    .timeout-info {
+        background: rgba(56, 182, 255, 0.08);
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-size: 0.8em;
+        color: #666;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .section-label {
+        color: #888;
+        font-size: 0.65em;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    
+    div[data-testid="stForm"] {
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    
+    .stTextInput > div > div > input {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 12px 14px;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #38b6ff;
+        box-shadow: 0 0 0 3px rgba(56, 182, 255, 0.1);
+    }
+    
+    .stSelectbox > div > div {
+        border-radius: 8px;
+    }
+    
+    .stTextArea > div > div > textarea {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
+        border-color: #38b6ff;
+        box-shadow: 0 0 0 3px rgba(56, 182, 255, 0.1);
     }
     
     .expired-notice {
-        background: #fde7e9;
-        border: 1px solid #d83b01;
-        border-radius: 8px;
-        padding: 30px;
+        background: white;
+        border-radius: 20px;
+        padding: 50px 40px;
         text-align: center;
-        margin: 100px auto;
-        max-width: 500px;
-    }
-    
-    .timeout-warning {
-        background: #fff4ce;
-        border: 1px solid #ffb900;
-        border-radius: 6px;
-        padding: 10px 15px;
-        font-size: 13px;
-        color: #6a5700;
-        margin-bottom: 20px;
-        text-align: center;
+        max-width: 450px;
+        margin: 80px auto;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
     }
 </style>
 """
@@ -399,16 +500,27 @@ def verify_credentials(df, staff_number, dob_input):
     
     try:
         if ' ' in dob_str:
-            dob_str = dob_str.split(' ')[0]
+            parts = dob_str.split(' ')
+            dob_str = parts[0]
         
-        for fmt in ['%d/%m/%Y', '%m/%d/%Y', '%Y-%m-%d']:
+        formats_to_try = [
+            ('%d/%m/%Y', '%d/%m/%Y'),
+            ('%m/%d/%Y', '%d/%m/%Y'),
+            ('%Y-%m-%d', '%d/%m/%Y'),
+        ]
+        
+        actual_dob = None
+        for parse_fmt, output_fmt in formats_to_try:
             try:
-                parsed_date = datetime.strptime(dob_str, fmt)
-                actual_dob = parsed_date.strftime('%d/%m/%Y')
+                parsed_date = datetime.strptime(dob_str, parse_fmt)
+                if parsed_date.year < 1920 or parsed_date.year > 2025:
+                    continue
+                actual_dob = parsed_date.strftime(output_fmt)
                 break
             except ValueError:
                 continue
-        else:
+        
+        if actual_dob is None:
             actual_dob = dob_str
         
         if dob_input.strip() == actual_dob:
@@ -430,11 +542,11 @@ def render_expired_page():
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
     st.markdown("""
     <div class="expired-notice">
-        <div style="font-size: 48px; margin-bottom: 15px;">⏰</div>
-        <h2 style="color: #d83b01; margin-bottom: 10px;">Verification Period Ended</h2>
-        <p style="color: #666;">The medical insurance renewal verification period has ended.</p>
-        <p style="color: #666; margin-top: 15px;">If you need to make changes, please contact HR directly.</p>
-        <a href="https://wa.me/971564966546" target="_blank" style="display: inline-block; margin-top: 20px; background: #25D366; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 600;">
+        <div style="font-size: 48px; margin-bottom: 20px;">⏰</div>
+        <h2 style="color: #1a1a2e; font-size: 1.3em; margin-bottom: 12px;">Verification Period Ended</h2>
+        <p style="color: #888; font-size: 0.9em; line-height: 1.6;">The medical insurance renewal verification period has closed.</p>
+        <p style="color: #888; font-size: 0.85em; margin-top: 20px;">For any changes, please contact HR directly.</p>
+        <a href="https://wa.me/971564966546" target="_blank" style="display: inline-block; margin-top: 25px; background: #25D366; color: white; padding: 12px 28px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 0.85em;">
             📱 Contact HR via WhatsApp
         </a>
     </div>
@@ -443,17 +555,15 @@ def render_expired_page():
 def render_login():
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    col1, col2, col3 = st.columns([1, 1.3, 1])
     with col2:
-        st.markdown("""
+        st.markdown(f"""
         <div class="login-container">
             <div class="login-header">
-                <div class="login-logo">🏥</div>
-                <h1 style="color: #1a1a1a; font-size: 22px; margin-bottom: 8px;">Medical Insurance Renewal</h1>
-                <p style="color: #666; font-size: 14px;">Employee Verification Portal</p>
-                <div style="background: #e8f4fd; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-top: 15px;">
-                    <span style="color: #0078d4; font-weight: 600;">Policy Year """ + POLICY_YEAR + """</span>
-                </div>
+                <div class="login-logo">🏢</div>
+                <h1 class="login-title">Medical Insurance Verification</h1>
+                <p class="login-subtitle">Employee Self-Service Portal</p>
+                <div class="login-badge">Policy Year {POLICY_YEAR}</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -491,9 +601,9 @@ def render_login():
                         st.error(error_msg)
         
         st.markdown("""
-        <div style="text-align: center; margin-top: 20px;">
-            <p style="color: #999; font-size: 12px;">Need help? Contact HR</p>
-            <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none; font-weight: 600;">
+        <div style="text-align: center; margin-top: 25px;">
+            <p style="color: #aaa; font-size: 0.75em;">Need assistance?</p>
+            <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none; font-weight: 600; font-size: 0.85em;">
                 📱 WhatsApp HR Support
             </a>
         </div>
@@ -506,16 +616,16 @@ def render_header(principal_name, staff_number):
             <div class="header-left">
                 <div class="company-logo">🏢</div>
                 <div class="header-title">
-                    <h1>Medical Insurance Renewal</h1>
-                    <div class="subtitle">Employee Verification Portal</div>
+                    <h1>Medical Insurance Verification</h1>
+                    <div class="subtitle">Employee Self-Service Portal</div>
                 </div>
             </div>
             <div style="display: flex; align-items: center; gap: 30px;">
-                <div class="policy-badge">📅 Policy Year {POLICY_YEAR}</div>
+                <div class="policy-badge">Policy Year {POLICY_YEAR}</div>
                 <div style="text-align: right;">
-                    <div style="font-size: 13px; opacity: 0.8;">Logged in as</div>
-                    <div style="font-weight: 600;">{principal_name}</div>
-                    <div style="font-size: 12px; opacity: 0.8;">{staff_number}</div>
+                    <div style="font-size: 12px; opacity: 0.75;">Signed in as</div>
+                    <div style="font-weight: 600; font-size: 14px;">{principal_name}</div>
+                    <div style="font-size: 11px; opacity: 0.75;">{staff_number}</div>
                 </div>
             </div>
         </div>
@@ -523,109 +633,109 @@ def render_header(principal_name, staff_number):
     """, unsafe_allow_html=True)
 
 def render_employee_snapshot(principal, staff_number):
-    job_title = format_field(principal.get('Job Title')) or "—"
-    department = format_field(principal.get('Department')) or "—"
+    job_title = format_field(principal.get('JOB TITLE')) or format_field(principal.get('Job Title')) or "—"
+    department = format_field(principal.get('DEPARTMENT')) or format_field(principal.get('Department')) or "—"
     
     st.markdown(f"""
-    <div class="section-card">
-        <div class="section-title">👤 Section 1: Employee Snapshot</div>
+    <div class="glass-card">
+        <div class="card-title">👤 Employee Snapshot</div>
         <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Employee Number</div>
-                <div class="info-value">{staff_number}</div>
+            <div>
+                <div class="info-row">
+                    <span class="info-label">Employee Number</span>
+                    <span class="info-value">{staff_number}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Employee Name</span>
+                    <span class="info-value">{format_field(principal['Principal Name']) or '—'}</span>
+                </div>
             </div>
-            <div class="info-item">
-                <div class="info-label">Employee Name</div>
-                <div class="info-value">{format_field(principal['Principal Name']) or '—'}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Job Title</div>
-                <div class="info-value placeholder">{job_title}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Department</div>
-                <div class="info-value placeholder">{department}</div>
+            <div>
+                <div class="info-row">
+                    <span class="info-label">Job Title</span>
+                    <span class="info-value">{job_title}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Department</span>
+                    <span class="info-value">{department}</span>
+                </div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-def render_insurance_details(employee_data):
-    dependents_count = len(employee_data)
-    spouse_count = len(employee_data[employee_data['Relation'] == 'SPOUSE'])
-    children_count = len(employee_data[employee_data['Relation'] == 'CHILD'])
-    
-    st.markdown(f"""
-    <div class="section-card">
-        <div class="section-title">📋 Section 2: Current Insurance Details</div>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Insurance Provider</div>
-                <div class="info-value placeholder">To be updated</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Policy Number</div>
-                <div class="info-value placeholder">To be updated</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Plan Type</div>
-                <div class="info-value placeholder">To be updated</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Coverage Category</div>
-                <div class="info-value placeholder">To be updated</div>
-            </div>
-        </div>
-        
-        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-            <div class="info-label" style="margin-bottom: 10px;">DEPENDENTS LISTED ({dependents_count} members)</div>
-            <div style="display: flex; gap: 15px;">
-                <span class="relation-badge badge-principal">Principal: 1</span>
-                <span class="relation-badge badge-spouse">Spouse: {spouse_count}</span>
-                <span class="relation-badge badge-child">Children: {children_count}</span>
-            </div>
-        </div>
-        
-        <table class="dependent-table">
-            <thead>
-                <tr>
-                    <th>Relation</th>
-                    <th>Full Name</th>
-                    <th>Date of Birth</th>
-                    <th>Gender</th>
-                    <th>Emirates ID / Passport</th>
-                </tr>
-            </thead>
-            <tbody>
+def render_covered_members(employee_data):
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-title">👥 Covered Members</div>
     """, unsafe_allow_html=True)
     
-    rows_html = ""
+    has_missing = False
+    for _, member in employee_data.iterrows():
+        eid = format_field(member.get('National Identity'))
+        passport = format_field(member.get('Passport number'))
+        if not eid and not passport:
+            has_missing = True
+            break
+    
+    if has_missing:
+        st.markdown("""
+        <div class="missing-banner">
+            <span>⚠️</span>
+            <span>Some members have missing information. Please review and submit corrections if needed.</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
     for _, member in employee_data.iterrows():
         relation = member['Relation']
         badge_class = "badge-principal" if relation == "PRINCIPAL" else ("badge-spouse" if relation == "SPOUSE" else "badge-child")
         
-        full_name = format_field(member.get('Member Full Name')) or f"{format_field(member.get('Member First Name', '')) or ''} {format_field(member.get('Member Last Name', '')) or ''}".strip()
-        dob = format_field(member.get('Date Of Birth')) or "—"
-        gender = format_field(member.get('Gender')) or "—"
-        emirates_id = format_field(member.get('National Identity')) or "—"
-        passport = format_field(member.get('Passport number')) or "—"
-        id_display = emirates_id if emirates_id != "—" else passport
+        full_name = format_field(member.get('Member Full Name')) or f"{format_field(member.get('Member First Name')) or ''} {format_field(member.get('Member Last Name')) or ''}".strip()
+        dob = format_field(member.get('Date Of Birth'))
+        if dob and ' ' in dob:
+            dob = dob.split(' ')[0]
+        dob = dob or "—"
         
-        rows_html += f"""
-            <tr>
-                <td><span class="relation-badge {badge_class}">{relation}</span></td>
-                <td>{full_name}</td>
-                <td>{dob}</td>
-                <td>{gender}</td>
-                <td>{id_display}</td>
-            </tr>
-        """
+        gender = format_field(member.get('Gender')) or "—"
+        nationality = format_field(member.get('Nationality')) or "—"
+        emirates_id = format_field(member.get('National Identity'))
+        passport = format_field(member.get('Passport number'))
+        
+        eid_display = emirates_id if emirates_id else f'<span class="missing-value">Not provided</span>'
+        passport_display = passport if passport else f'<span class="missing-value">Not provided</span>'
+        
+        st.markdown(f"""
+        <div class="member-card">
+            <div class="member-header">
+                <span class="member-name">{full_name}</span>
+                <span class="member-badge {badge_class}">{relation}</span>
+            </div>
+            <div class="member-details">
+                <div class="member-detail-item">
+                    <span class="member-detail-label">Date of Birth</span>
+                    <span class="member-detail-value">{dob}</span>
+                </div>
+                <div class="member-detail-item">
+                    <span class="member-detail-label">Gender</span>
+                    <span class="member-detail-value">{gender}</span>
+                </div>
+                <div class="member-detail-item">
+                    <span class="member-detail-label">Nationality</span>
+                    <span class="member-detail-value">{nationality}</span>
+                </div>
+                <div class="member-detail-item">
+                    <span class="member-detail-label">Emirates ID</span>
+                    <span class="member-detail-value">{eid_display}</span>
+                </div>
+                <div class="member-detail-item">
+                    <span class="member-detail-label">Passport</span>
+                    <span class="member-detail-value">{passport_display}</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
-    st.markdown(rows_html + """
-            </tbody>
-        </table>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 def render_confirmation_section(employee_data, staff_number):
     confirmed = employee_data['EmployeeConfirmed'].iloc[0]
@@ -634,9 +744,9 @@ def render_confirmation_section(employee_data, staff_number):
     if already_confirmed:
         st.markdown(f"""
         <div class="success-message">
-            <div class="success-icon">✅</div>
+            <div class="success-icon">✓</div>
             <div class="success-title">Information Confirmed</div>
-            <div class="success-desc">You confirmed your information on {confirmed}. HR will proceed with renewal.</div>
+            <div class="success-desc">You confirmed your information on {confirmed}.<br>HR will proceed with the insurance renewal.</div>
         </div>
         """, unsafe_allow_html=True)
         return
@@ -645,9 +755,9 @@ def render_confirmation_section(employee_data, staff_number):
         if st.session_state.get('submission_type') == 'confirmation':
             st.markdown("""
             <div class="success-message">
-                <div class="success-icon">✅</div>
+                <div class="success-icon">✓</div>
                 <div class="success-title">Thank You!</div>
-                <div class="success-desc">Your information has been confirmed. HR will proceed with the renewal.</div>
+                <div class="success-desc">Your information has been confirmed.<br>HR will proceed with the renewal.</div>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -655,22 +765,25 @@ def render_confirmation_section(employee_data, staff_number):
             <div class="success-message">
                 <div class="success-icon">📝</div>
                 <div class="success-title">Correction Request Submitted</div>
-                <div class="success-desc">Your request has been recorded. HR will review and contact you if needed.</div>
+                <div class="success-desc">Your request has been recorded.<br>HR will review and contact you if needed.</div>
             </div>
             """, unsafe_allow_html=True)
         return
     
     st.markdown("""
-    <div class="section-card">
-        <div class="section-title">✔️ Section 3: Confirmation</div>
-        <p style="color: #444; margin-bottom: 20px;">Please review the information above carefully. If everything is correct, confirm below. If you need to request corrections, select that option instead.</p>
+    <div class="glass-card">
+        <div class="card-title">✔️ Confirmation</div>
+        <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
+            Please review the information above. If everything is correct, confirm below. 
+            If you need to request changes, select the correction option.
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
     action = st.radio(
         "Select your action:",
-        ["✅ I confirm that all information above is accurate as of today",
-         "📝 I need to request corrections to some information"],
+        ["✅ I confirm that all information above is accurate",
+         "📝 I need to request corrections"],
         key="action_choice",
         label_visibility="collapsed"
     )
@@ -678,7 +791,7 @@ def render_confirmation_section(employee_data, staff_number):
     if "I confirm" in action:
         st.markdown("---")
         confirm_checkbox = st.checkbox(
-            "I hereby confirm that all the information displayed above for myself and my dependents is accurate and complete.",
+            "I hereby confirm that all the information displayed for myself and my dependents is accurate and complete.",
             key="confirm_checkbox"
         )
         
@@ -698,16 +811,18 @@ def render_confirmation_section(employee_data, staff_number):
 
 def render_correction_form(employee_data, staff_number):
     st.markdown("""
-    <div class="section-card">
-        <div class="section-title">📝 Section 4: Correction Request</div>
-        <p style="color: #444; margin-bottom: 15px;">Please specify the corrections needed. Only fill in fields that require changes.</p>
+    <div class="glass-card">
+        <div class="card-title">📝 Correction Request</div>
+        <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
+            Specify the corrections needed below. Only fill in fields that require changes.
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
     member_options = []
     for _, member in employee_data.iterrows():
         relation = member['Relation']
-        name = format_field(member.get('Member Full Name')) or f"{format_field(member.get('Member First Name', '')) or ''} {format_field(member.get('Member Last Name', '')) or ''}".strip()
+        name = format_field(member.get('Member Full Name')) or f"{format_field(member.get('Member First Name')) or ''} {format_field(member.get('Member Last Name')) or ''}".strip()
         member_options.append(f"{relation}: {name}")
     
     selected_member = st.selectbox("Select Member to Correct", member_options, key="selected_member")
@@ -716,7 +831,7 @@ def render_correction_form(employee_data, staff_number):
     member_row = employee_data.iloc[selected_idx]
     member_number = member_row['Member Number']
     
-    st.markdown("#### Fields to Correct")
+    st.markdown('<p class="section-label" style="margin-top: 20px;">Fields to Correct</p>', unsafe_allow_html=True)
     st.caption("Only fill in fields that need correction. Leave others empty.")
     
     changes = []
@@ -736,7 +851,7 @@ def render_correction_form(employee_data, staff_number):
                 changes.append({"field": "Date of Birth", "old": current_dob, "new": new_dob})
         else:
             st.text_input("Date of Birth", value=current_dob, disabled=True, key="corr_dob_locked")
-            st.caption("Principal's DOB cannot be changed (used for authentication)")
+            st.caption("Principal's DOB cannot be changed (used for login)")
     
     with col2:
         current_relation = format_field(member_row.get('Relation')) or ""
@@ -761,7 +876,7 @@ def render_correction_form(employee_data, staff_number):
         changes.append({"field": "Passport Number", "old": current_passport or "Not provided", "new": new_passport})
     
     if changes:
-        st.markdown("#### Changes Summary")
+        st.markdown('<p class="section-label" style="margin-top: 20px;">Changes Summary</p>', unsafe_allow_html=True)
         st.markdown('<div class="change-log">', unsafe_allow_html=True)
         for change in changes:
             st.markdown(f"""
@@ -773,11 +888,12 @@ def render_correction_form(employee_data, staff_number):
             """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("#### Remarks")
+    st.markdown('<p class="section-label" style="margin-top: 20px;">Remarks</p>', unsafe_allow_html=True)
     remarks = st.text_area(
-        "Please provide additional details or reason for the correction (Required)",
-        placeholder="e.g., 'Emirates ID was renewed' or 'Spelling correction for dependent name'",
-        key="corr_remarks"
+        "Please provide details for the correction (Required)",
+        placeholder="e.g., 'Emirates ID was renewed' or 'Spelling correction'",
+        key="corr_remarks",
+        label_visibility="collapsed"
     )
     
     submit_disabled = len(changes) == 0 or not remarks.strip()
@@ -830,26 +946,28 @@ def render_dashboard():
     
     col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("🚪 Sign Out", use_container_width=True):
+        st.markdown('<div class="signout-btn">', unsafe_allow_html=True)
+        if st.button("Sign Out", use_container_width=True):
             st.session_state.clear()
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     
     days_left = (RENEWAL_DEADLINE - datetime.now()).days
     if days_left > 0:
         st.markdown(f"""
-        <div class="timeout-warning">
-            ⏱️ Session timeout: {SESSION_TIMEOUT_MINUTES} minutes of inactivity | 
-            📅 Verification deadline: {RENEWAL_DEADLINE.strftime('%d %B %Y')} ({days_left} days remaining)
+        <div class="timeout-info">
+            ⏱️ Session timeout: {SESSION_TIMEOUT_MINUTES} min  |  
+            📅 Deadline: {RENEWAL_DEADLINE.strftime('%d %B %Y')} ({days_left} days left)
         </div>
         """, unsafe_allow_html=True)
     
     render_employee_snapshot(principal, staff_number)
-    render_insurance_details(employee_data)
+    render_covered_members(employee_data)
     render_confirmation_section(employee_data, staff_number)
     
     st.markdown("""
-    <div style="text-align: center; margin-top: 40px; padding: 20px; color: #999; font-size: 12px;">
-        Need assistance? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366;">Contact HR via WhatsApp</a>
+    <div style="text-align: center; margin-top: 40px; padding: 20px; color: #aaa; font-size: 0.75em;">
+        Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366;">WhatsApp HR Support</a>
     </div>
     """, unsafe_allow_html=True)
 
