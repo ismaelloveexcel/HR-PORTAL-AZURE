@@ -359,6 +359,12 @@ CUSTOM_CSS = """
         margin: 0 auto;
     }
     
+    .content-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
     .login-header {
         margin-bottom: 25px;
     }
@@ -1075,23 +1081,25 @@ def render_dashboard():
     render_header(principal_name, staff_number)
     render_status_strip()
     
-    col1, col2 = st.columns([8, 1])
+    col1, col2, col3 = st.columns([1, 2.5, 1])
     with col2:
-        st.markdown('<div class="signout-btn">', unsafe_allow_html=True)
-        if st.button("Sign Out", use_container_width=True):
-            st.session_state.clear()
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    render_employee_snapshot(principal, staff_number)
-    render_covered_members(employee_data)
-    render_confirmation_section(employee_data, staff_number)
-    
-    st.markdown("""
-    <div style="text-align: center; margin-top: 30px; padding: 16px; color: #999; font-size: 11px;">
-        Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none;">WhatsApp HR Support</a>
-    </div>
-    """, unsafe_allow_html=True)
+        signout_col1, signout_col2 = st.columns([5, 1])
+        with signout_col2:
+            st.markdown('<div class="signout-btn">', unsafe_allow_html=True)
+            if st.button("Sign Out", use_container_width=True):
+                st.session_state.clear()
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        render_employee_snapshot(principal, staff_number)
+        render_covered_members(employee_data)
+        render_confirmation_section(employee_data, staff_number)
+        
+        st.markdown("""
+        <div style="text-align: center; margin-top: 30px; padding: 16px; color: #999; font-size: 11px;">
+            Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none;">WhatsApp HR Support</a>
+        </div>
+        """, unsafe_allow_html=True)
 
 def main():
     if 'authenticated' not in st.session_state:
