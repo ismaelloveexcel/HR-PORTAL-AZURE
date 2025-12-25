@@ -1,8 +1,8 @@
 import os
+from contextlib import contextmanager
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -67,7 +67,24 @@ def init_db():
         except Exception as e:
             print(f"Error creating tables: {e}")
 
+@contextmanager
+def get_db_session():
+    """Context manager for database sessions. Use with 'with' statement."""
+    if SessionLocal is None:
+        yield None
+        return
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
 def get_db():
+    """Legacy function for backward compatibility. Consider using get_db_session() context manager instead."""
     if SessionLocal:
         db = SessionLocal()
         try:

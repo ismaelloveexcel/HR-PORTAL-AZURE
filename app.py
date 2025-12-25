@@ -88,7 +88,7 @@ CUSTOM_CSS = """
     
     .login-card .subtitle {
         color: #b5bcd9;
-        font-size: 9px;
+        font-size: 11px;
         margin: 0;
     }
     
@@ -96,16 +96,16 @@ CUSTOM_CSS = """
         display: inline-block;
         background: rgba(56, 182, 255, 0.15);
         color: #38b6ff;
-        padding: 3px 10px;
+        padding: 4px 12px;
         border-radius: 10px;
-        font-size: 8px;
+        font-size: 10px;
         font-weight: 600;
         margin-top: 8px;
     }
     
     .login-help {
         margin-top: 12px;
-        font-size: 9px;
+        font-size: 11px;
         color: #888;
     }
     
@@ -155,12 +155,12 @@ CUSTOM_CSS = """
     
     .header-title h1 {
         margin: 0;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
     }
     
     .header-title .subtitle {
-        font-size: 9px;
+        font-size: 11px;
         opacity: 0.8;
         margin-top: 2px;
         font-weight: 400;
@@ -174,9 +174,9 @@ CUSTOM_CSS = """
     
     .policy-badge {
         background: rgba(255,255,255,0.15);
-        padding: 5px 11px;
+        padding: 6px 12px;
         border-radius: 16px;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 500;
     }
     
@@ -185,12 +185,12 @@ CUSTOM_CSS = """
     }
     
     .user-name {
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 500;
     }
     
     .user-id {
-        font-size: 8px;
+        font-size: 10px;
         opacity: 0.7;
         margin-bottom: 3px;
     }
@@ -200,9 +200,9 @@ CUSTOM_CSS = """
         background: rgba(255,255,255,0.15);
         border: 1px solid rgba(255,255,255,0.3);
         color: white;
-        padding: 2px 8px;
-        border-radius: 3px;
-        font-size: 8px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 10px;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s;
@@ -219,19 +219,19 @@ CUSTOM_CSS = """
     .status-strip {
         background: #1a1a2e;
         border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding: 8px 24px;
+        padding: 10px 24px;
         margin: 0 -60px 16px -60px;
         display: flex;
         justify-content: center;
         gap: 32px;
-        font-size: 10px;
+        font-size: 12px;
         color: #b5bcd9;
     }
     
     .status-item {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
     }
     
     .glass-card {
@@ -245,7 +245,7 @@ CUSTOM_CSS = """
     
     .card-title {
         color: #e6ebff;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1.2px;
@@ -268,14 +268,14 @@ CUSTOM_CSS = """
     
     .snapshot-label {
         color: #888;
-        font-size: 9px;
+        font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
     .snapshot-value {
         color: #e6ebff;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 500;
     }
     
@@ -303,9 +303,9 @@ CUSTOM_CSS = """
     }
     
     .member-badge {
-        padding: 3px 10px;
+        padding: 4px 12px;
         border-radius: 12px;
-        font-size: 8px;
+        font-size: 10px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -336,7 +336,7 @@ CUSTOM_CSS = """
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 10px;
+        font-size: 12px;
         padding: 2px 0;
     }
     
@@ -351,7 +351,7 @@ CUSTOM_CSS = """
     
     .missing-value {
         color: #ff9800;
-        font-size: 9px;
+        font-size: 11px;
     }
     
     .member-divider {
@@ -366,7 +366,7 @@ CUSTOM_CSS = """
     
     .edit-section-header {
         color: #ff9800;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -393,7 +393,7 @@ CUSTOM_CSS = """
     
     .field-label {
         color: #888;
-        font-size: 9px;
+        font-size: 10px;
         text-transform: uppercase;
         margin-bottom: 3px;
     }
@@ -401,7 +401,7 @@ CUSTOM_CSS = """
     .field-value {
         color: #e6ebff;
         font-weight: 500;
-        font-size: 11px;
+        font-size: 13px;
     }
     
     .missing-field-text {
@@ -444,7 +444,7 @@ CUSTOM_CSS = """
     
     .inline-edit-title {
         color: #ff9800;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -453,15 +453,15 @@ CUSTOM_CSS = """
     
     .missing-banner {
         background: rgba(255, 152, 0, 0.1);
-        border-left: 2px solid #ff9800;
+        border-left: 3px solid #ff9800;
         border-radius: 0 6px 6px 0;
-        padding: 10px 12px;
+        padding: 12px 14px;
         margin: 12px 0;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         color: #ff9800;
-        font-size: 10px;
+        font-size: 12px;
     }
     
     .confirmation-card {
@@ -518,14 +518,14 @@ CUSTOM_CSS = """
     
     .success-title {
         color: #e6ebff;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
         margin-bottom: 5px;
     }
     
     .success-desc {
         color: #b5bcd9;
-        font-size: 10px;
+        font-size: 12px;
         line-height: 1.5;
     }
     
@@ -542,7 +542,7 @@ CUSTOM_CSS = """
         gap: 6px;
         padding: 5px 0;
         border-bottom: 1px solid rgba(255,255,255,0.1);
-        font-size: 10px;
+        font-size: 12px;
         color: #e6ebff;
     }
     
@@ -629,7 +629,7 @@ CUSTOM_CSS = """
     
     .login-subtitle {
         color: #b5bcd9;
-        font-size: 9px;
+        font-size: 11px;
         font-weight: 400;
         margin-top: 2px;
     }
@@ -638,9 +638,9 @@ CUSTOM_CSS = """
         display: inline-block;
         background: rgba(56, 182, 255, 0.15);
         color: #38b6ff;
-        padding: 3px 10px;
+        padding: 4px 12px;
         border-radius: 12px;
-        font-size: 8px;
+        font-size: 10px;
         font-weight: 600;
         margin-top: 6px;
     }
@@ -649,9 +649,9 @@ CUSTOM_CSS = """
         background: #1E1B5C;
         color: white;
         border: none;
-        padding: 8px 20px;
+        padding: 10px 22px;
         font-weight: 600;
-        font-size: 10px;
+        font-size: 12px;
         letter-spacing: 0.8px;
         text-transform: uppercase;
         border-radius: 6px;
@@ -668,8 +668,8 @@ CUSTOM_CSS = """
         background: transparent !important;
         border: 1px solid rgba(255,255,255,0.2) !important;
         color: #b5bcd9 !important;
-        padding: 5px 12px !important;
-        font-size: 9px !important;
+        padding: 6px 14px !important;
+        font-size: 11px !important;
         letter-spacing: 0.5px !important;
     }
     
@@ -679,7 +679,7 @@ CUSTOM_CSS = """
     
     .section-label {
         color: #b5bcd9;
-        font-size: 9px;
+        font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 6px;
@@ -701,16 +701,16 @@ CUSTOM_CSS = """
     .stTextInput > div > div > input {
         border-radius: 6px;
         border: 1px solid rgba(255,255,255,0.15);
-        padding: 8px 10px;
+        padding: 10px 12px;
         font-family: 'Poppins', sans-serif;
-        font-size: 11px;
+        font-size: 13px;
         background: #16213e;
         color: #e6ebff;
     }
     
     .stTextInput label {
-        font-size: 10px !important;
-        margin-bottom: 2px !important;
+        font-size: 12px !important;
+        margin-bottom: 4px !important;
         color: #b5bcd9 !important;
     }
     
@@ -721,11 +721,11 @@ CUSTOM_CSS = """
     
     .stSelectbox > div > div {
         border-radius: 6px;
-        font-size: 11px;
+        font-size: 13px;
     }
     
     .stSelectbox label {
-        font-size: 10px !important;
+        font-size: 12px !important;
         color: #b5bcd9 !important;
     }
     
@@ -733,13 +733,13 @@ CUSTOM_CSS = """
         border-radius: 6px;
         border: 1px solid rgba(255,255,255,0.15);
         font-family: 'Poppins', sans-serif;
-        font-size: 10px;
+        font-size: 12px;
         background: #16213e;
         color: #e6ebff;
     }
     
     .stTextArea label {
-        font-size: 10px !important;
+        font-size: 12px !important;
         color: #b5bcd9 !important;
     }
     
@@ -753,8 +753,8 @@ CUSTOM_CSS = """
     }
     
     .stRadio label {
-        padding: 8px 12px !important;
-        font-size: 11px !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
         border: 1px solid rgba(255,255,255,0.15) !important;
         border-radius: 6px !important;
         margin-bottom: 6px !important;
@@ -762,7 +762,7 @@ CUSTOM_CSS = """
     }
     
     .stCheckbox label {
-        font-size: 11px !important;
+        font-size: 13px !important;
         color: #e6ebff !important;
     }
     
@@ -783,13 +783,13 @@ CUSTOM_CSS = """
     
     .inline-error {
         color: #f87171;
-        font-size: 9px;
+        font-size: 11px;
         margin-top: 3px;
     }
     
     .field-hint {
         color: #888;
-        font-size: 9px;
+        font-size: 11px;
         margin-top: 3px;
     }
     
@@ -803,26 +803,56 @@ SESSION_TIMEOUT_JS = f"""
 <script>
     var sessionTimeout = {SESSION_TIMEOUT_MINUTES * 60 * 1000};
     var warningTime = {(SESSION_TIMEOUT_MINUTES - 2) * 60 * 1000};
+    var redirectDelay = 2000; // Delay before redirecting to login after session expires
     var sessionTimer;
     var warningTimer;
+    
+    // Safely insert element at the top of document body
+    function insertAtBodyTop(element) {{
+        if (document.body.firstChild) {{
+            document.body.insertBefore(element, document.body.firstChild);
+        }} else {{
+            document.body.appendChild(element);
+        }}
+    }}
+    
+    // Create warning banner element
+    function createWarningBanner() {{
+        var banner = document.createElement('div');
+        banner.id = 'session-warning-banner';
+        banner.innerHTML = '⚠️ Your session will expire in 2 minutes due to inactivity. Please save your work.';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff9800;color:#000;padding:12px 20px;text-align:center;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+        return banner;
+    }}
+    
+    function removeWarningBanner() {{
+        var banner = document.getElementById('session-warning-banner');
+        if (banner) banner.remove();
+    }}
     
     function resetTimers() {{
         clearTimeout(sessionTimer);
         clearTimeout(warningTimer);
+        removeWarningBanner();
         
         warningTimer = setTimeout(function() {{
-            alert('Your session will expire in 2 minutes due to inactivity.');
+            insertAtBodyTop(createWarningBanner());
         }}, warningTime);
         
         sessionTimer = setTimeout(function() {{
-            alert('Session expired due to inactivity. Please log in again.');
-            window.location.reload();
+            removeWarningBanner();
+            var expiredBanner = document.createElement('div');
+            expiredBanner.innerHTML = '🔒 Session expired due to inactivity. Redirecting to login...';
+            expiredBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f44336;color:#fff;padding:14px 20px;text-align:center;font-weight:600;font-size:14px;z-index:9999;';
+            insertAtBodyTop(expiredBanner);
+            setTimeout(function() {{ window.location.reload(); }}, redirectDelay);
         }}, sessionTimeout);
     }}
     
     document.addEventListener('click', resetTimers);
     document.addEventListener('keypress', resetTimers);
     document.addEventListener('scroll', resetTimers);
+    document.addEventListener('mousemove', resetTimers);
     
     resetTimers();
 </script>
@@ -864,6 +894,14 @@ def get_employee_data(df, staff_number):
     return df[df['Staff Number'] == staff_number]
 
 def verify_credentials(df, staff_number, dob_input):
+    """
+    Verify user credentials using Staff Number and Date of Birth.
+    
+    Security Note: For production environments, consider implementing:
+    - Rate limiting on failed login attempts (e.g., max 5 attempts per 15 minutes)
+    - Account lockout after repeated failures
+    - Logging of failed authentication attempts for security monitoring
+    """
     principals = df[(df['Relation'] == 'PRINCIPAL') & (df['Staff Number'] == staff_number)]
     if principals.empty:
         return False, "Invalid Staff Number."
@@ -921,10 +959,10 @@ def render_expired_page():
     st.markdown("""
     <div class="expired-notice">
         <div style="font-size: 48px; margin-bottom: 20px;">⏰</div>
-        <h2 style="color: #1a1a2e; font-size: 1.3em; margin-bottom: 12px;">Verification Period Ended</h2>
-        <p style="color: #888; font-size: 0.9em; line-height: 1.6;">The medical insurance renewal verification period has closed.</p>
-        <p style="color: #888; font-size: 0.85em; margin-top: 20px;">For any changes, please contact HR directly.</p>
-        <a href="https://wa.me/971564966546" target="_blank" style="display: inline-block; margin-top: 25px; background: #25D366; color: white; padding: 12px 28px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 0.85em;">
+        <h2 style="color: #e6ebff; font-size: 1.4em; margin-bottom: 12px;">Verification Period Ended</h2>
+        <p style="color: #b5bcd9; font-size: 1em; line-height: 1.6;">The medical insurance renewal verification period has closed.</p>
+        <p style="color: #b5bcd9; font-size: 0.95em; margin-top: 20px;">For any changes, please contact HR directly.</p>
+        <a href="https://wa.me/971564966546" target="_blank" style="display: inline-block; margin-top: 25px; background: #25D366; color: white; padding: 14px 30px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 0.95em;">
             📱 Contact HR via WhatsApp
         </a>
     </div>
@@ -949,9 +987,9 @@ def render_login():
     st.markdown(f"""
     <div style="text-align:center; padding-top:3vh;">
         {logo_html}
-        <h1 style="color:#1E1B5C; font-size:22px; font-weight:600; margin:0 0 4px 0; line-height:1.2;">Medical Insurance<br>Verification</h1>
-        <p style="color:#888; font-size:11px; margin:0;">Employee Self-Service Portal</p>
-        <span style="display:inline-block; background:rgba(30,27,92,0.08); color:#1E1B5C; padding:4px 12px; border-radius:12px; font-size:10px; font-weight:600; margin-top:8px;">Policy Year {POLICY_YEAR}</span>
+        <h1 style="color:#1E1B5C; font-size:24px; font-weight:600; margin:0 0 4px 0; line-height:1.2;">Medical Insurance<br>Verification</h1>
+        <p style="color:#888; font-size:13px; margin:0;">Employee Self-Service Portal</p>
+        <span style="display:inline-block; background:rgba(30,27,92,0.08); color:#1E1B5C; padding:5px 14px; border-radius:12px; font-size:12px; font-weight:600; margin-top:10px;">Policy Year {POLICY_YEAR}</span>
     </div>
     """, unsafe_allow_html=True)
     
@@ -990,7 +1028,7 @@ def render_login():
                         st.error(error_msg)
         
         st.markdown("""
-        <div style="text-align:center; margin-top:10px; font-size:11px; color:#aaa;">
+        <div style="text-align:center; margin-top:12px; font-size:13px; color:#aaa;">
             Need help? <a href="https://wa.me/971564966546" target="_blank" style="color:#25D366; text-decoration:none; font-weight:600;">WhatsApp HR</a>
         </div>
         """, unsafe_allow_html=True)
@@ -1400,20 +1438,21 @@ def render_covered_members(employee_data, staff_number):
         
         if len(direct_inputs) > 0 and len(validation_errors) == 0:
             if st.button("Save", key=f"save_member_{idx}_{member_number}", type="primary"):
-                df = load_data()
-                for field, value in direct_inputs.items():
-                    old_val = ""
-                    if field in df.columns:
-                        old_val_series = df.loc[df['Member Number'] == member_number, field]
-                        if not old_val_series.empty:
-                            old_val = old_val_series.iloc[0] if pd.notna(old_val_series.iloc[0]) else ""
-                    df.loc[df['Member Number'] == member_number, field] = value
-                    log_audit_trail("data_added", staff_number, member_number, field_labels.get(field, field), str(old_val), value, "employee")
-                df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
-                df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-                save_data(df)
-                st.cache_data.clear()
-                st.session_state[saved_key] = True
+                with st.spinner("Saving information..."):
+                    df = load_data()
+                    for field, value in direct_inputs.items():
+                        old_val = ""
+                        if field in df.columns:
+                            old_val_series = df.loc[df['Member Number'] == member_number, field]
+                            if not old_val_series.empty:
+                                old_val = old_val_series.iloc[0] if pd.notna(old_val_series.iloc[0]) else ""
+                        df.loc[df['Member Number'] == member_number, field] = value
+                        log_audit_trail("data_added", staff_number, member_number, field_labels.get(field, field), str(old_val), value, "employee")
+                    df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
+                    df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
+                    save_data(df)
+                    st.cache_data.clear()
+                    st.session_state[saved_key] = True
                 st.rerun()
         
         st.markdown("<hr class='member-divider'>", unsafe_allow_html=True)
@@ -1456,7 +1495,7 @@ def render_confirmation_section(employee_data, staff_number):
     st.markdown("""
     <div class="glass-card">
         <div class="card-title">✔️ Confirmation</div>
-        <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
+        <p style="color: #b5bcd9; font-size: 1em; margin-bottom: 20px; line-height: 1.5;">
             Please review the information above. Once you've completed any missing fields, confirm below.
         </p>
     </div>
@@ -1468,13 +1507,14 @@ def render_confirmation_section(employee_data, staff_number):
     )
     
     if st.button("Submit Confirmation", type="primary", disabled=not confirm_checkbox):
-        df = load_data()
-        confirmation_time = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-        df.loc[df['Staff Number'] == staff_number, 'EmployeeConfirmed'] = confirmation_time
-        save_data(df)
-        st.cache_data.clear()
-        st.session_state['submission_success'] = True
-        st.session_state['submission_type'] = 'confirmation'
+        with st.spinner("Submitting confirmation..."):
+            df = load_data()
+            confirmation_time = datetime.now().strftime("%d/%m/%Y %I:%M %p")
+            df.loc[df['Staff Number'] == staff_number, 'EmployeeConfirmed'] = confirmation_time
+            save_data(df)
+            st.cache_data.clear()
+            st.session_state['submission_success'] = True
+            st.session_state['submission_type'] = 'confirmation'
         st.balloons()
         st.rerun()
     
@@ -1482,7 +1522,7 @@ def render_confirmation_section(employee_data, staff_number):
     
     st.markdown("""
     <div style="margin-top: 20px;">
-        <p style="color: #666; font-size: 0.85em;">
+        <p style="color: #b5bcd9; font-size: 0.95em; line-height: 1.5;">
             <strong>Need other changes?</strong> Describe any additional corrections below. HR will review your request.
         </p>
     </div>
@@ -1498,22 +1538,23 @@ def render_confirmation_section(employee_data, staff_number):
     
     if change_description.strip():
         if st.button("📤 Submit Change Request", type="secondary"):
-            principal = employee_data[employee_data['Relation'] == 'PRINCIPAL'].iloc[0]
-            member_number = principal['Member Number']
-            
-            changes_list = [{"field": "General Change Request", "old": "", "new": change_description.strip()}]
-            save_change_request_db(staff_number, member_number, "General Request", changes_list, change_description.strip())
-            
-            log_audit_trail("change_requested", staff_number, member_number, "General Change Request", "", change_description.strip(), "employee")
-            
-            df = load_data()
-            df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
-            df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-            save_data(df)
-            st.cache_data.clear()
-            
-            st.session_state['submission_success'] = True
-            st.session_state['submission_type'] = 'change_request'
+            with st.spinner("Submitting change request..."):
+                principal = employee_data[employee_data['Relation'] == 'PRINCIPAL'].iloc[0]
+                member_number = principal['Member Number']
+                
+                changes_list = [{"field": "General Change Request", "old": "", "new": change_description.strip()}]
+                save_change_request_db(staff_number, member_number, "General Request", changes_list, change_description.strip())
+                
+                log_audit_trail("change_requested", staff_number, member_number, "General Change Request", "", change_description.strip(), "employee")
+                
+                df = load_data()
+                df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
+                df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
+                save_data(df)
+                st.cache_data.clear()
+                
+                st.session_state['submission_success'] = True
+                st.session_state['submission_type'] = 'change_request'
             st.rerun()
 
 def render_dashboard():
@@ -1540,8 +1581,8 @@ def render_dashboard():
         render_confirmation_section(employee_data, staff_number)
         
         st.markdown("""
-        <div style="text-align: center; margin-top: 30px; padding: 16px; color: #999; font-size: 11px;">
-            Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none;">WhatsApp HR Support</a>
+        <div style="text-align: center; margin-top: 30px; padding: 16px; color: #999; font-size: 13px;">
+            Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none; font-weight: 600;">WhatsApp HR Support</a>
         </div>
         """, unsafe_allow_html=True)
 
