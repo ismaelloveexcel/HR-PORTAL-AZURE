@@ -117,20 +117,16 @@ CUSTOM_CSS = """
     
     .main-header {
         background: #1E1B5C;
-        padding: 18px 30px;
-        margin: -80px -80px 0 -80px;
+        padding: 18px 24px;
+        margin-bottom: 20px;
         color: white;
-        position: sticky;
-        top: 0;
-        z-index: 999;
+        border-radius: 12px;
     }
     
     .header-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
     }
     
     .header-left {
@@ -196,24 +192,27 @@ CUSTOM_CSS = """
     .user-id {
         font-size: 10px;
         opacity: 0.7;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
     
-    .header-signout-btn {
+    .header-signout-link {
+        display: inline-block;
         background: rgba(255,255,255,0.15);
         border: 1px solid rgba(255,255,255,0.3);
         color: white;
-        padding: 4px 12px;
-        border-radius: 6px;
-        font-size: 10px;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 9px;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        text-decoration: none;
+        margin-top: 4px;
     }
     
-    .header-signout-btn:hover {
+    .header-signout-link:hover {
         background: rgba(255,255,255,0.25);
     }
     
@@ -885,9 +884,9 @@ def render_header(principal_name, staff_number):
     </div>
     """, unsafe_allow_html=True)
     
-    signout_col1, signout_col2 = st.columns([6, 1])
-    with signout_col2:
-        if st.button("SIGN OUT", key="header_signout", use_container_width=True):
+    header_cols = st.columns([5, 1])
+    with header_cols[1]:
+        if st.button("Sign Out", key="header_signout", type="secondary"):
             st.session_state.clear()
             st.rerun()
 
@@ -1104,31 +1103,28 @@ def get_audit_trail(limit=100):
         print(f"Error fetching audit trail: {e}")
     return []
 
-def render_covered_members(employee_data):
-    st.markdown("""
-    <div class="glass-card">
-        <div class="card-title">👥 Covered Members</div>
-    """, unsafe_allow_html=True)
-    
-    has_missing = False
+def render_covered_members(employee_data, staff_number):
+    has_any_missing = False
     for _, member in employee_data.iterrows():
         eid = format_field(member.get('National Identity'))
+        visa = format_field(member.get('Visa Unified Number'))
         passport = format_field(member.get('Passport number'))
-        if not eid and not passport:
-            has_missing = True
+        if not eid or not visa or not passport:
+            has_any_missing = True
             break
     
-    if has_missing:
+    if has_any_missing:
         st.markdown("""
         <div class="missing-banner">
             <span>⚠️</span>
-            <span>Some members have missing information. Please review and submit corrections if needed.</span>
+            <span>Some members have missing information. Please fill in the required fields below.</span>
         </div>
         """, unsafe_allow_html=True)
     
-    for _, member in employee_data.iterrows():
+    for idx, (_, member) in enumerate(employee_data.iterrows()):
         relation = member['Relation']
         badge_class = "badge-principal" if relation == "PRINCIPAL" else ("badge-spouse" if relation == "SPOUSE" else "badge-child")
+        member_number = member['Member Number']
         
         first_name = format_field(member.get('Member First Name')) or ''
         middle_name = format_field(member.get('Member Middle Name')) or ''
@@ -1144,18 +1140,25 @@ def render_covered_members(employee_data):
         gender = format_field(member.get('Gender')) or "—"
         nationality = format_field(member.get('Nationality')) or "—"
         marital_status = format_field(member.get('Marital Status')) or "—"
-        emirates_id = format_field(member.get('National Identity'))
-        visa_unified = format_field(member.get('Visa Unified Number'))
-        passport = format_field(member.get('Passport number'))
+        current_eid = format_field(member.get('National Identity')) or ""
+        current_visa = format_field(member.get('Visa Unified Number')) or ""
+        current_passport = format_field(member.get('Passport number')) or ""
         
-        eid_formatted = format_emirates_id(emirates_id) if emirates_id else None
+        eid_formatted = format_emirates_id(current_eid) if current_eid else None
         eid_display = eid_formatted if eid_formatted else '<span class="missing-value">Not provided</span>'
-        visa_display = visa_unified if visa_unified else '<span class="missing-value">Not provided</span>'
-        passport_display = passport if passport else '<span class="missing-value">Not provided</span>'
+        visa_display = current_visa if current_visa else '<span class="missing-value">Not provided</span>'
+        passport_display = current_passport if current_passport else '<span class="missing-value">Not provided</span>'
+        
+        has_missing = not current_eid or not current_visa or not current_passport
+        
+        save_success_key = f"saved_{idx}_{member_number}"
+        saved_just_now = st.session_state.get(save_success_key, False)
+        if saved_just_now:
+            del st.session_state[save_success_key]
         
         st.markdown(f"""
-        <div class="member-card">
-            <div class="member-header">
+        <div class="glass-card" style="margin-bottom: 16px;">
+            <div class="member-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
                 <span class="member-name">{full_name}</span>
                 <span class="member-badge {badge_class}">{relation}</span>
             </div>
@@ -1191,8 +1194,67 @@ def render_covered_members(employee_data):
             </div>
         </div>
         """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+        
+        if saved_just_now:
+            st.success(f"✓ Information saved successfully!")
+        
+        if has_missing:
+            direct_inputs = {}
+            validation_errors = []
+            
+            field_labels = {
+                "National Identity": "Emirates ID",
+                "Visa Unified Number": "Visa Unified No.",
+                "Passport number": "Passport"
+            }
+            
+            col1, col2, col3, col4 = st.columns([1, 1, 1, 0.5])
+            
+            with col1:
+                if not current_eid:
+                    new_eid = st.text_input("Emirates ID", value="", placeholder="Enter Emirates ID", key=f"eid_{idx}_{member_number}")
+                    if new_eid and new_eid.strip():
+                        valid, msg = validate_emirates_id(new_eid.strip())
+                        if not valid:
+                            validation_errors.append(f"Emirates ID: {msg}")
+                        else:
+                            direct_inputs["National Identity"] = new_eid.strip()
+            
+            with col2:
+                if not current_visa:
+                    new_visa = st.text_input("Visa Unified No.", value="", placeholder="Enter Visa Number", key=f"visa_{idx}_{member_number}")
+                    if new_visa and new_visa.strip():
+                        direct_inputs["Visa Unified Number"] = new_visa.strip()
+            
+            with col3:
+                if not current_passport:
+                    new_passport = st.text_input("Passport", value="", placeholder="Enter Passport", key=f"passport_{idx}_{member_number}")
+                    if new_passport and new_passport.strip():
+                        direct_inputs["Passport number"] = new_passport.strip()
+            
+            with col4:
+                st.write("")
+                save_disabled = len(direct_inputs) == 0 or len(validation_errors) > 0
+                if st.button("Save", key=f"save_member_{idx}_{member_number}", type="primary", disabled=save_disabled):
+                    df = load_data()
+                    for field, value in direct_inputs.items():
+                        old_val = ""
+                        if field in df.columns:
+                            old_val_series = df.loc[df['Member Number'] == member_number, field]
+                            if not old_val_series.empty:
+                                old_val = old_val_series.iloc[0] if pd.notna(old_val_series.iloc[0]) else ""
+                        df.loc[df['Member Number'] == member_number, field] = value
+                        log_audit_trail("data_added", staff_number, member_number, field_labels.get(field, field), str(old_val), value, "employee")
+                    df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
+                    df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
+                    save_data(df)
+                    st.cache_data.clear()
+                    st.session_state[save_success_key] = True
+                    st.rerun()
+            
+            if validation_errors:
+                for err in validation_errors:
+                    st.error(err)
 
 def render_confirmation_section(employee_data, staff_number):
     confirmed = employee_data['EmployeeConfirmed'].iloc[0] if 'EmployeeConfirmed' in employee_data.columns else ""
@@ -1271,9 +1333,9 @@ def render_confirmation_section(employee_data, staff_number):
 def render_correction_form(employee_data, staff_number):
     st.markdown("""
     <div class="glass-card">
-        <div class="card-title">📝 Update Information</div>
+        <div class="card-title">📝 Request Changes</div>
         <p style="color: #666; font-size: 0.85em; margin-bottom: 15px;">
-            Select a member to add missing information or request changes.
+            Select a member to request changes to existing information. Changes require HR approval.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -1307,92 +1369,7 @@ def render_correction_form(employee_data, staff_number):
     current_visa = format_field(member_row.get('Visa Unified Number')) or ""
     current_passport = format_field(member_row.get('Passport number')) or ""
     
-    missing_fields = []
-    if not current_gender: missing_fields.append("Gender")
-    if not current_dob and not is_principal: missing_fields.append("Date of Birth")
-    if not current_nationality: missing_fields.append("Nationality")
-    if not current_marital: missing_fields.append("Marital Status")
-    if not current_eid: missing_fields.append("Emirates ID")
-    if not current_visa: missing_fields.append("Visa Unified Number")
-    if not current_passport: missing_fields.append("Passport")
-    
-    has_missing_fields = len(missing_fields) > 0
-    
-    direct_inputs = {}
     change_requests = []
-    
-    if has_missing_fields:
-        st.markdown('<p class="section-label" style="margin-top: 20px;">➕ Add Missing Information</p>', unsafe_allow_html=True)
-        st.caption("Fill in missing data below. This will be saved directly.")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            if not current_gender:
-                new_gender = st.selectbox("Gender", ["", "MALE", "FEMALE"], index=0, key="direct_gender")
-                if new_gender:
-                    direct_inputs["Gender"] = new_gender
-            
-            if not current_nationality:
-                new_nationality = st.text_input("Nationality", value="", placeholder="Enter nationality", key="direct_nationality")
-                if new_nationality:
-                    direct_inputs["Nationality"] = new_nationality
-        
-        with col2:
-            if not current_dob and not is_principal:
-                new_dob = st.text_input("Date of Birth", value="", placeholder="DD/MM/YYYY", key="direct_dob")
-                if new_dob:
-                    direct_inputs["Date Of Birth"] = new_dob
-            
-            if not current_marital:
-                new_marital = st.selectbox("Marital Status", ["", "SINGLE", "MARRIED", "DIVORCED", "WIDOWED"], index=0, key="direct_marital")
-                if new_marital:
-                    direct_inputs["Marital Status"] = new_marital
-        
-        with col3:
-            if not current_eid:
-                new_eid = st.text_input("Emirates ID", value="", placeholder="Enter Emirates ID", key="direct_eid")
-                if new_eid:
-                    direct_inputs["National Identity"] = new_eid
-            
-            if not current_visa:
-                new_visa = st.text_input("Visa Unified No.", value="", placeholder="Enter Visa Number", key="direct_visa")
-                if new_visa:
-                    direct_inputs["Visa Unified Number"] = new_visa
-        
-        with col4:
-            if not current_passport:
-                new_passport = st.text_input("Passport Number", value="", placeholder="Enter Passport", key="direct_passport")
-                if new_passport:
-                    direct_inputs["Passport number"] = new_passport
-        
-        if direct_inputs:
-            validation_errors = []
-            if "National Identity" in direct_inputs:
-                valid, msg = validate_emirates_id(direct_inputs["National Identity"])
-                if not valid:
-                    validation_errors.append(f"Emirates ID: {msg}")
-            if "Date Of Birth" in direct_inputs:
-                valid, msg = validate_date_of_birth(direct_inputs["Date Of Birth"])
-                if not valid:
-                    validation_errors.append(f"Date of Birth: {msg}")
-            
-            if validation_errors:
-                for err in validation_errors:
-                    st.error(err)
-            
-            if st.button("💾 Save Missing Information", type="primary", key="save_direct", disabled=len(validation_errors) > 0):
-                df = load_data()
-                for field, value in direct_inputs.items():
-                    old_val = df.loc[df['Member Number'] == member_number, field].iloc[0] if field in df.columns else ""
-                    df.loc[df['Member Number'] == member_number, field] = value
-                    log_audit_trail("data_added", staff_number, member_number, field, old_val, value, "employee")
-                df.loc[df['Staff Number'] == staff_number, 'LastEditedByStaffNo'] = staff_number
-                df.loc[df['Staff Number'] == staff_number, 'LastEditedOn'] = datetime.now().strftime("%d/%m/%Y %I:%M %p")
-                save_data(df)
-                st.cache_data.clear()
-                st.success("✅ Information saved successfully!")
-                st.rerun()
     
     has_existing_data = current_gender or current_dob or current_nationality or current_marital or current_eid or current_visa or current_passport
     
@@ -1530,7 +1507,7 @@ def render_dashboard():
     col1, col2, col3 = st.columns([1, 2.5, 1])
     with col2:
         render_employee_snapshot(principal, staff_number)
-        render_covered_members(employee_data)
+        render_covered_members(employee_data, staff_number)
         render_confirmation_section(employee_data, staff_number)
         
         st.markdown("""
