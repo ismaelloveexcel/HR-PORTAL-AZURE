@@ -459,7 +459,7 @@ SESSION_TIMEOUT_JS = f"""
 </script>
 """
 
-DATA_FILE = "attached_assets/Medical_Insurance_-_Workings_1766604832610.csv"
+DATA_FILE = "attached_assets/Medical_Insurance_Data.csv"
 CHANGES_FILE = "attached_assets/correction_requests.json"
 
 @st.cache_data
@@ -738,7 +738,9 @@ def render_covered_members(employee_data):
     st.markdown("</div>", unsafe_allow_html=True)
 
 def render_confirmation_section(employee_data, staff_number):
-    confirmed = employee_data['EmployeeConfirmed'].iloc[0]
+    confirmed = employee_data['EmployeeConfirmed'].iloc[0] if 'EmployeeConfirmed' in employee_data.columns else ""
+    if not confirmed or str(confirmed).strip() == "":
+        confirmed = employee_data['Confirmed'].iloc[0] if 'Confirmed' in employee_data.columns else ""
     already_confirmed = pd.notna(confirmed) and str(confirmed).strip() != ""
     
     if already_confirmed:

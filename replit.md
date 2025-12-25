@@ -56,9 +56,10 @@ Located at top of app.py:
 - `SESSION_TIMEOUT_MINUTES` - Inactivity timeout (15 min)
 
 ## Sample Staff Numbers for Testing
-- BAYN00047 (Alexander Manual Vaz) - DOB: 02/06/1958
-- BAYN00014 (Mahmoud Saeed Mohamed) - DOB: 31/12/1979
-- BAYN00003 (Michael Rutman) - DOB: 19/01/1900
+- BAYN00008 (Mohammad Ismael Sudally) - DOB: 16/05/1988
+- BAYN00047 (Alexander Manual Vaz) - DOB: 06/03/1958
+- BAYN00002 (Syed Irfan Zakiuddin) - DOB: 11/03/1979
+- BAYN00003 (Michael Rutman) - DOB: 21/07/1979
 
 ## Running the Application
 ```bash
