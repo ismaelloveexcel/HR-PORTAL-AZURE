@@ -43,6 +43,78 @@ CUSTOM_CSS = """
         background-color: #f5f5f5;
     }
     
+    .login-page [data-testid="stAppViewBlockContainer"] {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .login-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    
+    .login-card {
+        background: white;
+        padding: 28px 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        width: 100%;
+        max-width: 320px;
+        text-align: center;
+    }
+    
+    .login-card-header {
+        margin-bottom: 20px;
+    }
+    
+    .login-card .login-logo-img {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 14px;
+    }
+    
+    .login-card h1 {
+        color: #1E1B5C;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        line-height: 1.3;
+    }
+    
+    .login-card .subtitle {
+        color: #888;
+        font-size: 11px;
+        margin: 0;
+    }
+    
+    .login-card .policy-tag {
+        display: inline-block;
+        background: rgba(30, 27, 92, 0.08);
+        color: #1E1B5C;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+    
+    .login-help {
+        margin-top: 16px;
+        font-size: 11px;
+        color: #aaa;
+    }
+    
+    .login-help a {
+        color: #25D366;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
     .main-header {
         background: #1E1B5C;
         padding: 18px 30px;
@@ -707,21 +779,31 @@ def render_expired_page():
     """, unsafe_allow_html=True)
 
 def render_login():
-    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+    login_css = """
+    <style>
+        [data-testid="stAppViewBlockContainer"] {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        [data-testid="stVerticalBlock"] {
+            gap: 0.5rem !important;
+        }
+    </style>
+    """
+    st.markdown(CUSTOM_CSS + login_css, unsafe_allow_html=True)
     
-    logo_html = f'<img src="data:image/gif;base64,{LOGO_BASE64}" alt="Logo" class="login-logo-img">' if LOGO_BASE64 else '<div class="login-logo">🏥</div>'
+    logo_html = f'<img src="data:image/gif;base64,{LOGO_BASE64}" alt="Logo" style="width:56px;height:56px;display:block;margin:0 auto 10px;">' if LOGO_BASE64 else ''
+    
     st.markdown(f"""
-    <div class="login-container">
-        <div class="login-header">
-            {logo_html}
-            <h1 class="login-title">Medical Insurance Verification</h1>
-            <p class="login-subtitle">Employee Self-Service Portal</p>
-            <div class="login-badge">Policy Year {POLICY_YEAR}</div>
-        </div>
+    <div style="text-align:center; padding-top:3vh;">
+        {logo_html}
+        <h1 style="color:#1E1B5C; font-size:22px; font-weight:600; margin:0 0 4px 0; line-height:1.2;">Medical Insurance<br>Verification</h1>
+        <p style="color:#888; font-size:11px; margin:0;">Employee Self-Service Portal</p>
+        <span style="display:inline-block; background:rgba(30,27,92,0.08); color:#1E1B5C; padding:4px 12px; border-radius:12px; font-size:10px; font-weight:600; margin-top:8px;">Policy Year {POLICY_YEAR}</span>
     </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1.2, 1, 1.2])
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         with st.form("login_form"):
             staff_number = st.text_input(
@@ -756,11 +838,8 @@ def render_login():
                         st.error(error_msg)
         
         st.markdown("""
-        <div style="text-align: center; margin-top: 20px;">
-            <p style="color: #aaa; font-size: 11px;">Need assistance?</p>
-            <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none; font-weight: 600; font-size: 12px;">
-                WhatsApp HR Support
-            </a>
+        <div style="text-align:center; margin-top:10px; font-size:11px; color:#aaa;">
+            Need help? <a href="https://wa.me/971564966546" target="_blank" style="color:#25D366; text-decoration:none; font-weight:600;">WhatsApp HR</a>
         </div>
         """, unsafe_allow_html=True)
 
