@@ -1207,17 +1207,17 @@ def render_login():
             margin-top: 12px !important;
         }
         [data-testid="stForm"] .stFormSubmitButton > button {
-            padding: 1.3em 3em !important;
-            font-size: 12px !important;
+            padding: 0.9em 2em !important;
+            font-size: 11px !important;
             text-transform: uppercase !important;
-            letter-spacing: 2.5px !important;
+            letter-spacing: 2px !important;
             font-weight: 500 !important;
             font-family: 'Aptos', 'Calibri', sans-serif !important;
             color: #000 !important;
-            background-color: #fff !important;
+            background-color: #d9d9d9 !important;
             border: none !important;
             border-radius: 45px !important;
-            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08) !important;
             transition: all 0.3s ease 0s !important;
             cursor: pointer;
             outline: none !important;
