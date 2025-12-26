@@ -1248,6 +1248,12 @@ def render_login():
             
             submitted = st.form_submit_button("Sign In", use_container_width=True)
             
+            st.markdown("""
+            <div class="login-help" style="text-align:center;margin-top:16px;font-size:13px;color:#0f172a;font-family:'Aptos','Calibri',sans-serif;">
+                Need help? <a href="https://wa.me/971564966546" target="_blank" style="color:#25D366;text-decoration:none;font-weight:600;">WhatsApp HR</a>
+            </div>
+            """, unsafe_allow_html=True)
+            
             if submitted:
                 if not staff_number:
                     st.error("Please enter your Staff Number.")
@@ -1264,12 +1270,6 @@ def render_login():
                         st.rerun()
                     else:
                         st.error(error_msg)
-        
-        st.markdown("""
-        <div class="login-help">
-            Need help? <a href="https://wa.me/971564966546" target="_blank">WhatsApp HR</a>
-        </div>
-        """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
