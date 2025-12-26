@@ -2328,11 +2328,11 @@ def render_dashboard():
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="signout-container">', unsafe_allow_html=True)
+    st.markdown('<div class="edit-form-card"><div class="signout-container">', unsafe_allow_html=True)
     if st.button("Sign Out", key="footer_signout", type="secondary"):
         st.session_state.clear()
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
