@@ -1065,12 +1065,13 @@ def render_login():
         .login-page-wrapper .stTextInput label {
             color: #0f172a !important;
             font-family: 'Aptos', 'Calibri', sans-serif !important;
-            font-weight: 600 !important;
-            font-size: 13px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
             margin-bottom: 6px !important;
         }
         .login-page-wrapper .stTextInput label p {
             color: #0f172a !important;
+            font-weight: 700 !important;
         }
         .login-page-wrapper .stTextInput > div > div > input {
             background: #f0f4f8 !important;
@@ -1123,31 +1124,19 @@ def render_login():
             padding: 20px;
         }
         .login-page-wrapper [data-testid="stForm"] {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 16px;
-            padding: 32px 28px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            padding: 35px 30px;
             box-shadow: 
-                0 4px 24px rgba(0, 0, 0, 0.08),
-                0 1px 2px rgba(0, 0, 0, 0.04);
+                30px 30px 50px rgba(0, 0, 0, 0.15),
+                15px 15px 30px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.02),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.9);
             position: relative;
             overflow: hidden;
             max-width: 380px;
             margin: 0 auto;
-        }
-        .login-page-wrapper [data-testid="stForm"]::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 40%);
-            pointer-events: none;
-            z-index: 0;
-            border-radius: 16px;
         }
         .login-page-wrapper [data-testid="stForm"] > * {
             position: relative;
