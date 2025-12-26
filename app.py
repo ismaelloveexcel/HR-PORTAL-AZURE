@@ -1132,9 +1132,9 @@ def render_login():
             margin-bottom: 20px;
         }
         .login-card-title h1 {
-            color: #0f172a;
+            color: #64748b;
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 500;
             font-family: 'Inter', sans-serif;
             margin: 0 0 6px 0;
             line-height: 1.2;
