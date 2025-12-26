@@ -1076,15 +1076,16 @@ def render_login():
         }
         .login-card-title .badge {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.4);
-            color: #0f172a;
-            padding: 5px 14px;
-            border-radius: 12px;
+            background: rgba(35, 196, 131, 0.12);
+            color: #23c483;
+            padding: 6px 16px;
+            border-radius: 20px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
             font-family: 'Aptos', 'Calibri', sans-serif;
             margin-top: 10px;
-            backdrop-filter: blur(10px);
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
         [data-testid="stForm"] .stTextInput label {
             color: #0f172a !important;
@@ -1100,15 +1101,15 @@ def render_login():
         [data-testid="stForm"] .stTextInput > div > div > input {
             border: none !important;
             outline: none !important;
-            border-radius: 12px !important;
-            padding: 12px 16px !important;
+            border-radius: 45px !important;
+            padding: 14px 20px !important;
             background-color: #e8edf3 !important;
-            box-shadow: inset 1px 2px 4px rgba(0,0,0,0.08) !important;
-            transition: 300ms ease-in-out !important;
+            box-shadow: inset 1px 2px 4px rgba(0,0,0,0.06) !important;
+            transition: all 0.3s ease !important;
             color: #0f172a !important;
             font-family: 'Aptos', 'Calibri', sans-serif !important;
-            font-size: 14px !important;
-            line-height: 20px !important;
+            font-size: 13px !important;
+            line-height: 1.4 !important;
         }
         [data-testid="stForm"] .stTextInput > div > div > input:focus {
             background-color: #ffffff !important;
@@ -1260,8 +1261,8 @@ def render_login():
     </style>
     """, unsafe_allow_html=True)
     
-    logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" alt="Baynunah" style="width:180px;height:auto;display:block;margin:0 auto 16px;">' if LOGO_BASE64 else ''
-    app_icon_html = f'<img src="data:image/gif;base64,{APP_ICON_BASE64}" alt="Insurance" style="width:70px;height:70px;display:block;margin:0 auto 12px;border-radius:12px;">' if APP_ICON_BASE64 else ''
+    logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" alt="Baynunah" style="width:140px;height:auto;display:block;margin:0 auto 12px;">' if LOGO_BASE64 else ''
+    app_icon_html = f'<img src="data:image/gif;base64,{APP_ICON_BASE64}" alt="Insurance" style="width:60px;height:60px;display:block;margin:0 auto 10px;border-radius:10px;">' if APP_ICON_BASE64 else ''
     
     st.markdown('<div class="login-page-wrapper">', unsafe_allow_html=True)
     
@@ -1291,8 +1292,13 @@ def render_login():
             submitted = st.form_submit_button("Sign In", use_container_width=True)
             
             st.markdown("""
-            <div class="login-help" style="text-align:center;margin-top:16px;font-size:13px;color:#0f172a;font-family:'Aptos','Calibri',sans-serif;">
-                Need help? <a href="https://wa.me/971564966546" target="_blank" style="color:#25D366;text-decoration:none;font-weight:600;">WhatsApp HR</a>
+            <div style="text-align:center;margin-top:20px;font-family:'Aptos','Calibri',sans-serif;">
+                <div style="color:#64748b;font-size:12px;font-weight:500;margin-bottom:8px;">Need Help?</div>
+                <a href="https://wa.me/971564966546" target="_blank" style="display:inline-block;color:#23c483;text-decoration:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#23c483" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                </a>
             </div>
             """, unsafe_allow_html=True)
             
