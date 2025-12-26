@@ -46,7 +46,7 @@ SESSION_TIMEOUT_MINUTES = 15
 
 CUSTOM_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -54,7 +54,7 @@ CUSTOM_CSS = """
     .stDeployButton {display: none;}
     
     .stApp {
-        font-family: 'Aptos', 'Calibri', sans-serif;
+        font-family: 'Inter', sans-serif;
         background: #f5f7fb;
     }
     
@@ -687,7 +687,7 @@ CUSTOM_CSS = """
         border-radius: 8px;
         width: 100%;
         transition: all 0.2s ease;
-        font-family: 'Aptos', 'Calibri', sans-serif;
+        font-family: 'Inter', sans-serif;
         box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
     }
     
@@ -735,7 +735,7 @@ CUSTOM_CSS = """
         border-radius: 6px;
         border: 1px solid #cbd5e1;
         padding: 10px 12px;
-        font-family: 'Aptos', 'Calibri', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
         background: #f1f5f9 !important;
         color: #0f172a !important;
@@ -768,7 +768,7 @@ CUSTOM_CSS = """
     .stTextArea > div > div > textarea {
         border-radius: 6px;
         border: 1px solid #cbd5e1;
-        font-family: 'Aptos', 'Calibri', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
         background: #f1f5f9 !important;
         color: #0f172a !important;
@@ -1081,7 +1081,7 @@ def render_login():
         }
         .loading-text {
             margin-top: 20px;
-            font-family: 'Aptos', 'Calibri', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
             color: #64748b;
             letter-spacing: 1px;
@@ -1135,14 +1135,14 @@ def render_login():
             color: #0f172a;
             font-size: 20px;
             font-weight: 700;
-            font-family: 'Aptos', 'Calibri', sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0 0 6px 0;
             line-height: 1.2;
         }
         .login-card-title .subtitle {
             color: #0f172a;
             font-size: 13px;
-            font-family: 'Aptos', 'Calibri', sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
         }
         .login-card-title .badge {
@@ -1153,14 +1153,14 @@ def render_login():
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            font-family: 'Aptos', 'Calibri', sans-serif;
+            font-family: 'Inter', sans-serif;
             margin-top: 10px;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
         [data-testid="stForm"] .stTextInput label {
             color: #0f172a !important;
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-family: 'Inter', sans-serif !important;
             font-weight: 700 !important;
             font-size: 14px !important;
             margin-bottom: 6px !important;
@@ -1178,7 +1178,7 @@ def render_login():
             box-shadow: inset 1px 2px 4px rgba(0,0,0,0.06) !important;
             transition: all 0.3s ease !important;
             color: #0f172a !important;
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-family: 'Inter', sans-serif !important;
             font-size: 12px !important;
             line-height: 1.4 !important;
         }
@@ -1196,7 +1196,7 @@ def render_login():
             border: 1px solid rgba(239, 68, 68, 0.2) !important;
             border-radius: 12px !important;
             color: #dc2626 !important;
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-family: 'Inter', sans-serif !important;
         }
         [data-testid="stForm"] .stAlert {
             background: rgba(239, 68, 68, 0.08) !important;
@@ -1205,7 +1205,7 @@ def render_login():
         }
         [data-testid="stForm"] .stAlert p {
             color: #dc2626 !important;
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-family: 'Inter', sans-serif !important;
             font-size: 13px !important;
         }
         [data-testid="stForm"] .stFormSubmitButton {
@@ -1219,7 +1219,7 @@ def render_login():
         button[data-testid="stBaseButton-secondaryFormSubmit"] {
             font-size: 14px !important;
             color: #0f172a !important;
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-family: 'Inter', sans-serif !important;
             font-weight: 700 !important;
             cursor: pointer;
             position: relative;
@@ -1264,7 +1264,7 @@ def render_login():
             left: 20% !important;
         }
         .login-help {
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-family: 'Inter', sans-serif !important;
             color: #0f172a !important;
         }
         .login-help a {
@@ -1406,7 +1406,7 @@ def render_login():
             submitted = st.form_submit_button("Sign In", use_container_width=True)
             
             st.markdown("""
-            <div style="text-align:center;margin-top:18px;font-family:'Aptos','Calibri',sans-serif;">
+            <div style="text-align:center;margin-top:18px;font-family:'Inter',sans-serif;">
                 <div style="color:#94a3b8;font-size:11px;font-weight:400;margin-bottom:6px;letter-spacing:0.5px;">Need Help?</div>
                 <a href="https://wa.me/971564966546" target="_blank" style="display:inline-block;color:#23c483;text-decoration:none;transition:transform 0.2s ease;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#23c483" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
