@@ -1051,11 +1051,11 @@ def render_login():
         .login-card-title .badge {
             display: inline-block;
             background: rgba(255, 255, 255, 0.4);
-            color: #0f172a;
+            color: #4df759;
             padding: 5px 14px;
             border-radius: 12px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             margin-top: 10px;
             backdrop-filter: blur(10px);
         }
