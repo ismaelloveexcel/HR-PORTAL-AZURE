@@ -1091,22 +1091,66 @@ def render_login():
         [data-testid="stForm"] .stTextInput > div > div > input::placeholder {
             color: #94a3b8 !important;
         }
-        [data-testid="stForm"] .stFormSubmitButton > button {
-            background: #f0f4f8 !important;
-            color: #0f172a !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 10px !important;
-            font-weight: 600 !important;
-            font-family: 'Aptos', 'Calibri', sans-serif !important;
-            padding: 12px 24px !important;
-            font-size: 14px !important;
-            transition: all 0.2s ease !important;
+        [data-testid="stForm"] .stFormSubmitButton {
+            position: relative;
+            display: block;
+            overflow: hidden;
             margin-top: 8px !important;
         }
+        [data-testid="stForm"] .stFormSubmitButton > button {
+            background: transparent !important;
+            color: #0f172a !important;
+            border: none !important;
+            border-radius: 0 !important;
+            font-weight: 900 !important;
+            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            padding: 15px 24px !important;
+            font-size: 14px !important;
+            text-transform: uppercase !important;
+            transition: 0.5s linear !important;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        [data-testid="stForm"] .stFormSubmitButton > button::before {
+            position: absolute;
+            content: '';
+            left: 0;
+            bottom: 0;
+            height: 4px;
+            width: 100%;
+            border-bottom: 4px solid transparent;
+            border-left: 4px solid transparent;
+            box-sizing: border-box;
+            transform: translateX(100%);
+        }
+        [data-testid="stForm"] .stFormSubmitButton > button::after {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            border-top: 4px solid transparent;
+            border-right: 4px solid transparent;
+            box-sizing: border-box;
+            transform: translateX(-100%);
+        }
         [data-testid="stForm"] .stFormSubmitButton > button:hover {
-            background: #e2e8f0 !important;
-            border-color: #cbd5e1 !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+            background: transparent !important;
+        }
+        [data-testid="stForm"] .stFormSubmitButton > button:hover::before {
+            border-color: #262626;
+            height: 100%;
+            transform: translateX(0);
+            transition: 0.3s transform linear, 0.3s height linear 0.3s;
+        }
+        [data-testid="stForm"] .stFormSubmitButton > button:hover::after {
+            border-color: #262626;
+            height: 100%;
+            transform: translateX(0);
+            transition: 0.3s transform linear, 0.3s height linear 0.5s;
         }
         .login-help {
             font-family: 'Aptos', 'Calibri', sans-serif !important;
