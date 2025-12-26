@@ -2025,7 +2025,12 @@ def render_dashboard():
     principal = employee_data[employee_data['Relation'] == 'PRINCIPAL'].iloc[0]
     principal_name = principal['Principal Name']
     
-    render_header(principal_name, staff_number)
+    # Simple sign out in top right
+    signout_col1, signout_col2 = st.columns([6, 1])
+    with signout_col2:
+        if st.button("Sign Out", key="header_signout", type="secondary"):
+            st.session_state.clear()
+            st.rerun()
     
     col1, col2, col3 = st.columns([1, 2.5, 1])
     with col2:
