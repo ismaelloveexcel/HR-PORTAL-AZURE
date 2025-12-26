@@ -5,14 +5,25 @@ import base64
 from datetime import datetime, timedelta
 import json
 from io import BytesIO
+
+# Check database configuration before importing models
+if not os.environ.get('DATABASE_URL'):
+    st.error("⚠️ Database not configured. Please ensure the PostgreSQL database is provisioned and republish the app.")
+    st.stop()
+
 from models import init_db, get_db, AuditTrail, ChangeRequest
 
 @st.cache_resource
 def initialize_database():
-    init_db()
-    return True
+    try:
+        init_db()
+        return True
+    except Exception as e:
+        st.error(f"⚠️ Database initialization failed: {str(e)}")
+        return False
 
-initialize_database()
+if not initialize_database():
+    st.stop()
 
 @st.cache_resource
 def get_logo_base64():
