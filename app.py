@@ -276,52 +276,42 @@ CUSTOM_CSS = """
         gap: 6px;
     }
     
-    .minimal-header {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 14px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .centered-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 10px 0;
     }
     
-    .header-left-section {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-    
-    .header-logo-img {
-        width: 40px;
-        height: 40px;
+    .centered-header-logo {
+        width: 50px;
+        height: 50px;
         border-radius: 8px;
         object-fit: contain;
+        margin-bottom: 10px;
     }
     
-    .header-logo-placeholder {
-        font-size: 28px;
-    }
-    
-    .header-info {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    
-    .header-title-text {
+    .centered-header-title {
         color: #64748b;
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+    
+    .centered-header-subtitle {
+        color: #94a3b8;
+        font-size: 13px;
+        font-weight: 400;
+        margin-bottom: 4px;
+    }
+    
+    .centered-header-year {
+        color: #23c483;
         font-size: 14px;
         font-weight: 500;
     }
     
-    .header-subtitle-text {
-        color: #94a3b8;
-        font-size: 11px;
-        font-weight: 400;
+    .header-logo-placeholder {
+        font-size: 28px;
     }
     
     .header-right-section {
@@ -2145,20 +2135,14 @@ def render_dashboard():
     
     col1, col2, col3 = st.columns([1, 2.5, 1])
     with col2:
-        # Minimal header inside the content column (aligned with cards)
-        logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" alt="Baynunah" class="header-logo-img">' if LOGO_BASE64 else '<span class="header-logo-placeholder">🏥</span>'
+        # Centered header
+        logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" alt="Baynunah" class="centered-header-logo">' if LOGO_BASE64 else '<span class="header-logo-placeholder">🏥</span>'
         st.markdown(f"""
-        <div class="minimal-header">
-            <div class="header-left-section">
-                {logo_html}
-                <div class="header-info">
-                    <div class="header-title-text">Medical Insurance Verification</div>
-                    <div class="header-subtitle-text">Insured by DAMAN</div>
-                </div>
-            </div>
-            <div class="header-right-section">
-                <div class="header-policy-badge">Policy {POLICY_YEAR}</div>
-            </div>
+        <div class="centered-header">
+            {logo_html}
+            <div class="centered-header-title">Medical Insurance Renewal</div>
+            <div class="centered-header-subtitle">Insured by DAMAN</div>
+            <div class="centered-header-year">Year {POLICY_YEAR}</div>
         </div>
         """, unsafe_allow_html=True)
         
