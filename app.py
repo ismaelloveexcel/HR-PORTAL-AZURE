@@ -48,42 +48,6 @@ CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;750;800;850&display=swap');
     
-    /* =========================
-       1) DESIGN TOKENS
-       ========================= */
-    :root {
-        /* Brand */
-        --brand-900: #0B1F3B;
-        --brand-700: #123B6E;
-        --accent-600: #21C17A;
-        --warn-600: #F59E0B;
-        --danger-600: #EF4444;
-        
-        /* Neutrals */
-        --bg: #b4b4b4;
-        --ink-900: #0F172A;
-        --ink-700: #334155;
-        --ink-500: #64748B;
-        --ink-300: #94A3B8;
-        
-        --surface-0: rgba(255,255,255,.92);
-        --surface-1: rgba(255,255,255,.84);
-        --surface-2: rgba(248,250,252,.90);
-        
-        --border: rgba(15,23,42,.10);
-        --border-strong: rgba(15,23,42,.16);
-        
-        /* Layout */
-        --radius: 16px;
-        --radius-sm: 12px;
-        
-        --shadow-sm: 0 6px 18px rgba(15,23,42,.08);
-        --shadow-md: 0 12px 30px rgba(15,23,42,.12);
-        
-        /* Typography */
-        --font: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    }
-    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -93,8 +57,8 @@ CUSTOM_CSS = """
        2) APP BACKGROUND + NOISE
        ========================= */
     .stApp {
-        font-family: var(--font);
-        color: var(--ink-900);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        color: #0F172A;
         background:
             radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.35), transparent 60%),
             radial-gradient(900px 500px at 80% 0%, rgba(33,193,122,.18), transparent 55%),
@@ -295,11 +259,11 @@ CUSTOM_CSS = """
     .login-help {
         margin-top: 18px;
         font-size: 13px;
-        color: var(--ink-500);
+        color: #64748B;
     }
     
     .login-help a {
-        color: var(--accent-600);
+        color: #21C17A;
         text-decoration: none;
         font-weight: 600;
     }
@@ -308,18 +272,18 @@ CUSTOM_CSS = """
        5) MAIN HEADER + CARDS
        ========================= */
     .main-header {
-        background: var(--surface-0);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
+        background: rgba(255,255,255,.92);
+        border: 1px solid rgba(15,23,42,.10);
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(15,23,42,.08);
         padding: 22px 22px;
         backdrop-filter: blur(10px);
         margin-bottom: 20px;
     }
     
     .main-header:hover {
-        box-shadow: var(--shadow-md);
-        border-color: var(--border-strong);
+        box-shadow: 0 12px 30px rgba(15,23,42,.12);
+        border-color: rgba(15,23,42,.16);
         transform: translateY(-1px);
         transition: 160ms ease;
     }
@@ -358,12 +322,12 @@ CUSTOM_CSS = """
         margin: 0;
         font-size: 16px;
         font-weight: 650;
-        color: var(--ink-700);
+        color: #334155;
     }
     
     .header-title .subtitle {
         font-size: 12px;
-        color: var(--ink-500);
+        color: #64748B;
         margin-top: 3px;
         font-weight: 400;
     }
@@ -394,12 +358,12 @@ CUSTOM_CSS = """
     .user-name {
         font-size: 13px;
         font-weight: 650;
-        color: var(--ink-700);
+        color: #334155;
     }
     
     .user-id {
         font-size: 11px;
-        color: var(--ink-500);
+        color: #64748B;
         margin-bottom: 4px;
     }
     
@@ -407,7 +371,7 @@ CUSTOM_CSS = """
         display: inline-block;
         background: transparent;
         border: none;
-        color: var(--ink-500);
+        color: #64748B;
         padding: 4px 0;
         font-size: 11px;
         font-weight: 500;
@@ -427,12 +391,12 @@ CUSTOM_CSS = """
         left: 0;
         width: 0;
         height: 2px;
-        background: var(--accent-600);
+        background: #21C17A;
         transition: width 0.3s ease;
     }
     
     .header-signout-link:hover {
-        color: var(--accent-600);
+        color: #21C17A;
     }
     
     .header-signout-link:hover::after {
@@ -440,16 +404,16 @@ CUSTOM_CSS = """
     }
     
     .status-strip {
-        background: var(--surface-1);
-        border: 1px solid var(--border);
+        background: rgba(255,255,255,.84);
+        border: 1px solid rgba(15,23,42,.10);
         padding: 12px 16px;
         margin: 0 0 6px 0;
-        border-radius: var(--radius-sm);
+        border-radius: 12px;
         display: flex;
         justify-content: space-between;
         gap: 18px;
         font-size: 12px;
-        color: var(--ink-700);
+        color: #334155;
     }
     
     .status-item {
@@ -493,7 +457,7 @@ CUSTOM_CSS = """
     }
 
     .metric-tile {
-        background: var(--surface-2);
+        background: rgba(248,250,252,.90);
         border: 1px solid rgba(15,23,42,.08);
         border-radius: 14px;
         padding: 14px 14px;
@@ -503,14 +467,14 @@ CUSTOM_CSS = """
         font-size: 11px;
         letter-spacing: .10em;
         text-transform: uppercase;
-        color: var(--ink-500);
+        color: #64748B;
         font-weight: 750;
     }
 
     .metric-value {
         font-size: 18px;
         font-weight: 800;
-        color: var(--ink-900);
+        color: #0F172A;
         margin-top: 6px;
     }
 
@@ -521,7 +485,7 @@ CUSTOM_CSS = """
         padding: 8px 0;
         border-bottom: 1px solid rgba(15,23,42,.06);
         font-size: 12px;
-        color: var(--ink-700);
+        color: #334155;
     }
 
     .list-row:last-child {
@@ -531,14 +495,14 @@ CUSTOM_CSS = """
     .list-label {
         text-transform: uppercase;
         letter-spacing: 0.4px;
-        color: var(--ink-500);
+        color: #64748B;
         font-weight: 750;
         font-size: 11px;
     }
 
     .list-value {
         font-weight: 650;
-        color: var(--ink-700);
+        color: #334155;
     }
     
     /* Card header row */
@@ -559,7 +523,7 @@ CUSTOM_CSS = """
         font-size: 13px;
         letter-spacing: .10em;
         text-transform: uppercase;
-        color: var(--ink-500);
+        color: #64748B;
         font-weight: 750;
         margin-bottom: 12px;
         padding-bottom: 10px;
@@ -571,9 +535,9 @@ CUSTOM_CSS = """
         font-weight: 750;
         padding: 6px 10px;
         border-radius: 999px;
-        border: 1px solid var(--border);
+        border: 1px solid rgba(15,23,42,.10);
         background: rgba(248,250,252,.85);
-        color: var(--ink-700);
+        color: #334155;
     }
     
     .badge--principal, .badge-principal { 
@@ -620,13 +584,13 @@ CUSTOM_CSS = """
         line-height: 1.15;
         letter-spacing: -0.02em;
         margin: 10px 0 6px;
-        color: var(--brand-900);
+        color: #0B1F3B;
         font-weight: 750;
     }
     
     .centered-header-subtitle {
         font-size: 14px;
-        color: var(--ink-500);
+        color: #64748B;
         margin: 0 0 4px 0;
     }
     
@@ -672,13 +636,13 @@ CUSTOM_CSS = """
     }
     
     .header-user-name {
-        color: var(--ink-700);
+        color: #334155;
         font-size: 13px;
         font-weight: 650;
     }
     
     .header-user-id {
-        color: var(--ink-500);
+        color: #64748B;
         font-size: 11px;
     }
     
@@ -701,13 +665,13 @@ CUSTOM_CSS = """
         font-size: 11px;
         letter-spacing: .10em;
         text-transform: uppercase;
-        color: var(--ink-500);
+        color: #64748B;
         font-weight: 750;
     }
     
     .snapshot-value {
         font-size: 14px;
-        color: var(--ink-900);
+        color: #0F172A;
         font-weight: 650;
         margin-top: 6px;
     }
@@ -722,7 +686,7 @@ CUSTOM_CSS = """
     }
     
     .member-name {
-        color: var(--ink-700);
+        color: #334155;
         font-size: 15px;
         font-weight: 650;
     }
@@ -751,11 +715,11 @@ CUSTOM_CSS = """
     }
     
     .member-detail-label {
-        color: var(--ink-500);
+        color: #64748B;
     }
     
     .member-detail-value {
-        color: var(--ink-900);
+        color: #0F172A;
         font-weight: 650;
     }
     
@@ -793,11 +757,11 @@ CUSTOM_CSS = """
         text-transform: uppercase;
         letter-spacing: 0.10em;
         margin: 0 0 12px 0;
-        font-family: var(--font);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     
     .edit-section-header-green {
-        color: var(--accent-600);
+        color: #21C17A;
         font-size: 12px;
         font-weight: 850;
         text-transform: uppercase;
@@ -805,7 +769,7 @@ CUSTOM_CSS = """
         margin: 16px 0 12px 0;
         padding-top: 12px;
         border-top: 1px solid rgba(15,23,42,.06);
-        font-family: var(--font);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     
     .member-grid {
@@ -836,20 +800,20 @@ CUSTOM_CSS = """
         font-size: 11px;
         letter-spacing: .10em;
         text-transform: uppercase;
-        color: var(--ink-500);
+        color: #64748B;
         font-weight: 750;
         margin-bottom: 3px;
     }
     
     .field-value {
         font-size: 14px;
-        color: var(--ink-900);
+        color: #0F172A;
         font-weight: 650;
         margin-top: 6px;
     }
     
     .field-value-muted {
-        color: var(--ink-500);
+        color: #64748B;
         font-weight: 600;
     }
     
@@ -869,8 +833,8 @@ CUSTOM_CSS = """
     
     .missing-info-banner {
         background: rgba(245,158,11,.14);
-        border-left: 3px solid var(--warn-600);
-        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        border-left: 3px solid #F59E0B;
+        border-radius: 0 12px 12px 0;
         padding: 10px 14px;
         margin-top: 12px;
         display: flex;
@@ -879,7 +843,7 @@ CUSTOM_CSS = """
     }
     
     .missing-icon {
-        color: var(--warn-600);
+        color: #F59E0B;
         font-size: 16px;
     }
     
@@ -890,7 +854,7 @@ CUSTOM_CSS = """
     }
     
     .missing-desc {
-        color: var(--ink-500);
+        color: #64748B;
         font-size: 12px;
     }
     
@@ -911,8 +875,8 @@ CUSTOM_CSS = """
     
     .missing-banner {
         background: rgba(245,158,11,.14);
-        border-left: 3px solid var(--warn-600);
-        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        border-left: 3px solid #F59E0B;
+        border-radius: 0 12px 12px 0;
         padding: 10px 12px;
         margin: 10px 0;
         display: flex;
@@ -931,27 +895,27 @@ CUSTOM_CSS = """
         align-items: center;
         gap: 8px;
         padding: 10px 12px;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
+        border: 1px solid rgba(15,23,42,.10);
+        border-radius: 12px;
         margin-bottom: 8px;
         cursor: pointer;
         transition: all 160ms ease;
-        background: var(--surface-1);
+        background: rgba(255,255,255,.84);
     }
     
     .radio-option:hover {
-        border-color: var(--accent-600);
+        border-color: #21C17A;
         background: rgba(33,193,122,.04);
     }
     
     .radio-option.selected {
-        border-color: var(--accent-600);
+        border-color: #21C17A;
         background: rgba(33,193,122,.08);
     }
     
     .success-message {
         background: rgba(33,193,122,.08);
-        border-radius: var(--radius);
+        border-radius: 16px;
         padding: 24px;
         text-align: center;
         margin: 14px 0;
@@ -968,18 +932,18 @@ CUSTOM_CSS = """
         justify-content: center;
         margin: 0 auto 12px;
         font-size: 22px;
-        color: var(--accent-600);
+        color: #21C17A;
     }
     
     .success-title {
-        color: var(--ink-900);
+        color: #0F172A;
         font-size: 16px;
         font-weight: 800;
         margin-bottom: 6px;
     }
     
     .success-desc {
-        color: var(--ink-700);
+        color: #334155;
         font-size: 13px;
         line-height: 1.5;
     }
@@ -998,7 +962,7 @@ CUSTOM_CSS = """
         padding: 6px 0;
         border-bottom: 1px solid rgba(15,23,42,.06);
         font-size: 13px;
-        color: var(--ink-900);
+        color: #0F172A;
     }
     
     .change-item:last-child {
@@ -1006,12 +970,12 @@ CUSTOM_CSS = """
     }
     
     .old-value {
-        color: var(--danger-600);
+        color: #EF4444;
         text-decoration: line-through;
     }
     
     .new-value {
-        color: var(--accent-600);
+        color: #21C17A;
         font-weight: 650;
     }
     
@@ -1049,7 +1013,7 @@ CUSTOM_CSS = """
     .login-logo {
         width: 40px;
         height: 40px;
-        background: var(--accent-600);
+        background: #21C17A;
         border-radius: 12px;
         margin: 0 auto 14px;
         display: flex;
@@ -1068,7 +1032,7 @@ CUSTOM_CSS = """
     }
     
     .login-title {
-        color: var(--brand-900);
+        color: #0B1F3B;
         font-size: 22px;
         font-weight: 750;
         margin-bottom: 4px;
@@ -1087,7 +1051,7 @@ CUSTOM_CSS = """
     }
     
     .login-subtitle {
-        color: var(--ink-500);
+        color: #64748B;
         font-size: 13px;
         font-weight: 400;
         margin-top: 4px;
@@ -1126,7 +1090,7 @@ CUSTOM_CSS = """
         color: white;
         box-shadow: 0 10px 22px rgba(22,163,74,.22);
         width: 100%;
-        font-family: var(--font);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
         text-transform: uppercase;
         letter-spacing: 0.4px;
     }
@@ -1143,9 +1107,9 @@ CUSTOM_CSS = """
     }
     
     .signout-btn button {
-        background: var(--surface-2) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--ink-900) !important;
+        background: rgba(248,250,252,.90) !important;
+        border: 1px solid rgba(15,23,42,.10) !important;
+        color: #0F172A !important;
         padding: 8px 16px !important;
         font-size: 11px !important;
         letter-spacing: 0.5px !important;
@@ -1153,7 +1117,7 @@ CUSTOM_CSS = """
     }
     
     .signout-btn button:hover {
-        border-color: var(--border-strong) !important;
+        border-color: rgba(15,23,42,.16) !important;
         transform: translateY(-1px) !important;
     }
     
@@ -1183,7 +1147,7 @@ CUSTOM_CSS = """
         letter-spacing: 0.4px !important;
         text-transform: uppercase !important;
         border-radius: 12px !important;
-        font-family: var(--font) !important;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial !important;
         box-shadow: 0 10px 22px rgba(22,163,74,.22) !important;
         transition: 160ms ease !important;
         width: auto !important;
@@ -1200,11 +1164,11 @@ CUSTOM_CSS = """
         letter-spacing: .10em;
         text-transform: uppercase;
         font-weight: 850;
-        color: var(--brand-700);
+        color: #123B6E;
     }
 
     .section-heading {
-        color: var(--ink-900);
+        color: #0F172A;
         font-size: 15px;
         font-weight: 800;
         margin: 6px 0 10px 0;
@@ -1215,11 +1179,11 @@ CUSTOM_CSS = """
        13) FORM CONTROLS
        ========================= */
     div[data-testid="stForm"] {
-        background: var(--surface-0);
+        background: rgba(255,255,255,.92);
         padding: 14px;
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(15,23,42,.08);
+        border: 1px solid rgba(15,23,42,.10);
     }
     
     div[data-testid="stForm"] [data-testid="stVerticalBlock"] {
@@ -1259,13 +1223,13 @@ CUSTOM_CSS = """
     .stSelectbox > div > div {
         border-radius: 12px;
         font-size: 14px;
-        background: var(--surface-2) !important;
+        background: rgba(248,250,252,.90) !important;
         border: 1px solid rgba(15,23,42,.14) !important;
     }
     
     .stSelectbox label {
         font-size: 12px !important;
-        color: var(--ink-500) !important;
+        color: #64748B !important;
         font-weight: 750 !important;
         letter-spacing: .10em !important;
         text-transform: uppercase !important;
@@ -1273,19 +1237,19 @@ CUSTOM_CSS = """
     
     .stTextArea > div > div > textarea {
         width: 100%;
-        background: var(--surface-2);
+        background: rgba(248,250,252,.90);
         border: 1px solid rgba(15,23,42,.14);
         border-radius: 12px;
         padding: 12px 12px;
         font-size: 14px;
-        font-family: var(--font);
-        color: var(--ink-900);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        color: #0F172A;
         outline: none;
     }
     
     .stTextArea label {
         font-size: 12px !important;
-        color: var(--ink-500) !important;
+        color: #64748B !important;
         font-weight: 750 !important;
         letter-spacing: .10em !important;
         text-transform: uppercase !important;
@@ -1306,45 +1270,45 @@ CUSTOM_CSS = """
         border: 1px solid rgba(15,23,42,.14) !important;
         border-radius: 12px !important;
         margin-bottom: 6px !important;
-        color: var(--ink-900) !important;
-        background: var(--surface-2) !important;
+        color: #0F172A !important;
+        background: rgba(248,250,252,.90) !important;
     }
     
     .stCheckbox label {
         font-size: 14px !important;
-        color: var(--ink-700) !important;
+        color: #334155 !important;
     }
     
     .stCheckbox label span {
-        color: var(--ink-700) !important;
+        color: #334155 !important;
     }
     
     .expired-notice {
-        background: var(--surface-0);
+        background: rgba(255,255,255,.92);
         border-radius: 22px;
         padding: 36px 28px;
         text-align: center;
         max-width: 380px;
         margin: 60px auto;
         box-shadow: 0 22px 60px rgba(15,23,42,.18);
-        border: 1px solid var(--border);
+        border: 1px solid rgba(15,23,42,.10);
     }
     
     .inline-error {
-        color: var(--danger-600);
+        color: #EF4444;
         font-size: 12px;
         margin-top: 4px;
         font-weight: 650;
     }
     
     .field-hint {
-        color: var(--ink-500);
+        color: #64748B;
         font-size: 12px;
         margin-top: 4px;
     }
     
     p {
-        color: var(--ink-700) !important;
+        color: #334155 !important;
     }
 </style>
 """
@@ -1912,7 +1876,7 @@ def render_login():
                 {logo_html}
                 {app_icon_html}
                 <h1>Medical Insurance<br>Verification</h1>
-                <span class="badge">Policy Year {POLICY_YEAR}</span>
+                <span class="pill">Policy Year {POLICY_YEAR}</span>
             </div>
             """, unsafe_allow_html=True)
             staff_number = st.text_input(
@@ -2020,7 +1984,7 @@ def render_employee_snapshot(principal, staff_number):
     emp_name = format_field(principal['Principal Name']) or '—'
     
     st.markdown(f"""
-    <div class="glass-card">
+    <div class="card card--accent">
         <div class="card-title">👤 Employee Snapshot</div>
         <div class="snapshot-grid">
             <div class="snapshot-item">
@@ -2271,7 +2235,7 @@ def render_covered_members(employee_data, staff_number):
             del st.session_state[saved_key]
         
         st.markdown(f"""
-        <div class="glass-card member-card">
+        <div class="card card--accent">
             <div class="member-header">
                 <span class="member-name">{full_name}</span>
                 <span class="member-badge {badge_class}">{relation}</span>
@@ -2522,7 +2486,7 @@ def render_dashboard():
     members_count = len(employee_data)
     deadline_str = RENEWAL_DEADLINE.strftime('%d %B %Y')
 
-    st.markdown('<div class="page-shell">', unsafe_allow_html=True)
+    st.markdown('<div class="page">', unsafe_allow_html=True)
 
     render_header(principal_name, staff_number)
     render_status_strip()
@@ -2541,7 +2505,7 @@ def render_dashboard():
         render_employee_snapshot(principal, staff_number)
     with top_cols[1]:
         st.markdown(f"""
-        <div class="summary-card">
+        <div class="card card--accent">
             <div class="card-title">🔎 Renewal Overview</div>
             <div class="key-metrics">
                 <div class="metric-tile">
