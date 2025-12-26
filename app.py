@@ -1032,22 +1032,22 @@ def render_login():
             margin-bottom: 20px;
         }
         .login-card-title h1 {
-            color: #ffffff;
+            color: #0f172a;
             font-size: 22px;
             font-weight: 600;
             margin: 0 0 4px 0;
             line-height: 1.3;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 0 1px 2px rgba(255,255,255,0.2);
         }
         .login-card-title .subtitle {
-            color: rgba(255,255,255,0.85);
+            color: #334155;
             font-size: 13px;
             margin: 0;
         }
         .login-card-title .badge {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.25);
-            color: #ffffff;
+            background: rgba(255, 255, 255, 0.4);
+            color: #0f172a;
             padding: 5px 14px;
             border-radius: 12px;
             font-size: 11px;
@@ -1056,11 +1056,12 @@ def render_login():
             backdrop-filter: blur(10px);
         }
         .login-page-wrapper .stTextInput label {
-            color: rgba(255,255,255,0.9) !important;
+            color: #0f172a !important;
         }
         .login-page-wrapper .stTextInput > div > div > input {
-            background: rgba(255,255,255,0.85) !important;
-            border: 1px solid rgba(255,255,255,0.5) !important;
+            background: rgba(255,255,255,0.95) !important;
+            border: 1px solid rgba(255,255,255,0.6) !important;
+            color: #0f172a !important;
         }
         .login-page-wrapper .stFormSubmitButton > button {
             background: rgba(255,255,255,0.95) !important;
