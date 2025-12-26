@@ -134,12 +134,14 @@ CUSTOM_CSS = """
     }
     
     .main-header {
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        padding: 14px 18px;
-        margin-bottom: 16px;
-        color: white;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        padding: 20px 24px;
+        margin-bottom: 20px;
+        color: #64748b;
         border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.2);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     
     .header-content {
@@ -151,13 +153,13 @@ CUSTOM_CSS = """
     .header-left {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 16px;
     }
     
     .company-logo {
-        width: 34px;
-        height: 34px;
-        background: white;
+        width: 40px;
+        height: 40px;
+        background: transparent;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -166,37 +168,42 @@ CUSTOM_CSS = """
     }
     
     .company-logo-img {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         border-radius: 8px;
         object-fit: contain;
     }
     
     .header-title h1 {
         margin: 0;
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 16px;
+        font-weight: 500;
+        color: #64748b;
     }
     
     .header-title .subtitle {
-        font-size: 11px;
-        opacity: 0.8;
-        margin-top: 2px;
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 3px;
         font-weight: 400;
     }
     
     .header-right {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 24px;
     }
     
     .policy-badge {
-        background: rgba(255,255,255,0.15);
-        padding: 6px 12px;
-        border-radius: 16px;
+        background: rgba(35, 196, 131, 0.1);
+        border: 1px solid rgba(35, 196, 131, 0.3);
+        color: #23c483;
+        padding: 8px 16px;
+        border-radius: 20px;
         font-size: 11px;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .user-block {
@@ -204,35 +211,51 @@ CUSTOM_CSS = """
     }
     
     .user-name {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 500;
+        color: #64748b;
     }
     
     .user-id {
-        font-size: 10px;
-        opacity: 0.7;
-        margin-bottom: 3px;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 4px;
     }
     
     .header-signout-link {
         display: inline-block;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.3);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 10px;
+        background: transparent;
+        border: none;
+        color: #64748b;
+        padding: 4px 0;
+        font-size: 11px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         text-decoration: none;
-        margin-top: 3px;
+        margin-top: 4px;
+        position: relative;
+    }
+    
+    .header-signout-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #23c483;
+        transition: width 0.3s ease;
     }
     
     .header-signout-link:hover {
-        background: rgba(255,255,255,0.25);
+        color: #23c483;
+    }
+    
+    .header-signout-link:hover::after {
+        width: 100%;
     }
     
     .status-strip {
