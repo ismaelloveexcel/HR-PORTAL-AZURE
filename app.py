@@ -1077,7 +1077,8 @@ def render_login():
             border: none !important;
             outline: none !important;
             border-radius: 15px !important;
-            padding: 1em !important;
+            padding: 1.2em 1em !important;
+            height: 50px !important;
             background-color: #ccc !important;
             box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3) !important;
             transition: 300ms ease-in-out !important;
