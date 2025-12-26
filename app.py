@@ -1207,29 +1207,38 @@ def render_login():
             margin-top: 12px !important;
         }
         [data-testid="stForm"] .stFormSubmitButton > button {
-            padding: 0.9em 2em !important;
-            font-size: 11px !important;
+            padding: 1.1em 2.5em !important;
+            font-size: 12px !important;
             text-transform: uppercase !important;
-            letter-spacing: 2px !important;
-            font-weight: 500 !important;
+            letter-spacing: 2.5px !important;
+            font-weight: 600 !important;
             font-family: 'Aptos', 'Calibri', sans-serif !important;
-            color: #000 !important;
-            background-color: #d9d9d9 !important;
+            color: #333 !important;
+            background: linear-gradient(145deg, #e6e6e6, #cccccc) !important;
             border: none !important;
-            border-radius: 45px !important;
-            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.08) !important;
-            transition: all 0.3s ease 0s !important;
+            border-radius: 50px !important;
+            box-shadow: 
+                6px 6px 12px rgba(0, 0, 0, 0.15),
+                -4px -4px 10px rgba(255, 255, 255, 0.8),
+                inset 1px 1px 2px rgba(255, 255, 255, 0.5) !important;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
             cursor: pointer;
             outline: none !important;
         }
         [data-testid="stForm"] .stFormSubmitButton > button:hover {
-            background-color: #23c483 !important;
-            box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4) !important;
+            background: linear-gradient(145deg, #27d98a, #1fb370) !important;
+            box-shadow: 
+                8px 8px 16px rgba(35, 196, 131, 0.3),
+                -4px -4px 12px rgba(255, 255, 255, 0.6),
+                inset 1px 1px 2px rgba(255, 255, 255, 0.3) !important;
             color: #fff !important;
-            transform: translateY(-7px) !important;
+            transform: translateY(-4px) scale(1.02) !important;
         }
         [data-testid="stForm"] .stFormSubmitButton > button:active {
-            transform: translateY(-1px) !important;
+            transform: translateY(1px) scale(0.98) !important;
+            box-shadow: 
+                2px 2px 6px rgba(0, 0, 0, 0.2),
+                inset 2px 2px 4px rgba(0, 0, 0, 0.1) !important;
         }
         .login-help {
             font-family: 'Aptos', 'Calibri', sans-serif !important;
