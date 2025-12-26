@@ -1722,10 +1722,6 @@ def render_header(principal_name, staff_number):
             </div>
             <div class="header-right">
                 <div class="policy-badge">Policy Year {POLICY_YEAR}</div>
-                <div class="user-block">
-                    <div class="user-name">{principal_name}</div>
-                    <div class="user-id">{staff_number}</div>
-                </div>
             </div>
         </div>
     </div>
