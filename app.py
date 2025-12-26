@@ -2757,9 +2757,21 @@ def render_admin_login():
             else:
                 st.error("Invalid credentials")
 
+def get_query_params():
+    """Get query params with backward compatibility for older Streamlit versions."""
+    try:
+        # Newer Streamlit versions (1.30+)
+        return st.query_params
+    except AttributeError:
+        # Older Streamlit versions
+        try:
+            return st.experimental_get_query_params()
+        except:
+            return {}
+
 def main():
-    query_params = st.query_params
-    is_admin = query_params.get('admin') == 'true'
+    query_params = get_query_params()
+    is_admin = query_params.get('admin') == 'true' or (isinstance(query_params.get('admin'), list) and 'true' in query_params.get('admin', []))
     
     if 'authenticated' not in st.session_state:
         st.session_state['authenticated'] = False
