@@ -64,7 +64,9 @@ A secure employee self-service portal for medical insurance renewal verification
 - **Database**: PostgreSQL (for audit trail, change requests)
 - **Port**: 5000
 - **Data Storage**: CSV for employee data, PostgreSQL for audit/requests
-- **Authentication**: Staff Number + Date of Birth validation
+- **Authentication**: 
+  - Employees: Staff Number + Date of Birth validation
+  - Admins: Replit Auth (auto-login via Replit account) OR password
 
 ## Database Tables
 - `audit_trail`: Logs all data changes with timestamps
@@ -77,8 +79,9 @@ Located at top of app.py:
 - `SESSION_TIMEOUT_MINUTES` - Inactivity timeout (15 min)
 
 Environment Variables:
-- `ADMIN_PASSWORD` - Admin portal password (default: admin2026)
+- `ADMIN_PASSWORD` - Admin portal password (default: admin123)
 - `DATABASE_URL` - PostgreSQL connection string
+- `REPLIT_AUTH_ADMINS` - Comma-separated list of Replit usernames allowed auto-admin access (optional)
 
 ## Sample Staff Numbers for Testing
 - BAYN00008 (Mohammad Ismael Sudally) - DOB: 16/05/1988

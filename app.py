@@ -6,6 +6,18 @@ from datetime import datetime, timedelta
 import json
 from io import BytesIO
 
+def get_replit_user():
+    """Get Replit Auth user info from headers."""
+    try:
+        headers = dict(st.context.headers)
+        user_id = headers.get('X-Replit-User-Id') or headers.get('x-replit-user-id')
+        user_name = headers.get('X-Replit-User-Name') or headers.get('x-replit-user-name')
+        if user_id and user_name:
+            return {'id': user_id, 'name': user_name, 'authenticated': True}
+    except Exception:
+        pass
+    return {'authenticated': False}
+
 # Check database configuration before importing models
 if not os.environ.get('DATABASE_URL'):
     st.error("⚠️ Database not configured. Please ensure the PostgreSQL database is provisioned and republish the app.")
@@ -1904,17 +1916,6 @@ def render_login():
             
             submitted = st.form_submit_button("Sign In", use_container_width=True)
             
-            st.markdown("""
-            <div style="text-align:center;margin-top:18px;font-family:'Inter',sans-serif;">
-                <div style="color:#94a3b8;font-size:11px;font-weight:400;margin-bottom:6px;letter-spacing:0.5px;">Need Help?</div>
-                <a href="https://wa.me/971564966546" target="_blank" style="display:inline-block;color:#23c483;text-decoration:none;transition:transform 0.2s ease;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#23c483" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                    </svg>
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
-            
             if submitted:
                 if not staff_number:
                     st.error("Please enter your Staff Number.")
@@ -1945,6 +1946,21 @@ def render_login():
                         st.rerun()
                     else:
                         st.error(error_msg)
+        
+        st.markdown("""
+        <div style="text-align:center;margin-top:16px;font-family:'Inter',sans-serif;">
+            <div style="color:#94a3b8;font-size:11px;font-weight:400;margin-bottom:10px;letter-spacing:0.5px;">— or login with —</div>
+            <script authed="location.reload()" src="https://auth.util.repl.co/script.js"></script>
+        </div>
+        <div style="text-align:center;margin-top:18px;font-family:'Inter',sans-serif;">
+            <div style="color:#94a3b8;font-size:11px;font-weight:400;margin-bottom:6px;letter-spacing:0.5px;">Need Help?</div>
+            <a href="https://wa.me/971564966546" target="_blank" style="display:inline-block;color:#23c483;text-decoration:none;transition:transform 0.2s ease;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#23c483" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -2788,6 +2804,16 @@ def main():
         st.session_state['authenticated'] = False
     if 'admin_authenticated' not in st.session_state:
         st.session_state['admin_authenticated'] = False
+    
+    replit_user = get_replit_user()
+    if replit_user['authenticated'] and is_admin and not st.session_state['admin_authenticated']:
+        allowed_admins = os.environ.get('REPLIT_AUTH_ADMINS', '').split(',')
+        allowed_admins = [a.strip().lower() for a in allowed_admins if a.strip()]
+        if replit_user['name'].lower() in allowed_admins:
+            st.session_state['admin_authenticated'] = True
+            st.session_state['replit_user'] = replit_user
+            st.session_state['admin_name'] = replit_user['name']
+            st.session_state['login_time'] = datetime.now().isoformat()
     
     if st.session_state['authenticated'] or st.session_state['admin_authenticated']:
         if check_session_timeout():
