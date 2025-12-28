@@ -91,11 +91,18 @@ CUSTOM_CSS = """
         background-size: 50px 50px;
         animation: backgroundMove 20s linear infinite;
         opacity: 0.3;
+        will-change: transform;
     }
     
     @keyframes backgroundMove {
         0% { transform: translate(0, 0); }
         100% { transform: translate(50px, 50px); }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+        .login-shell::before {
+            animation: none;
+        }
     }
     
     .login-card {
@@ -513,15 +520,17 @@ CUSTOM_CSS = """
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        animation: pulse 2s ease-in-out infinite;
+        animation: pulseOpacity 2s ease-in-out infinite;
     }
     
     .missing-value::before {
         content: '⚠';
         font-size: 14px;
+        display: inline-block;
+        line-height: 1;
     }
     
-    @keyframes pulse {
+    @keyframes pulseOpacity {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.7; }
     }
@@ -535,7 +544,7 @@ CUSTOM_CSS = """
     .missing-text {
         color: #f59e0b !important;
         font-weight: 700;
-        animation: pulse 2s ease-in-out infinite;
+        animation: pulseOpacity 2s ease-in-out infinite;
     }
     
     .edit-section-header {
@@ -555,6 +564,8 @@ CUSTOM_CSS = """
     .edit-section-header::before {
         content: '✏️';
         font-size: 14px;
+        display: inline-block;
+        line-height: 1;
     }
     
     .member-grid {
@@ -591,7 +602,7 @@ CUSTOM_CSS = """
     .missing-field-text {
         color: #f59e0b;
         font-weight: 700;
-        animation: pulse 2s ease-in-out infinite;
+        animation: pulseOpacity 2s ease-in-out infinite;
     }
     
     .missing-info-banner {
@@ -721,7 +732,7 @@ CUSTOM_CSS = """
         }
     }
 
-    @keyframes pulse {
+    @keyframes pulseScale {
         0%, 100% {
             transform: scale(1);
         }
@@ -741,7 +752,7 @@ CUSTOM_CSS = """
         margin: 0 auto 16px;
         font-size: 32px;
         color: white;
-        animation: pulse 1.5s ease-in-out;
+        animation: pulseScale 1.5s ease-in-out;
         box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
     }
     
