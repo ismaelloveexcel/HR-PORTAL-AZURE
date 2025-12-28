@@ -1394,18 +1394,18 @@ def render_login():
             letter-spacing: 2.5px !important;
             font-weight: 500 !important;
             font-family: 'Aptos', 'Calibri', sans-serif !important;
-            color: #000 !important;
-            background-color: #fff !important;
+            color: #fff !important;
+            background-color: #25D366 !important;
             border: none !important;
             border-radius: 45px !important;
-            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0px 8px 15px rgba(37, 211, 102, 0.3) !important;
             transition: all 0.3s ease 0s !important;
             cursor: pointer;
             outline: none !important;
         }
         [data-testid="stForm"] .stFormSubmitButton > button:hover {
-            background-color: #23c483 !important;
-            box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4) !important;
+            background-color: #1ea954 !important;
+            box-shadow: 0px 15px 20px rgba(37, 211, 102, 0.4) !important;
             color: #fff !important;
             transform: translateY(-7px) !important;
         }
