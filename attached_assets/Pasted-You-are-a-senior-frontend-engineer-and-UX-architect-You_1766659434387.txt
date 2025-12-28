@@ -1,0 +1,191 @@
+You are a senior frontend engineer and UX architect. Your task is to refactor, enhance, and polish an existing Medical Insurance Verification web app without changing its core business logic.
+
+⸻
+
+1. CONTEXT
+
+This is an internal HR self-service portal used by employees to:
+	•	Review medical insurance details (self + dependents)
+	•	Confirm accuracy OR request corrections
+	•	Submit correction requests before a deadline
+
+The app already exists. Your job is visual clarity, usability, consistency, and minor UX logic improvements — not a rebuild.
+
+⸻
+
+2. DESIGN DIRECTION (NON-NEGOTIABLE)
+
+Visual Style
+	•	Clean, enterprise, minimal
+	•	White-dominant UI
+	•	Dark navy header (existing brand)
+	•	Soft grey dividers and shadows
+	•	Rounded cards (8–12px radius)
+	•	No flashy animations
+
+Color Tokens
+	•	Primary: #1E1B5C (existing navy)
+	•	Secondary: muted slate / grey
+	•	Success: subtle green
+	•	Warning: amber
+	•	Error: muted red (not aggressive)
+
+⸻
+
+3. LAYOUT & STRUCTURE CHANGES
+
+A. Header (Sticky)
+	•	Left: App icon +
+Medical Insurance Verification
+Employee Self-Service Portal
+	•	Right:
+	•	Pill badge: Policy Year 2026
+	•	User block:
+	•	Employee Name
+	•	Employee Number (small, muted)
+	•	Sign Out (right aligned, not oversized)
+
+⸻
+
+B. Status Strip (Below Header)
+Single horizontal info bar:
+	•	⏱ Session timeout: 15 min
+	•	📅 Deadline: 31 January 2026 (XX days left)
+
+Use icons + muted background.
+
+⸻
+
+C. Employee Snapshot (Read-Only Card)
+Two-column layout:
+
+Left:
+	•	Employee Number
+	•	Employee Name
+
+Right:
+	•	Job Title
+	•	Department
+
+This card must be visually distinct but compact.
+
+⸻
+
+4. COVERED MEMBERS SECTION (KEY IMPROVEMENTS)
+
+A. Member Cards
+Each covered member must appear as a separate card:
+
+Header:
+	•	Member Name
+	•	Relationship badge:
+	•	PRINCIPAL (blue)
+	•	SPOUSE / CHILD (soft pink / neutral)
+
+Body (2-column grid):
+	•	Date of Birth
+	•	Gender
+	•	Nationality
+	•	Emirates ID
+	•	Passport Status
+
+Rules:
+	•	If missing → show “Not provided” in muted red
+	•	Emirates ID should be visually formatted (grouped digits)
+
+⸻
+
+5. CONFIRMATION LOGIC (IMPORTANT)
+
+A. Radio Selection (Mandatory)
+User must choose ONE:
+	•	✅ I confirm all information above is accurate
+	•	✏️ I need to request corrections
+
+Behavior:
+	•	If confirmed → show green confirmation state + enable final submit
+	•	If correction selected → dynamically reveal correction section
+
+No page reloads.
+
+⸻
+
+6. CORRECTION REQUEST UX (CRITICAL FIXES)
+
+A. Dependent Selection
+	•	Dropdown: “Select dependent to correct”
+	•	Auto-populate current values as read-only placeholders
+
+B. Fields to Correct
+	•	Editable fields only:
+	•	Name
+	•	Date of Birth
+	•	Emirates ID
+	•	Passport Number
+	•	Relationship
+
+Rules:
+	•	User fills only the fields that need correction
+	•	Empty fields must NOT overwrite existing data
+
+⸻
+
+C. Validation
+	•	At least ONE field must be edited
+	•	Emirates ID format validation
+	•	DOB must be valid (no future dates)
+
+Show inline validation messages — no alerts.
+
+⸻
+
+D. Remarks
+	•	Free-text but required
+	•	Placeholder examples:
+	•	“Spelling correction”
+	•	“Emirates ID renewed”
+	•	“Passport recently issued”
+
+⸻
+
+7. SUBMISSION & FEEDBACK
+
+After submission:
+	•	Disable form
+	•	Show confirmation message:
+“Your correction request has been submitted to HR for review.”
+
+Optional:
+	•	Reference number (if already supported)
+
+⸻
+
+8. ACCESSIBILITY & QUALITY
+	•	Proper label/input association
+	•	Keyboard navigable
+	•	Mobile responsive (tablet priority)
+	•	No console errors
+	•	No breaking existing API calls
+
+⸻
+
+9. WHAT NOT TO DO
+	•	Do NOT introduce authentication changes
+	•	Do NOT redesign backend
+	•	Do NOT over-engineer
+	•	Do NOT add unnecessary animations
+
+⸻
+
+10. DELIVERABLE
+
+Update the existing frontend code to:
+	•	Improve layout
+	•	Improve clarity
+	•	Improve correction workflow
+	•	Keep logic intact
+	•	Be production-ready
+
+⸻
+
+Start by reviewing the current UI structure, then apply changes incrementally.

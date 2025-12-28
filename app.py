@@ -5,36 +5,14 @@ import base64
 from datetime import datetime, timedelta
 import json
 from io import BytesIO
-
-def get_replit_user():
-    """Get Replit Auth user info from headers."""
-    try:
-        headers = dict(st.context.headers)
-        user_id = headers.get('X-Replit-User-Id') or headers.get('x-replit-user-id')
-        user_name = headers.get('X-Replit-User-Name') or headers.get('x-replit-user-name')
-        if user_id and user_name:
-            return {'id': user_id, 'name': user_name, 'authenticated': True}
-    except Exception:
-        pass
-    return {'authenticated': False}
-
-# Check database configuration before importing models
-if not os.environ.get('DATABASE_URL'):
-    st.error("⚠️ Database not configured. Please ensure the PostgreSQL database is provisioned and republish the app.")
-    st.stop()
-
 from models import init_db, get_db, AuditTrail, ChangeRequest
 
+@st.cache_resource
 def initialize_database():
-    try:
-        init_db()
-        return True
-    except Exception as e:
-        st.error(f"⚠️ Database initialization failed: {str(e)}")
-        return False
+    init_db()
+    return True
 
-if not initialize_database():
-    st.stop()
+initialize_database()
 
 @st.cache_resource
 def get_logo_base64():
@@ -56,8 +34,8 @@ LOGO_BASE64 = get_logo_base64()
 APP_ICON_BASE64 = get_app_icon_base64()
 
 st.set_page_config(
-    page_title="HR Portal | Baynunah",
-    page_icon="🏢",
+    page_title="Medical Insurance Verification | Baynunah",
+    page_icon="🏥",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -68,151 +46,18 @@ SESSION_TIMEOUT_MINUTES = 15
 
 CUSTOM_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;750;800;850&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
     
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display: none;}
     
-    /* =========================
-       2) APP BACKGROUND + NOISE
-       ========================= */
     .stApp {
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-        color: #0F172A;
-        background:
-            radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.35), transparent 60%),
-            radial-gradient(900px 500px at 80% 0%, rgba(33,193,122,.18), transparent 55%),
-            linear-gradient(180deg, rgba(180,180,180,1) 0%, rgba(210,214,222,1) 100%);
-        position: relative;
+        font-family: 'Aptos', 'Calibri', sans-serif;
+        background: #f5f7fb;
     }
     
-
-    /* =========================
-       3) PAGE CONTAINER
-       ========================= */
-    .page, .page-shell {
-        max-width: 1160px;
-        margin: 0 auto;
-        padding: 28px 20px 64px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    .page-header {
-        text-align: center;
-        margin-bottom: 16px;
-    }
-    
-    .page-title {
-        color: #0B1F3B !important;
-        font-size: 26px !important;
-        font-weight: 750 !important;
-        margin: 0 0 6px 0;
-        line-height: 1.15;
-    }
-    
-    .page-subtitle {
-        color: #64748B !important;
-        font-size: 14px !important;
-        margin: 0;
-    }
-    
-    .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 14px;
-        border-radius: 999px;
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
-        font-size: 12px;
-        font-weight: 650;
-        margin-top: 10px;
-    }
-
-    .section-grid {
-        display: grid;
-        grid-template-columns: 1.6fr 1fr;
-        gap: 16px;
-        align-items: start;
-    }
-    
-    @media (max-width: 980px) {
-        .section-grid { grid-template-columns: 1fr; }
-    }
-
-    .section-divider {
-        margin: 6px 0 4px;
-    }
-    
-    /* Stats grid */
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-    
-    .stat {
-        background: rgba(248,250,252,.90);
-        border: 1px solid rgba(15,23,42,.08);
-        border-radius: 14px;
-        padding: 14px 14px;
-    }
-    
-    .stat .k {
-        font-size: 11px;
-        letter-spacing: .10em;
-        text-transform: uppercase;
-        color: #64748B;
-        font-weight: 750;
-    }
-    
-    .stat .v {
-        font-size: 18px;
-        font-weight: 800;
-        color: #0F172A;
-        margin-top: 6px;
-    }
-    
-    /* Key-value blocks */
-    .k {
-        font-size: 11px;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-        color: #64748B;
-        font-weight: 700;
-    }
-    
-    .v {
-        font-weight: 600;
-        color: #334155;
-    }
-    
-    .missing {
-        color: #F59E0B !important;
-        font-style: italic;
-    }
-    
-    /* Badge variants */
-    .badge--principal {
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
-    }
-    
-    .badge--spouse {
-        background: rgba(18,59,110,.10);
-        color: #123B6E;
-        border: 1px solid rgba(18,59,110,.18);
-    }
-    
-    /* =========================
-       4) LOGIN STYLES
-       ========================= */
     .login-page [data-testid="stAppViewBlockContainer"] {
         padding: 0 !important;
         max-width: 100% !important;
@@ -224,19 +69,21 @@ CUSTOM_CSS = """
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 24px 18px;
+        padding: 20px;
         box-sizing: border-box;
+        background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 50%, #faf5ff 100%);
     }
     
     .login-card {
-        width: min(420px, 100%);
-        background: rgba(255,255,255,.92) !important;
-        border: 1px solid rgba(15,23,42,.10) !important;
-        border-radius: 22px !important;
-        box-shadow: 0 22px 60px rgba(15,23,42,.18) !important;
-        padding: 26px 24px !important;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        padding: 24px 22px;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+        width: 100%;
+        max-width: 320px;
         text-align: center;
-        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
     }
     
     .login-card-header {
@@ -250,64 +97,49 @@ CUSTOM_CSS = """
     }
     
     .login-card h1 {
-        color: #0B1F3B !important;
-        font-size: 22px !important;
-        font-weight: 750 !important;
-        margin: 10px 0 6px 0;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 6px 0;
+        line-height: 1.3;
     }
     
     .login-card .subtitle {
-        color: #64748B !important;
-        font-size: 14px !important;
+        color: #475569;
+        font-size: 14px;
         margin: 0;
     }
     
     .login-card .policy-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
+        display: inline-block;
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+        padding: 6px 14px;
+        border-radius: 16px;
         font-size: 12px;
-        font-weight: 650;
-        margin-top: 10px;
+        font-weight: 600;
+        margin-top: 14px;
     }
     
     .login-help {
         margin-top: 18px;
         font-size: 13px;
-        color: #64748B;
+        color: #64748b;
     }
     
     .login-help a {
-        color: #21C17A;
+        color: #22c55e;
         text-decoration: none;
         font-weight: 600;
     }
     
-    /* =========================
-       5) MAIN HEADER + CARDS
-       ========================= */
     .main-header {
-        background: rgba(255,255,255,.92);
-        border: 1px solid rgba(15,23,42,.10);
-        border-radius: 16px;
-        box-shadow: 0 6px 18px rgba(15,23,42,.08);
-        padding: 22px 22px;
-        backdrop-filter: blur(10px);
-        margin-bottom: 20px;
-    }
-    
-    .main-header:hover {
-        box-shadow: 0 12px 30px rgba(15,23,42,.12);
-        border-color: rgba(15,23,42,.16);
-        transform: translateY(-1px);
-        transition: 160ms ease;
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.2);
     }
     
     .header-content {
@@ -319,13 +151,13 @@ CUSTOM_CSS = """
     .header-left {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
     }
     
     .company-logo {
-        width: 40px;
-        height: 40px;
-        background: transparent;
+        width: 34px;
+        height: 34px;
+        background: white;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -334,43 +166,37 @@ CUSTOM_CSS = """
     }
     
     .company-logo-img {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
         border-radius: 8px;
         object-fit: contain;
     }
     
     .header-title h1 {
         margin: 0;
-        font-size: 16px;
-        font-weight: 650;
-        color: #334155;
+        font-size: 14px;
+        font-weight: 600;
     }
     
     .header-title .subtitle {
-        font-size: 12px;
-        color: #64748B;
-        margin-top: 3px;
+        font-size: 11px;
+        opacity: 0.8;
+        margin-top: 2px;
         font-weight: 400;
     }
     
     .header-right {
         display: flex;
         align-items: center;
-        gap: 24px;
+        gap: 20px;
     }
     
     .policy-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
-        font-size: 12px;
-        font-weight: 650;
+        background: rgba(255,255,255,0.15);
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 11px;
+        font-weight: 500;
     }
     
     .user-block {
@@ -378,64 +204,47 @@ CUSTOM_CSS = """
     }
     
     .user-name {
-        font-size: 13px;
-        font-weight: 650;
-        color: #334155;
+        font-size: 12px;
+        font-weight: 500;
     }
     
     .user-id {
-        font-size: 11px;
-        color: #64748B;
-        margin-bottom: 4px;
+        font-size: 10px;
+        opacity: 0.7;
+        margin-bottom: 3px;
     }
     
     .header-signout-link {
         display: inline-block;
-        background: transparent;
-        border: none;
-        color: #64748B;
-        padding: 4px 0;
-        font-size: 11px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 10px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         text-decoration: none;
-        margin-top: 4px;
-        position: relative;
-    }
-    
-    .header-signout-link::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: #21C17A;
-        transition: width 0.3s ease;
+        margin-top: 3px;
     }
     
     .header-signout-link:hover {
-        color: #21C17A;
-    }
-    
-    .header-signout-link:hover::after {
-        width: 100%;
+        background: rgba(255,255,255,0.25);
     }
     
     .status-strip {
-        background: rgba(255,255,255,.84);
-        border: 1px solid rgba(15,23,42,.10);
-        padding: 12px 16px;
-        margin: 0 0 6px 0;
-        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.7);
+        border-bottom: 1px solid #e2e8f0;
+        padding: 10px 20px;
+        margin: 0 -60px 14px -60px;
         display: flex;
-        justify-content: space-between;
-        gap: 18px;
+        justify-content: center;
+        gap: 28px;
         font-size: 12px;
-        color: #334155;
+        color: #475569;
     }
     
     .status-item {
@@ -443,234 +252,28 @@ CUSTOM_CSS = """
         align-items: center;
         gap: 6px;
     }
-
-    /* =========================
-       6) CARDS + STATS
-       ========================= */
-    .card, .glass-card, .summary-card, .member-card, .confirmation-card, .edit-form-card {
-        background: rgba(255,255,255,.92) !important;
-        border: 1px solid rgba(15,23,42,.10) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 6px 18px rgba(15,23,42,.08) !important;
-        padding: 22px 22px !important;
-        backdrop-filter: blur(10px) !important;
-        margin-bottom: 14px !important;
-    }
     
-    .card:hover, .glass-card:hover, .summary-card:hover, .member-card:hover {
-        box-shadow: 0 12px 30px rgba(15,23,42,.12) !important;
-        border-color: rgba(15,23,42,.16) !important;
-        transform: translateY(-1px);
-        transition: 160ms ease;
-    }
-    
-    .card--accent, .glass-card--accent {
-        border-top: 3px solid rgba(18,59,110,.65) !important;
-    }
-
-    .summary-card .card-title {
-        margin-bottom: 10px;
-    }
-
-    .key-metrics {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .metric-tile {
-        background: rgba(248,250,252,.90);
-        border: 1px solid rgba(15,23,42,.08);
-        border-radius: 14px;
-        padding: 14px 14px;
-    }
-
-    .metric-label {
-        font-size: 11px;
-        letter-spacing: .10em;
-        text-transform: uppercase;
-        color: #64748B;
-        font-weight: 750;
-    }
-
-    .metric-value {
-        font-size: 18px;
-        font-weight: 800;
-        color: #0F172A;
-        margin-top: 6px;
-    }
-
-    .list-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 6px;
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(15,23,42,.06);
-        font-size: 12px;
-        color: #334155;
-    }
-
-    .list-row:last-child {
-        border-bottom: none;
-    }
-
-    .list-label {
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        color: #64748B;
-        font-weight: 750;
-        font-size: 11px;
-    }
-
-    .list-value {
-        font-weight: 650;
-        color: #334155;
-    }
-    
-    /* Card header row */
-    .card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(15,23,42,.06);
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 16px;
         margin-bottom: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
     }
     
     .card-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 13px;
-        letter-spacing: .10em;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 600;
         text-transform: uppercase;
-        color: #64748B;
-        font-weight: 750;
+        letter-spacing: 0.8px;
         margin-bottom: 12px;
         padding-bottom: 10px;
-        border-bottom: 1px solid rgba(15,23,42,.06);
+        border-bottom: 1px solid #e2e8f0;
     }
     
-    .badge {
-        font-size: 11px;
-        font-weight: 750;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(15,23,42,.10);
-        background: rgba(248,250,252,.85);
-        color: #334155;
-    }
-    
-    .badge--principal, .badge-principal { 
-        background: rgba(33,193,122,.14); 
-        border-color: rgba(33,193,122,.25); 
-        color: #0E5F3D; 
-    }
-    
-    .badge--spouse, .badge-spouse { 
-        background: rgba(139,92,246,.12); 
-        border-color: rgba(139,92,246,.22); 
-        color: #4C1D95; 
-    }
-    
-    .badge--warn { 
-        background: rgba(245,158,11,.14); 
-        border-color: rgba(245,158,11,.22); 
-        color: #7A4B00; 
-    }
-    
-    .badge-child {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
-    }
-    
-    /* =========================
-       7) CENTERED HEADER
-       ========================= */
-    .centered-header {
-        text-align: center;
-        padding: 18px 0 26px;
-    }
-    
-    .centered-header-logo {
-        width: 50px;
-        height: 50px;
-        border-radius: 8px;
-        object-fit: contain;
-        margin-bottom: 10px;
-    }
-    
-    .centered-header-title {
-        font-size: 30px;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin: 10px 0 6px;
-        color: #0B1F3B;
-        font-weight: 750;
-    }
-    
-    .centered-header-subtitle {
-        font-size: 14px;
-        color: #64748B;
-        margin: 0 0 4px 0;
-    }
-    
-    .centered-header-year {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
-        font-size: 12px;
-        font-weight: 650;
-        margin-top: 10px;
-    }
-    
-    .header-logo-placeholder {
-        font-size: 28px;
-    }
-    
-    .header-right-section {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    
-    .header-policy-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
-        font-size: 12px;
-        font-weight: 650;
-    }
-    
-    .header-user-info {
-        text-align: right;
-    }
-    
-    .header-user-name {
-        color: #334155;
-        font-size: 13px;
-        font-weight: 650;
-    }
-    
-    .header-user-id {
-        color: #64748B;
-        font-size: 11px;
-    }
-    
-    /* =========================
-       8) SNAPSHOT + MEMBER DETAILS
-       ========================= */
     .snapshot-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -684,18 +287,27 @@ CUSTOM_CSS = """
     }
     
     .snapshot-label {
+        color: #64748b;
         font-size: 11px;
-        letter-spacing: .10em;
         text-transform: uppercase;
-        color: #64748B;
-        font-weight: 750;
+        letter-spacing: 0.4px;
+        font-weight: 500;
     }
     
     .snapshot-value {
-        font-size: 14px;
-        color: #0F172A;
-        font-weight: 650;
-        margin-top: 6px;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .member-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
     }
     
     .member-header {
@@ -704,22 +316,37 @@ CUSTOM_CSS = """
         align-items: center;
         margin-bottom: 12px;
         padding-bottom: 10px;
-        border-bottom: 1px solid rgba(15,23,42,.06);
+        border-bottom: 1px solid #e2e8f0;
     }
     
     .member-name {
-        color: #334155;
+        color: #0f172a;
         font-size: 15px;
-        font-weight: 650;
+        font-weight: 600;
     }
     
     .member-badge {
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 750;
+        padding: 3px 10px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.4px;
+    }
+    
+    .badge-principal {
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+    }
+    
+    .badge-spouse {
+        background: rgba(147, 51, 234, 0.1);
+        color: #9333ea;
+    }
+    
+    .badge-child {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
     }
     
     .member-details {
@@ -737,61 +364,40 @@ CUSTOM_CSS = """
     }
     
     .member-detail-label {
-        color: #64748B;
+        color: #64748b;
     }
     
     .member-detail-value {
-        color: #0F172A;
-        font-weight: 650;
+        color: #0f172a;
+        font-weight: 500;
     }
     
     .missing-value {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        font-weight: 750;
-        color: #7A4B00;
-        background: rgba(245,158,11,.14);
-        border: 1px solid rgba(245,158,11,.22);
-        padding: 6px 10px;
-        border-radius: 999px;
+        color: #f97316;
+        font-size: 11px;
+        font-weight: 600;
     }
     
     .member-divider {
         border: none;
-        border-top: 1px solid rgba(15,23,42,.06);
+        border-top: 1px solid #e2e8f0;
         margin: 12px 0;
     }
     
     .missing-text {
-        color: #7A4B00 !important;
-        font-weight: 750;
+        color: #f97316 !important;
+        font-weight: 600;
     }
     
-    /* =========================
-       9) EDIT FORM SECTIONS
-       ========================= */
     .edit-section-header {
-        color: #7A4B00;
-        font-size: 12px;
-        font-weight: 850;
+        color: #ea580c;
+        font-size: 11px;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.10em;
-        margin: 0 0 12px 0;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    }
-    
-    .edit-section-header-green {
-        color: #21C17A;
-        font-size: 12px;
-        font-weight: 850;
-        text-transform: uppercase;
-        letter-spacing: 0.10em;
-        margin: 16px 0 12px 0;
-        padding-top: 12px;
-        border-top: 1px solid rgba(15,23,42,.06);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        letter-spacing: 0.6px;
+        margin: 10px 0 8px 0;
+        padding-top: 10px;
+        border-top: 1px solid #e2e8f0;
     }
     
     .member-grid {
@@ -803,15 +409,7 @@ CUSTOM_CSS = """
     .grid-row {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 14px 18px;
-    }
-    
-    @media (max-width: 980px) {
-        .grid-row { grid-template-columns: 1fr 1fr; }
-    }
-    
-    @media (max-width: 560px) {
-        .grid-row { grid-template-columns: 1fr; }
+        gap: 12px;
     }
     
     .grid-cell {
@@ -819,44 +417,29 @@ CUSTOM_CSS = """
     }
     
     .field-label {
-        font-size: 11px;
-        letter-spacing: .10em;
+        color: #64748b;
+        font-size: 10px;
         text-transform: uppercase;
-        color: #64748B;
-        font-weight: 750;
         margin-bottom: 3px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
     }
     
     .field-value {
-        font-size: 14px;
-        color: #0F172A;
-        font-weight: 650;
-        margin-top: 6px;
-    }
-    
-    .field-value-muted {
-        color: #64748B;
-        font-weight: 600;
+        color: #0f172a;
+        font-weight: 500;
+        font-size: 13px;
     }
     
     .missing-field-text {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 6px;
-        font-size: 12px;
-        font-weight: 750;
-        color: #7A4B00;
-        background: rgba(245,158,11,.14);
-        border: 1px solid rgba(245,158,11,.22);
-        padding: 6px 10px;
-        border-radius: 999px;
+        color: #f97316;
+        font-weight: 600;
     }
     
     .missing-info-banner {
-        background: rgba(245,158,11,.14);
-        border-left: 3px solid #F59E0B;
-        border-radius: 0 12px 12px 0;
+        background: rgba(249, 115, 22, 0.08);
+        border-left: 3px solid #f97316;
+        border-radius: 0 8px 8px 0;
         padding: 10px 14px;
         margin-top: 12px;
         display: flex;
@@ -865,115 +448,121 @@ CUSTOM_CSS = """
     }
     
     .missing-icon {
-        color: #F59E0B;
+        color: #f97316;
         font-size: 16px;
     }
     
     .missing-title {
-        color: #7A4B00;
-        font-weight: 750;
+        color: #ea580c;
+        font-weight: 600;
         font-size: 13px;
     }
     
     .missing-desc {
-        color: #64748B;
+        color: #64748b;
         font-size: 12px;
     }
     
     .inline-edit-section {
-        border-top: 1px solid rgba(15,23,42,.06);
+        border-top: 1px solid #e2e8f0;
         margin-top: 12px;
         padding-top: 10px;
     }
     
     .inline-edit-title {
-        color: #7A4B00;
-        font-size: 12px;
-        font-weight: 850;
+        color: #ea580c;
+        font-size: 11px;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.10em;
+        letter-spacing: 0.6px;
         margin-bottom: 8px;
     }
     
     .missing-banner {
-        background: rgba(245,158,11,.14);
-        border-left: 3px solid #F59E0B;
-        border-radius: 0 12px 12px 0;
+        background: rgba(249, 115, 22, 0.06);
+        border-left: 3px solid #f97316;
+        border-radius: 0 8px 8px 0;
         padding: 10px 12px;
         margin: 10px 0;
         display: flex;
         align-items: center;
         gap: 10px;
-        color: #7A4B00;
+        color: #ea580c;
         font-size: 12px;
-        font-weight: 750;
     }
     
-    /* =========================
-       10) RADIO + CONFIRMATION
-       ========================= */
+    .confirmation-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+    
     .radio-option {
         display: flex;
         align-items: center;
         gap: 8px;
         padding: 10px 12px;
-        border: 1px solid rgba(15,23,42,.10);
-        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
         margin-bottom: 8px;
         cursor: pointer;
-        transition: all 160ms ease;
-        background: rgba(255,255,255,.84);
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.6);
     }
     
     .radio-option:hover {
-        border-color: #21C17A;
-        background: rgba(33,193,122,.04);
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.04);
     }
     
     .radio-option.selected {
-        border-color: #21C17A;
-        background: rgba(33,193,122,.08);
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.08);
     }
     
     .success-message {
-        background: rgba(33,193,122,.08);
-        border-radius: 16px;
+        background: rgba(16, 185, 129, 0.08);
+        border-radius: 12px;
         padding: 24px;
         text-align: center;
         margin: 14px 0;
-        border: 1px solid rgba(33,193,122,.2);
+        border: 1px solid rgba(16, 185, 129, 0.2);
     }
     
     .success-icon {
         width: 48px;
         height: 48px;
-        background: rgba(33,193,122,.12);
+        background: rgba(16, 185, 129, 0.12);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 12px;
         font-size: 22px;
-        color: #21C17A;
+        color: #10b981;
     }
     
     .success-title {
-        color: #0F172A;
+        color: #0f172a;
         font-size: 16px;
-        font-weight: 800;
+        font-weight: 600;
         margin-bottom: 6px;
     }
     
     .success-desc {
-        color: #334155;
+        color: #475569;
         font-size: 13px;
         line-height: 1.5;
     }
     
     .change-log {
-        background: rgba(245,158,11,.06);
-        border: 1px solid rgba(245,158,11,.2);
-        border-radius: 14px;
+        background: rgba(249, 115, 22, 0.06);
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        border-radius: 10px;
         padding: 14px;
         margin-top: 14px;
     }
@@ -982,9 +571,9 @@ CUSTOM_CSS = """
         display: flex;
         gap: 8px;
         padding: 6px 0;
-        border-bottom: 1px solid rgba(15,23,42,.06);
+        border-bottom: 1px solid #e2e8f0;
         font-size: 13px;
-        color: #0F172A;
+        color: #0f172a;
     }
     
     .change-item:last-child {
@@ -992,18 +581,15 @@ CUSTOM_CSS = """
     }
     
     .old-value {
-        color: #EF4444;
+        color: #f87171;
         text-decoration: line-through;
     }
     
     .new-value {
-        color: #21C17A;
-        font-weight: 650;
+        color: #22c55e;
+        font-weight: 500;
     }
     
-    /* =========================
-       11) LOGIN FORM
-       ========================= */
     .login-container {
         max-width: 280px;
         margin: 0 auto;
@@ -1035,7 +621,7 @@ CUSTOM_CSS = """
     .login-logo {
         width: 40px;
         height: 40px;
-        background: #21C17A;
+        background: #2563eb;
         border-radius: 12px;
         margin: 0 auto 14px;
         display: flex;
@@ -1054,12 +640,11 @@ CUSTOM_CSS = """
     }
     
     .login-title {
-        color: #0B1F3B;
-        font-size: 22px;
-        font-weight: 750;
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 600;
         margin-bottom: 4px;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
+        line-height: 1.2;
     }
     
     @media (max-width: 480px) {
@@ -1073,65 +658,48 @@ CUSTOM_CSS = """
     }
     
     .login-subtitle {
-        color: #64748B;
+        color: #64748b;
         font-size: 13px;
         font-weight: 400;
         margin-top: 4px;
     }
     
     .login-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 12px;
-        border-radius: 999px;
-        background: rgba(33,193,122,.14);
-        color: #0E5F3D;
-        border: 1px solid rgba(33,193,122,.22);
-        font-size: 12px;
-        font-weight: 650;
-        margin-top: 10px;
+        display: inline-block;
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+        padding: 5px 14px;
+        border-radius: 14px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 8px;
     }
     
-    /* =========================
-       12) BUTTONS
-       ========================= */
     .stButton > button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        border-radius: 12px;
-        padding: 11px 16px;
-        font-size: 13px;
-        font-weight: 800;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: 160ms ease;
-        background: linear-gradient(180deg, rgba(33,193,122,1), rgba(22,163,74,1));
+        background: #2563eb;
         color: white;
-        box-shadow: 0 10px 22px rgba(22,163,74,.22);
-        width: 100%;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-        text-transform: uppercase;
+        border: none;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 12px;
         letter-spacing: 0.4px;
+        text-transform: uppercase;
+        border-radius: 8px;
+        width: 100%;
+        transition: all 0.2s ease;
+        font-family: 'Poppins', sans-serif;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
     }
     
     .stButton > button:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.02);
-    }
-    
-    .stButton > button:disabled {
-        opacity: .55;
-        cursor: not-allowed;
-        transform: none;
+        background: #1d4ed8;
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
     }
     
     .signout-btn button {
-        background: rgba(248,250,252,.90) !important;
-        border: 1px solid rgba(15,23,42,.10) !important;
-        color: #0F172A !important;
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        color: white !important;
         padding: 8px 16px !important;
         font-size: 11px !important;
         letter-spacing: 0.5px !important;
@@ -1139,73 +707,24 @@ CUSTOM_CSS = """
     }
     
     .signout-btn button:hover {
-        border-color: rgba(15,23,42,.16) !important;
-        transform: translateY(-1px) !important;
-    }
-    
-    .signout-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        margin-top: 30px;
-        margin-bottom: 20px;
-        width: 100%;
-    }
-    
-    .signout-container .stButton {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .signout-container .stButton > button {
-        background: linear-gradient(180deg, rgba(33,193,122,1), rgba(22,163,74,1)) !important;
-        color: white !important;
-        border: none !important;
-        padding: 11px 40px !important;
-        font-weight: 800 !important;
-        font-size: 13px !important;
-        letter-spacing: 0.4px !important;
-        text-transform: uppercase !important;
-        border-radius: 12px !important;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial !important;
-        box-shadow: 0 10px 22px rgba(22,163,74,.22) !important;
-        transition: 160ms ease !important;
-        width: auto !important;
-    }
-    
-    .signout-container .stButton > button:hover {
-        transform: translateY(-1px) !important;
-        filter: brightness(1.02) !important;
+        background: rgba(255,255,255,0.15) !important;
     }
     
     .section-label {
-        margin-top: 18px;
+        color: #64748b;
         font-size: 12px;
-        letter-spacing: .10em;
         text-transform: uppercase;
-        font-weight: 850;
-        color: #123B6E;
-    }
-
-    .section-heading {
-        color: #0F172A;
-        font-size: 15px;
-        font-weight: 800;
-        margin: 6px 0 10px 0;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+        font-weight: 600;
     }
     
-    /* =========================
-       13) FORM CONTROLS
-       ========================= */
     div[data-testid="stForm"] {
-        background: rgba(255,255,255,.92);
+        background: rgba(255, 255, 255, 0.85);
         padding: 14px;
-        border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(15,23,42,.08);
-        border: 1px solid rgba(15,23,42,.10);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+        border: 1px solid #e2e8f0;
     }
     
     div[data-testid="stForm"] [data-testid="stVerticalBlock"] {
@@ -1213,73 +732,57 @@ CUSTOM_CSS = """
     }
     
     .stTextInput > div > div > input {
-        width: 100%;
-        background: rgba(248,250,252,.90) !important;
-        border: 1px solid rgba(15,23,42,.14) !important;
-        border-radius: 12px !important;
-        padding: 12px 12px !important;
-        font-size: 14px !important;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif !important;
-        color: #0F172A !important;
-        outline: none;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
     }
     
     .stTextInput label {
         font-size: 12px !important;
         margin-bottom: 4px !important;
-        color: #64748B !important;
-        font-weight: 750 !important;
-        letter-spacing: .10em !important;
-        text-transform: uppercase !important;
-    }
-    
-    .stTextInput label p {
-        color: #64748B !important;
+        color: #334155 !important;
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: rgba(18,59,110,.55);
-        box-shadow: 0 0 0 4px rgba(18,59,110,.14);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        background: #ffffff !important;
     }
     
     .stSelectbox > div > div {
-        border-radius: 12px;
-        font-size: 14px;
-        background: rgba(248,250,252,.90) !important;
-        border: 1px solid rgba(15,23,42,.14) !important;
+        border-radius: 6px;
+        font-size: 13px;
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
     }
     
     .stSelectbox label {
         font-size: 12px !important;
-        color: #64748B !important;
-        font-weight: 750 !important;
-        letter-spacing: .10em !important;
-        text-transform: uppercase !important;
+        color: #334155 !important;
     }
     
     .stTextArea > div > div > textarea {
-        width: 100%;
-        background: rgba(248,250,252,.90);
-        border: 1px solid rgba(15,23,42,.14);
-        border-radius: 12px;
-        padding: 12px 12px;
-        font-size: 14px;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-        color: #0F172A;
-        outline: none;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
     }
     
     .stTextArea label {
         font-size: 12px !important;
-        color: #64748B !important;
-        font-weight: 750 !important;
-        letter-spacing: .10em !important;
-        text-transform: uppercase !important;
+        color: #334155 !important;
     }
     
     .stTextArea > div > div > textarea:focus {
-        border-color: rgba(18,59,110,.55);
-        box-shadow: 0 0 0 4px rgba(18,59,110,.14);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        background: #ffffff !important;
     }
     
     .stRadio > div {
@@ -1288,53 +791,110 @@ CUSTOM_CSS = """
     
     .stRadio label {
         padding: 10px 14px !important;
-        font-size: 14px !important;
-        border: 1px solid rgba(15,23,42,.14) !important;
-        border-radius: 12px !important;
+        font-size: 13px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
         margin-bottom: 6px !important;
-        color: #0F172A !important;
-        background: rgba(248,250,252,.90) !important;
+        color: #0f172a !important;
+        background: #f1f5f9 !important;
     }
     
     .stCheckbox label {
-        font-size: 14px !important;
-        color: #334155 !important;
+        font-size: 13px !important;
+        color: #0f172a !important;
     }
     
     .stCheckbox label span {
-        color: #334155 !important;
+        color: #0f172a !important;
     }
     
     .expired-notice {
-        background: rgba(255,255,255,.92);
-        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 16px;
         padding: 36px 28px;
         text-align: center;
         max-width: 380px;
         margin: 60px auto;
-        box-shadow: 0 22px 60px rgba(15,23,42,.18);
-        border: 1px solid rgba(15,23,42,.10);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        border: 1px solid #e2e8f0;
     }
     
     .inline-error {
-        color: #EF4444;
+        color: #dc2626;
         font-size: 12px;
         margin-top: 4px;
-        font-weight: 650;
     }
     
     .field-hint {
-        color: #64748B;
+        color: #64748b;
         font-size: 12px;
         margin-top: 4px;
     }
     
     p {
-        color: #334155 !important;
+        color: #475569 !important;
     }
 </style>
 """
 
+SESSION_TIMEOUT_JS = f"""
+<script>
+    var sessionTimeout = {SESSION_TIMEOUT_MINUTES * 60 * 1000};
+    var warningTime = {(SESSION_TIMEOUT_MINUTES - 2) * 60 * 1000};
+    var redirectDelay = 2000; // Delay before redirecting to login after session expires
+    var sessionTimer;
+    var warningTimer;
+    
+    // Safely insert element at the top of document body
+    function insertAtBodyTop(element) {{
+        if (document.body.firstChild) {{
+            document.body.insertBefore(element, document.body.firstChild);
+        }} else {{
+            document.body.appendChild(element);
+        }}
+    }}
+    
+    // Create warning banner element
+    function createWarningBanner() {{
+        var banner = document.createElement('div');
+        banner.id = 'session-warning-banner';
+        banner.innerHTML = '⚠️ Your session will expire in 2 minutes due to inactivity. Please save your work.';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff9800;color:#000;padding:12px 20px;text-align:center;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+        return banner;
+    }}
+    
+    function removeWarningBanner() {{
+        var banner = document.getElementById('session-warning-banner');
+        if (banner) banner.remove();
+    }}
+    
+    function resetTimers() {{
+        clearTimeout(sessionTimer);
+        clearTimeout(warningTimer);
+        removeWarningBanner();
+        
+        warningTimer = setTimeout(function() {{
+            insertAtBodyTop(createWarningBanner());
+        }}, warningTime);
+        
+        sessionTimer = setTimeout(function() {{
+            removeWarningBanner();
+            var expiredBanner = document.createElement('div');
+            expiredBanner.innerHTML = '🔒 Session expired due to inactivity. Redirecting to login...';
+            expiredBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f44336;color:#fff;padding:14px 20px;text-align:center;font-weight:600;font-size:14px;z-index:9999;';
+            insertAtBodyTop(expiredBanner);
+            setTimeout(function() {{ window.location.reload(); }}, redirectDelay);
+        }}, sessionTimeout);
+    }}
+    
+    document.addEventListener('click', resetTimers);
+    document.addEventListener('keypress', resetTimers);
+    document.addEventListener('scroll', resetTimers);
+    document.addEventListener('mousemove', resetTimers);
+    
+    resetTimers();
+</script>
+"""
 
 DATA_FILE = "attached_assets/Medical_Insurance_Data.csv"
 JOB_DATA_FILE = "attached_assets/job_data.csv"
@@ -1432,204 +992,6 @@ def format_field(value):
 def check_link_expired():
     return datetime.now() > RENEWAL_DEADLINE
 
-LANDING_PAGE_CSS = """
-<style>
-    .landing-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .landing-header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-    
-    .landing-logo {
-        width: 120px;
-        height: auto;
-        margin-bottom: 20px;
-    }
-    
-    .landing-title {
-        font-size: 32px;
-        font-weight: 800;
-        color: #0B1F3B;
-        margin: 0 0 8px 0;
-        font-family: Inter, sans-serif;
-    }
-    
-    .landing-subtitle {
-        font-size: 16px;
-        color: #64748B;
-        margin: 0;
-        font-family: Inter, sans-serif;
-    }
-    
-    .apps-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 24px;
-        margin-top: 20px;
-    }
-    
-    .app-card {
-        background: rgba(255,255,255,0.95);
-        border: 1px solid rgba(15,23,42,0.08);
-        border-radius: 16px;
-        padding: 28px;
-        text-align: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        text-decoration: none;
-        display: block;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-    
-    .app-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(33,193,122,0.15);
-        border-color: rgba(33,193,122,0.3);
-    }
-    
-    .app-card-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-        display: block;
-    }
-    
-    .app-card-icon img {
-        width: 64px;
-        height: 64px;
-        object-fit: contain;
-    }
-    
-    .app-card-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #0B1F3B;
-        margin: 0 0 8px 0;
-        font-family: Inter, sans-serif;
-    }
-    
-    .app-card-description {
-        font-size: 14px;
-        color: #64748B;
-        margin: 0 0 16px 0;
-        line-height: 1.5;
-        font-family: Inter, sans-serif;
-    }
-    
-    .app-card-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(33,193,122,0.12);
-        color: #0E5F3D;
-        font-size: 12px;
-        font-weight: 600;
-        font-family: Inter, sans-serif;
-    }
-    
-    .app-card-coming-soon {
-        background: rgba(148,163,184,0.15);
-        color: #64748B;
-    }
-    
-    .app-card-disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-    
-    .app-card-disabled:hover {
-        transform: none;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        border-color: rgba(15,23,42,0.08);
-    }
-    
-    .landing-footer {
-        text-align: center;
-        margin-top: auto;
-        padding-top: 40px;
-        color: #94a3b8;
-        font-size: 13px;
-        font-family: Inter, sans-serif;
-    }
-    
-    .landing-footer a {
-        color: #21C17A;
-        text-decoration: none;
-        font-weight: 500;
-    }
-</style>
-"""
-
-def render_landing_page():
-    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-    st.markdown(LANDING_PAGE_CSS, unsafe_allow_html=True)
-    
-    logo_html = ""
-    if LOGO_BASE64:
-        logo_html = '<img src="data:image/png;base64,' + LOGO_BASE64 + '" alt="Baynunah" class="landing-logo">'
-    else:
-        logo_html = '<div style="font-size: 64px; margin-bottom: 20px;">🏢</div>'
-    
-    icon_html = ""
-    if APP_ICON_BASE64:
-        icon_html = '<img src="data:image/gif;base64,' + APP_ICON_BASE64 + '" alt="Insurance">'
-    else:
-        icon_html = "🏥"
-    
-    html_content = """
-    <div class="landing-container">
-        <div class="landing-header">
-            """ + logo_html + """
-            <h1 class="landing-title">HR Self-Service Portal</h1>
-            <p class="landing-subtitle">Access employee services and resources</p>
-        </div>
-        
-        <div class="apps-grid">
-            <a href="?app=insurance" class="app-card">
-                <span class="app-card-icon">""" + icon_html + """</span>
-                <h3 class="app-card-title">Medical Insurance</h3>
-                <p class="app-card-description">Review and verify your DAMAN medical insurance details for Policy Year 2026</p>
-                <span class="app-card-badge">Deadline: Jan 31, 2026</span>
-            </a>
-            
-            <div class="app-card app-card-disabled">
-                <span class="app-card-icon">📋</span>
-                <h3 class="app-card-title">Leave Management</h3>
-                <p class="app-card-description">Submit and track leave requests, view leave balance</p>
-                <span class="app-card-badge app-card-coming-soon">Coming Soon</span>
-            </div>
-            
-            <div class="app-card app-card-disabled">
-                <span class="app-card-icon">📄</span>
-                <h3 class="app-card-title">Documents</h3>
-                <p class="app-card-description">Request salary certificates, NOC letters, and other documents</p>
-                <span class="app-card-badge app-card-coming-soon">Coming Soon</span>
-            </div>
-            
-            <div class="app-card app-card-disabled">
-                <span class="app-card-icon">💰</span>
-                <h3 class="app-card-title">Payslips</h3>
-                <p class="app-card-description">View and download your monthly payslips</p>
-                <span class="app-card-badge app-card-coming-soon">Coming Soon</span>
-            </div>
-        </div>
-        
-        <div class="landing-footer">
-            Need help? <a href="https://wa.me/971564966546" target="_blank">WhatsApp HR Support</a>
-        </div>
-    </div>
-    """
-    st.markdown(html_content, unsafe_allow_html=True)
-
 def render_expired_page():
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
     st.markdown("""
@@ -1651,78 +1013,6 @@ def render_login():
         @keyframes gentle-float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-8px); }
-        }
-        @keyframes icon-float {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-6px) scale(1.02); }
-        }
-        @keyframes gentle-pulse {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(35, 196, 131, 0)); }
-            50% { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(35, 196, 131, 0.3)); }
-        }
-        .app-icon {
-            animation: icon-float 3s ease-in-out infinite;
-            transition: all 0.3s ease;
-        }
-        .app-icon:hover {
-            animation: gentle-pulse 1.5s ease-in-out infinite;
-            filter: drop-shadow(0 6px 12px rgba(35, 196, 131, 0.35));
-        }
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(90deg) translate(3em) rotate(-90deg); }
-            100% { transform: translate(-50%, -50%) rotate(450deg) translate(3em) rotate(-450deg); }
-        }
-        .loader {
-            position: relative;
-            width: 6em;
-            height: 6em;
-            margin: 0 auto;
-        }
-        .loader .track, .loader .inner-track {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            box-shadow: inset -0.1em -0.1em 0.2em #d1d1d1, inset 0.1em 0.1em 0.2em #ffffff;
-        }
-        .loader .inner-track {
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
-            border: 1.2em solid #f0f0f0;
-        }
-        .loader .orb {
-            position: absolute;
-            width: 1em;
-            height: 1em;
-            top: 50%;
-            left: 50%;
-            background-color: #c0cfda;
-            border-radius: 50%;
-            animation: spin 1.5s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            background: radial-gradient(circle at 30% 30%, #ffffff, #23c483);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 -2px 4px rgba(255, 255, 255, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .loading-text {
-            margin-top: 20px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            color: #64748b;
-            letter-spacing: 1px;
         }
         .stApp, [data-testid="stAppViewContainer"], [data-testid="stAppViewBlockContainer"] {
             background: linear-gradient(145deg, #a8b5c4 0%, #9ca8b8 50%, #8e9bab 100%) !important;
@@ -1770,152 +1060,97 @@ def render_login():
             margin-bottom: 20px;
         }
         .login-card-title h1 {
-            color: #64748b;
-            font-size: 20px;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-            margin: 0 0 6px 0;
-            line-height: 1.2;
+            color: #0f172a;
+            font-size: 22px;
+            font-weight: 700;
+            font-family: 'Aptos', 'Calibri', sans-serif;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.2);
         }
         .login-card-title .subtitle {
             color: #0f172a;
             font-size: 13px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Aptos', 'Calibri', sans-serif;
             margin: 0;
         }
         .login-card-title .badge {
             display: inline-block;
-            background: rgba(35, 196, 131, 0.12);
-            color: #23c483;
-            padding: 6px 16px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            color: #0f172a;
+            padding: 5px 14px;
+            border-radius: 12px;
             font-size: 11px;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-family: 'Aptos', 'Calibri', sans-serif;
             margin-top: 10px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            backdrop-filter: blur(10px);
         }
         [data-testid="stForm"] .stTextInput label {
-            color: #64748b !important;
-            font-family: 'Inter', sans-serif !important;
-            font-weight: 500 !important;
+            color: #0f172a !important;
+            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-weight: 700 !important;
             font-size: 14px !important;
             margin-bottom: 6px !important;
         }
         [data-testid="stForm"] .stTextInput label p {
-            color: #64748b !important;
-            font-weight: 500 !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
         }
         [data-testid="stForm"] .stTextInput > div > div > input {
             border: none !important;
             outline: none !important;
-            border-radius: 8px !important;
-            padding: 1.1em 1.2em !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
             background-color: #e8edf3 !important;
-            box-shadow: inset 1px 2px 4px rgba(0,0,0,0.06) !important;
-            transition: all 0.3s ease !important;
-            color: #64748b !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 12px !important;
-            line-height: 1.4 !important;
+            box-shadow: inset 1px 2px 4px rgba(0,0,0,0.08) !important;
+            transition: 300ms ease-in-out !important;
+            color: #0f172a !important;
+            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            font-size: 14px !important;
+            line-height: 20px !important;
         }
         [data-testid="stForm"] .stTextInput > div > div > input:focus {
             background-color: #ffffff !important;
-            transform: scale(1.01) !important;
-            box-shadow: 0 0 0 2px rgba(35, 196, 131, 0.2),
-                       0 4px 12px rgba(35, 196, 131, 0.1) !important;
+            transform: scale(1.02) !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15),
+                       inset 0 1px 2px rgba(0,0,0,0.05) !important;
         }
         [data-testid="stForm"] .stTextInput > div > div > input::placeholder {
-            color: #6b7280 !important;
-        }
-        [data-testid="stForm"] [data-testid="stNotification"] {
-            background: rgba(239, 68, 68, 0.08) !important;
-            border: 1px solid rgba(239, 68, 68, 0.2) !important;
-            border-radius: 12px !important;
-            color: #dc2626 !important;
-            font-family: 'Inter', sans-serif !important;
-        }
-        [data-testid="stForm"] .stAlert {
-            background: rgba(239, 68, 68, 0.08) !important;
-            border: 1px solid rgba(239, 68, 68, 0.2) !important;
-            border-radius: 12px !important;
-        }
-        [data-testid="stForm"] .stAlert p {
-            color: #dc2626 !important;
-            font-family: 'Inter', sans-serif !important;
-            font-size: 13px !important;
+            color: #94a3b8 !important;
         }
         [data-testid="stForm"] .stFormSubmitButton {
             display: block;
-            margin-top: 16px !important;
-            text-align: center;
+            margin-top: 12px !important;
         }
-        [data-testid="stForm"] .stFormSubmitButton > button,
-        [data-testid="stForm"] .stFormSubmitButton button,
-        [data-testid="stForm"] button,
-        button[data-testid="stBaseButton-secondaryFormSubmit"] {
-            font-size: 14px !important;
-            color: #64748b !important;
-            font-family: 'Inter', sans-serif !important;
-            font-weight: 700 !important;
-            cursor: pointer;
-            position: relative;
+        [data-testid="stForm"] .stFormSubmitButton > button {
+            padding: 1.3em 3em !important;
+            font-size: 12px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 2.5px !important;
+            font-weight: 500 !important;
+            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            color: #000 !important;
+            background-color: #fff !important;
             border: none !important;
-            background: none !important;
-            background-color: transparent !important;
-            text-transform: none !important;
-            letter-spacing: 0 !important;
-            padding: 12px 0 !important;
-            transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-            transition-duration: 400ms !important;
-            transition-property: color !important;
-            box-shadow: none !important;
+            border-radius: 45px !important;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.3s ease 0s !important;
+            cursor: pointer;
+            outline: none !important;
         }
-        [data-testid="stForm"] .stFormSubmitButton > button *,
-        [data-testid="stForm"] .stFormSubmitButton button *,
-        [data-testid="stForm"] .stFormSubmitButton button p,
-        [data-testid="stForm"] .stFormSubmitButton button span,
-        [data-testid="stForm"] .stFormSubmitButton button div {
-            font-family: 'Inter', sans-serif !important;
-            font-weight: 700 !important;
-            font-size: 14px !important;
-            letter-spacing: 0 !important;
-            text-transform: none !important;
-            color: #64748b !important;
-        }
-        [data-testid="stForm"] .stFormSubmitButton > button:focus,
-        [data-testid="stForm"] .stFormSubmitButton > button:hover,
-        button[data-testid="stBaseButton-secondaryFormSubmit"]:hover {
-            color: #23c483 !important;
-            background: none !important;
-            background-color: transparent !important;
-            box-shadow: none !important;
-            transform: none !important;
-        }
-        [data-testid="stForm"] .stFormSubmitButton > button::after,
-        button[data-testid="stBaseButton-secondaryFormSubmit"]::after {
-            content: "" !important;
-            pointer-events: none;
-            bottom: 8px;
-            left: 50%;
-            position: absolute;
-            width: 0%;
-            height: 2px;
+        [data-testid="stForm"] .stFormSubmitButton > button:hover {
             background-color: #23c483 !important;
-            transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
-            transition-duration: 400ms;
-            transition-property: width, left;
+            box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4) !important;
+            color: #fff !important;
+            transform: translateY(-7px) !important;
         }
-        [data-testid="stForm"] .stFormSubmitButton > button:focus::after,
-        [data-testid="stForm"] .stFormSubmitButton > button:hover::after,
-        button[data-testid="stBaseButton-secondaryFormSubmit"]:hover::after {
-            width: 60% !important;
-            left: 20% !important;
+        [data-testid="stForm"] .stFormSubmitButton > button:active {
+            transform: translateY(-1px) !important;
         }
         .login-help {
-            font-family: 'Inter', sans-serif !important;
-            color: #64748b !important;
+            font-family: 'Aptos', 'Calibri', sans-serif !important;
+            color: #0f172a !important;
         }
         .login-help a {
             color: #25D366 !important;
@@ -1963,7 +1198,7 @@ def render_login():
             background: #f1f5f9 !important;
             border: 1px solid #cbd5e1 !important;
             border-radius: 8px;
-            color: #64748b !important;
+            color: #0f172a !important;
             font-size: 14px;
         }
         .login-glass-card .stTextInput label {
@@ -2003,8 +1238,8 @@ def render_login():
         }
         .login-page-header .badge {
             display: inline-block;
-            background: rgba(35, 196, 131, 0.1);
-            color: #23c483;
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
             padding: 6px 16px;
             border-radius: 14px;
             font-size: 12px;
@@ -2018,15 +1253,15 @@ def render_login():
             color: #64748b;
         }
         .login-help a {
-            color: #23c483;
+            color: #25D366;
             text-decoration: none;
             font-weight: 600;
         }
     </style>
     """, unsafe_allow_html=True)
     
-    logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" alt="Baynunah" style="width:130px;height:auto;display:block;margin:0 auto 10px;">' if LOGO_BASE64 else ''
-    app_icon_html = f'<img src="data:image/gif;base64,{APP_ICON_BASE64}" alt="Insurance" class="app-icon" style="width:70px;height:70px;display:block;margin:0 auto 12px;border-radius:10px;cursor:pointer;">' if APP_ICON_BASE64 else ''
+    logo_html = f'<img src="data:image/png;base64,{LOGO_BASE64}" alt="Baynunah" style="width:180px;height:auto;display:block;margin:0 auto 16px;">' if LOGO_BASE64 else ''
+    app_icon_html = f'<img src="data:image/gif;base64,{APP_ICON_BASE64}" alt="Insurance" style="width:70px;height:70px;display:block;margin:0 auto 12px;border-radius:12px;">' if APP_ICON_BASE64 else ''
     
     st.markdown('<div class="login-page-wrapper">', unsafe_allow_html=True)
     
@@ -2038,7 +1273,7 @@ def render_login():
                 {logo_html}
                 {app_icon_html}
                 <h1>Medical Insurance<br>Verification</h1>
-                <span class="pill">Policy Year {POLICY_YEAR}</span>
+                <span class="badge">Policy Year {POLICY_YEAR}</span>
             </div>
             """, unsafe_allow_html=True)
             staff_number = st.text_input(
@@ -2055,28 +1290,20 @@ def render_login():
             
             submitted = st.form_submit_button("Sign In", use_container_width=True)
             
+            st.markdown("""
+            <div class="login-help" style="text-align:center;margin-top:16px;font-size:13px;color:#0f172a;font-family:'Aptos','Calibri',sans-serif;">
+                Need help? <a href="https://wa.me/971564966546" target="_blank" style="color:#25D366;text-decoration:none;font-weight:600;">WhatsApp HR</a>
+            </div>
+            """, unsafe_allow_html=True)
+            
             if submitted:
                 if not staff_number:
                     st.error("Please enter your Staff Number.")
                 elif not dob_input:
                     st.error("Please enter your Date of Birth (DD/MM/YYYY).")
                 else:
-                    loading_placeholder = st.empty()
-                    loading_placeholder.markdown("""
-                    <div class="loading-overlay">
-                        <div class="loader">
-                            <div class="track"></div>
-                            <div class="inner-track"></div>
-                            <div class="orb"></div>
-                        </div>
-                        <div class="loading-text">Verifying...</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
                     df = load_data()
                     is_valid, error_msg = verify_credentials(df, staff_number.upper(), dob_input)
-                    
-                    loading_placeholder.empty()
                     
                     if is_valid:
                         st.session_state['authenticated'] = True
@@ -2085,17 +1312,6 @@ def render_login():
                         st.rerun()
                     else:
                         st.error(error_msg)
-        
-        st.markdown("""
-        <div style="text-align:center;margin-top:18px;font-family:'Inter',sans-serif;">
-            <div style="color:#94a3b8;font-size:11px;font-weight:400;margin-bottom:6px;letter-spacing:0.5px;">Need Help?</div>
-            <a href="https://wa.me/971564966546" target="_blank" style="display:inline-block;color:#23c483;text-decoration:none;transition:transform 0.2s ease;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#23c483" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                </svg>
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -2113,6 +1329,10 @@ def render_header(principal_name, staff_number):
             </div>
             <div class="header-right">
                 <div class="policy-badge">Policy Year {POLICY_YEAR}</div>
+                <div class="user-block">
+                    <div class="user-name">{principal_name}</div>
+                    <div class="user-id">{staff_number}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -2146,7 +1366,7 @@ def render_employee_snapshot(principal, staff_number):
     emp_name = format_field(principal['Principal Name']) or '—'
     
     st.markdown(f"""
-    <div class="card card--accent">
+    <div class="glass-card">
         <div class="card-title">👤 Employee Snapshot</div>
         <div class="snapshot-grid">
             <div class="snapshot-item">
@@ -2397,7 +1617,7 @@ def render_covered_members(employee_data, staff_number):
             del st.session_state[saved_key]
         
         st.markdown(f"""
-        <div class="card card--accent">
+        <div class="glass-card member-card">
             <div class="member-header">
                 <span class="member-name">{full_name}</span>
                 <span class="member-badge {badge_class}">{relation}</span>
@@ -2455,9 +1675,6 @@ def render_covered_members(employee_data, staff_number):
             "Marital Status": "Marital Status"
         }
         
-        # Edit form card
-        st.markdown('<div class="edit-form-card">', unsafe_allow_html=True)
-        
         if missing_fields:
             st.markdown('<div class="edit-section-header">Complete Missing Information</div>', unsafe_allow_html=True)
             
@@ -2488,9 +1705,7 @@ def render_covered_members(employee_data, staff_number):
                     if new_passport and new_passport.strip():
                         direct_inputs["Passport number"] = new_passport.strip()
         
-            st.markdown('<div class="edit-section-header-green">Update Information</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="edit-section-header" style="color: #23c483;">Update Information</div>', unsafe_allow_html=True)
+        st.markdown('<div class="edit-section-header" style="color: #2563eb;">Update Information</div>', unsafe_allow_html=True)
         
         update_cols = st.columns(3)
         with update_cols[0]:
@@ -2523,8 +1738,6 @@ def render_covered_members(employee_data, staff_number):
                     st.cache_data.clear()
                     st.session_state[saved_key] = True
                 st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown("<hr class='member-divider'>", unsafe_allow_html=True)
 
@@ -2562,6 +1775,15 @@ def render_confirmation_section(employee_data, staff_number):
             </div>
             """, unsafe_allow_html=True)
         return
+    
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-title">✔️ Confirmation</div>
+        <p style="color: #b5bcd9; font-size: 1em; margin-bottom: 20px; line-height: 1.5;">
+            Please review the information above. Once you've completed any missing fields, confirm below.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     confirm_checkbox = st.checkbox(
         "I hereby confirm that all the information displayed for myself and my dependents is accurate and complete.",
@@ -2621,6 +1843,7 @@ def render_confirmation_section(employee_data, staff_number):
 
 def render_dashboard():
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+    st.markdown(SESSION_TIMEOUT_JS, unsafe_allow_html=True)
     
     staff_number = st.session_state.get('staff_number', '')
     df = load_data()
@@ -2632,95 +1855,20 @@ def render_dashboard():
     
     principal = employee_data[employee_data['Relation'] == 'PRINCIPAL'].iloc[0]
     principal_name = principal['Principal Name']
-    missing_fields_total = 0
-    for _, member in employee_data.iterrows():
-        if not format_field(member.get('National Identity')):
-            missing_fields_total += 1
-        if not format_field(member.get('Visa Unified Number')):
-            missing_fields_total += 1
-        if not format_field(member.get('Passport number')):
-            missing_fields_total += 1
-
-    confirmed_value = principal.get('EmployeeConfirmed') or principal.get('Confirmed')
-    confirmation_text = format_field(confirmed_value) or 'Pending submission'
-    last_updated = format_field(principal.get('LastEditedOn')) or '—'
-    members_count = len(employee_data)
-    deadline_str = RENEWAL_DEADLINE.strftime('%d %B %Y')
-
-    st.markdown('<div class="page">', unsafe_allow_html=True)
-
+    
     render_header(principal_name, staff_number)
-    render_status_strip()
-
-    st.markdown(f"""
-    <div class="centered-header">
-        {'<img src="data:image/png;base64,' + LOGO_BASE64 + '" alt="Baynunah" class="centered-header-logo">' if LOGO_BASE64 else '<span class="header-logo-placeholder">🏥</span>'}
-        <div class="centered-header-title">Medical Insurance Renewal</div>
-        <div class="centered-header-subtitle">Insured by DAMAN</div>
-        <div class="centered-header-year">Year {POLICY_YEAR}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    top_cols = st.columns([1.15, 0.85])
-    with top_cols[0]:
+    
+    col1, col2, col3 = st.columns([1, 2.5, 1])
+    with col2:
         render_employee_snapshot(principal, staff_number)
-    with top_cols[1]:
-        st.markdown(f"""
-        <div class="card card--accent">
-            <div class="card-title">🔎 Renewal Overview</div>
-            <div class="key-metrics">
-                <div class="metric-tile">
-                    <div class="metric-label">Covered Members</div>
-                    <div class="metric-value">{members_count}</div>
-                </div>
-                <div class="metric-tile">
-                    <div class="metric-label">Items To Update</div>
-                    <div class="metric-value">{missing_fields_total}</div>
-                </div>
-                <div class="metric-tile">
-                    <div class="metric-label">Confirmation</div>
-                    <div class="metric-value">{confirmation_text}</div>
-                </div>
-                <div class="metric-tile">
-                    <div class="metric-label">Last Updated</div>
-                    <div class="metric-value">{last_updated}</div>
-                </div>
-            </div>
-            <div class="section-divider"></div>
-            <div class="list-row">
-                <span class="list-label">Deadline</span>
-                <span class="list-value">{deadline_str}</span>
-            </div>
-            <div class="list-row">
-                <span class="list-label">Session Timeout</span>
-                <span class="list-value">{SESSION_TIMEOUT_MINUTES} minutes</span>
-            </div>
-            <div class="list-row">
-                <span class="list-label">Support</span>
-                <span class="list-value">WhatsApp HR • +971 56 496 6546</span>
-            </div>
+        render_covered_members(employee_data, staff_number)
+        render_confirmation_section(employee_data, staff_number)
+        
+        st.markdown("""
+        <div style="text-align: center; margin-top: 30px; padding: 16px; color: #999; font-size: 13px;">
+            Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #25D366; text-decoration: none; font-weight: 600;">WhatsApp HR Support</a>
         </div>
         """, unsafe_allow_html=True)
-
-    st.markdown('<div class="section-heading">Covered Members</div>', unsafe_allow_html=True)
-    render_covered_members(employee_data, staff_number)
-
-    st.markdown('<div class="section-heading">Confirmation & Requests</div>', unsafe_allow_html=True)
-    render_confirmation_section(employee_data, staff_number)
-
-    st.markdown("""
-    <div style="text-align: center; margin-top: 18px; padding: 12px; color: #94a3b8; font-size: 13px;">
-        Need help? <a href="https://wa.me/971564966546" target="_blank" style="color: #23c483; text-decoration: none; font-weight: 500;">WhatsApp HR Support</a>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="edit-form-card"><div class="signout-container">', unsafe_allow_html=True)
-    if st.button("Sign Out", key="footer_signout", type="secondary"):
-        st.session_state.clear()
-        st.rerun()
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 def generate_excel_report():
     df = load_data()
@@ -2918,40 +2066,14 @@ def render_admin_login():
             else:
                 st.error("Invalid credentials")
 
-def get_query_params():
-    """Get query params with backward compatibility for older Streamlit versions."""
-    # Check which API is available
-    if hasattr(st, 'query_params'):
-        # Newer Streamlit versions (1.30+)
-        return st.query_params
-    elif hasattr(st, 'experimental_get_query_params'):
-        # Older Streamlit versions
-        return st.experimental_get_query_params()
-    else:
-        return {}
-
 def main():
-    query_params = get_query_params()
-    is_admin = query_params.get('admin') == 'true' or (isinstance(query_params.get('admin'), list) and 'true' in query_params.get('admin', []))
-    app_param = query_params.get('app', '')
-    if isinstance(app_param, list):
-        app_param = app_param[0] if app_param else ''
-    is_insurance = app_param == 'insurance'
+    query_params = st.query_params
+    is_admin = query_params.get('admin') == 'true'
     
     if 'authenticated' not in st.session_state:
         st.session_state['authenticated'] = False
     if 'admin_authenticated' not in st.session_state:
         st.session_state['admin_authenticated'] = False
-    
-    replit_user = get_replit_user()
-    if replit_user['authenticated'] and is_admin and not st.session_state['admin_authenticated']:
-        allowed_admins = os.environ.get('REPLIT_AUTH_ADMINS', '').split(',')
-        allowed_admins = [a.strip().lower() for a in allowed_admins if a.strip()]
-        if replit_user['name'].lower() in allowed_admins:
-            st.session_state['admin_authenticated'] = True
-            st.session_state['replit_user'] = replit_user
-            st.session_state['admin_name'] = replit_user['name']
-            st.session_state['login_time'] = datetime.now().isoformat()
     
     if st.session_state['authenticated'] or st.session_state['admin_authenticated']:
         if check_session_timeout():
@@ -2963,7 +2085,7 @@ def main():
             render_admin_portal()
         else:
             render_admin_login()
-    elif is_insurance:
+    else:
         if check_link_expired():
             render_expired_page()
             return
@@ -2972,8 +2094,6 @@ def main():
             render_dashboard()
         else:
             render_login()
-    else:
-        render_landing_page()
 
 if __name__ == "__main__":
     main()

@@ -1,32 +1,18 @@
-# HR Self-Service Portal
+# Medical Insurance Renewal - Employee Verification Portal
 
 ## Overview
-A comprehensive HR self-service portal for employees. Currently features medical insurance renewal verification with plans for additional HR services.
-
-### Available Apps
-1. **Medical Insurance Verification** - Employees authenticate with Staff Number + Date of Birth to review their DAMAN insurance details and either confirm accuracy OR submit correction requests.
-2. **Leave Management** - Coming Soon
-3. **Documents** - Coming Soon  
-4. **Payslips** - Coming Soon
+A secure employee self-service portal for medical insurance renewal verification. Employees authenticate with Staff Number + Date of Birth to review their insurance details and either confirm accuracy OR submit correction requests.
 
 ## Current State
 - **Status**: Complete and functional
-- **Last Updated**: December 28, 2025
+- **Last Updated**: December 25, 2025
 - **Policy Year**: 2026
 - **Verification Deadline**: January 31, 2026
-- **Insurance Provider**: DAMAN
-
-## Design System
-- **Font**: Inter (Google Web Font)
-- **Primary Accent**: Green (#23c483)
-- **Text Colors**: Light gray (#64748b) for values, lighter gray (#94a3b8) for subtitles
-- **Background**: Light gradient with frosted glass cards
-- **Buttons**: Green with hover animation, Sign Out uses underline animation
 
 ## Features
 
 ### Layout Sections
-1. **Minimal Header** - Company logo, title "Medical Insurance Verification", subtitle "Insured by DAMAN", Policy Year badge, user name/ID
+1. **Header** - Company logo placeholder, title, Policy Year badge
 2. **Employee Snapshot** (Read-only) - Employee Number, Name, Job Title, Department
 3. **Covered Members** - All members with detailed fields (Gender, DOB, Nationality, Marital Status, Emirates ID, Visa Unified Number, Passport)
 4. **Confirmation** - Two-path workflow (Confirm or Update Information)
@@ -70,9 +56,7 @@ A comprehensive HR self-service portal for employees. Currently features medical
 - **Database**: PostgreSQL (for audit trail, change requests)
 - **Port**: 5000
 - **Data Storage**: CSV for employee data, PostgreSQL for audit/requests
-- **Authentication**: 
-  - Employees: Staff Number + Date of Birth validation
-  - Admins: Replit Auth (auto-login via Replit account) OR password
+- **Authentication**: Staff Number + Date of Birth validation
 
 ## Database Tables
 - `audit_trail`: Logs all data changes with timestamps
@@ -85,9 +69,8 @@ Located at top of app.py:
 - `SESSION_TIMEOUT_MINUTES` - Inactivity timeout (15 min)
 
 Environment Variables:
-- `ADMIN_PASSWORD` - Admin portal password (default: admin123)
+- `ADMIN_PASSWORD` - Admin portal password (default: admin2026)
 - `DATABASE_URL` - PostgreSQL connection string
-- `REPLIT_AUTH_ADMINS` - Comma-separated list of Replit usernames allowed auto-admin access (optional)
 
 ## Sample Staff Numbers for Testing
 - BAYN00008 (Mohammad Ismael Sudally) - DOB: 16/05/1988
