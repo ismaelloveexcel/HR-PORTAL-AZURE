@@ -91,7 +91,6 @@ CUSTOM_CSS = """
         background-size: 50px 50px;
         animation: backgroundMove 20s linear infinite;
         opacity: 0.3;
-        will-change: transform;
     }
     
     @keyframes backgroundMove {
@@ -101,6 +100,23 @@ CUSTOM_CSS = """
     
     @media (prefers-reduced-motion: reduce) {
         .login-shell::before {
+            animation: none;
+        }
+        .login-card:hover {
+            transform: none;
+        }
+        .missing-value,
+        .missing-text,
+        .missing-field-text {
+            animation: none;
+        }
+        .missing-icon {
+            animation: none;
+        }
+        .success-message {
+            animation: slideIn 0.5s ease-out;
+        }
+        .success-icon {
             animation: none;
         }
     }
