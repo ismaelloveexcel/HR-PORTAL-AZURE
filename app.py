@@ -319,14 +319,25 @@ def render_admin():
     
     if st.session_state.admin_authenticated:
         st.markdown('''
+        <style>
+            .admin-menu { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+            .admin-menu-item {
+                background: #e8e8e8; padding: 20px 30px; border-radius: 12px;
+                text-decoration: none; color: #333; font-weight: 500; text-align: center;
+                box-shadow: 4px 4px 8px rgba(0,0,0,0.15), -4px -4px 8px rgba(255,255,255,0.8);
+                transition: all 0.3s ease;
+            }
+            .admin-menu-item:hover { background: #171717; color: white; transform: translateY(-3px); }
+            .section-title { color: #39FF14; font-size: 0.85em; letter-spacing: 0.1em; margin-bottom: 5px; }
+        </style>
         <div class="page-container">
-            <div class="admin-card">
+            <div class="admin-card" style="max-width: 450px;">
                 <h2 class="admin-title">HR Administration</h2>
-                <div class="contact-info">
-                    <div class="contact-item"><strong>HR Department</strong></div>
-                    <div class="contact-item">Email: hr@baynunah.ae</div>
-                    <div class="contact-item">Phone: +971 2 XXX XXXX</div>
-                    <div class="contact-item">WhatsApp: +971 56 496 6546</div>
+                <div class="admin-menu">
+                    <a href="?page=insurance_renewal" class="admin-menu-item">
+                        <div class="section-title">FOLDER</div>
+                        Insurance Renewal 2026
+                    </a>
                 </div>
             </div>
         </div>
@@ -364,6 +375,84 @@ def render_admin():
                 st.query_params.clear()
                 st.rerun()
 
+def render_insurance_renewal():
+    st.markdown(CSS, unsafe_allow_html=True)
+    
+    if 'admin_authenticated' not in st.session_state or not st.session_state.admin_authenticated:
+        st.query_params["page"] = "admin"
+        st.rerun()
+        return
+    
+    st.markdown('''
+    <style>
+        .admin-menu { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .admin-menu-item {
+            background: #e8e8e8; padding: 20px 30px; border-radius: 12px;
+            text-decoration: none; color: #333; font-weight: 500; text-align: center;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.15), -4px -4px 8px rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+        .admin-menu-item:hover { background: #171717; color: white; transform: translateY(-3px); }
+    </style>
+    <div class="page-container">
+        <div class="admin-card" style="max-width: 450px;">
+            <h2 class="admin-title">Insurance Renewal 2026</h2>
+            <div class="admin-menu">
+                <a href="?page=life_insurance" class="admin-menu-item">Life Insurance</a>
+                <a href="?page=medical_insurance" class="admin-menu-item">Medical Insurance</a>
+            </div>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("Back to Admin", use_container_width=True):
+            st.query_params["page"] = "admin"
+            st.rerun()
+
+def render_life_insurance():
+    st.markdown(CSS, unsafe_allow_html=True)
+    
+    if 'admin_authenticated' not in st.session_state or not st.session_state.admin_authenticated:
+        st.query_params["page"] = "admin"
+        st.rerun()
+        return
+    
+    st.markdown('''
+    <div class="page-container">
+        <h1 class="page-title">Life Insurance</h1>
+        <p class="page-message">Life Insurance section coming soon.</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("Back to Insurance Renewal", use_container_width=True):
+            st.query_params["page"] = "insurance_renewal"
+            st.rerun()
+
+def render_medical_insurance():
+    st.markdown(CSS, unsafe_allow_html=True)
+    
+    if 'admin_authenticated' not in st.session_state or not st.session_state.admin_authenticated:
+        st.query_params["page"] = "admin"
+        st.rerun()
+        return
+    
+    st.markdown('''
+    <div class="page-container">
+        <h1 class="page-title">Medical Insurance</h1>
+        <p class="page-message">Medical Insurance section coming soon.</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("Back to Insurance Renewal", use_container_width=True):
+            st.query_params["page"] = "insurance_renewal"
+            st.rerun()
+
 def main():
     page = get_page()
     
@@ -377,6 +466,12 @@ def main():
         render_coming_soon("External Users")
     elif page == "admin":
         render_admin()
+    elif page == "insurance_renewal":
+        render_insurance_renewal()
+    elif page == "life_insurance":
+        render_life_insurance()
+    elif page == "medical_insurance":
+        render_medical_insurance()
     else:
         render_home()
 
