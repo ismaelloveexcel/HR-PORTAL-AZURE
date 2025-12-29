@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 import base64
 
@@ -228,14 +229,54 @@ def render_home():
     logo_b64 = get_logo_base64()
     logo_html = f'<img src="data:image/png;base64,{logo_b64}" class="portal-logo">' if logo_b64 else ''
     
-    st.markdown(CSS, unsafe_allow_html=True)
-    st.markdown(f'''
-    <div class="portal-container">
+    html_content = f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{ 
+                font-family: 'Poppins', sans-serif; 
+                background: #e8e8e8;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }}
+            .portal-header {{ text-align: center; margin-bottom: 30px; }}
+            .portal-logo {{ width: 120px; margin-bottom: 10px; }}
+            .portal-title {{ font-size: 1.8em; font-weight: 600; color: #333; letter-spacing: 0.05em; }}
+            .menu-grid {{ display: grid; grid-template-columns: repeat(2, 130px); gap: 8px; margin: 20px auto; }}
+            .menu-item {{
+                width: 130px; height: 130px; background: #e8e8e8;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                text-decoration: none; color: #333; font-weight: 500; font-size: 0.85em;
+                letter-spacing: 0.2em; text-transform: uppercase; transition: all 0.3s ease;
+                box-shadow: 6px 6px 12px rgba(0,0,0,0.15), -6px -6px 12px rgba(255,255,255,0.8), inset 2px 5px 10px rgba(0,0,0,0.1);
+            }}
+            .menu-item:hover {{ letter-spacing: 0.5em; transform: translateY(-8px); background: #171717; color: white; }}
+            .menu-item:hover img {{ filter: brightness(0) invert(1); }}
+            .menu-item img {{ width: 36px; height: 36px; margin-bottom: 10px; }}
+            .item-tl {{ border-radius: 60px 12px 12px 12px; }}
+            .item-tr {{ border-radius: 12px 60px 12px 12px; }}
+            .item-bl {{ border-radius: 12px 12px 12px 60px; }}
+            .item-br {{ border-radius: 12px 12px 60px 12px; }}
+            .portal-footer {{ margin-top: 30px; text-align: center; font-size: 0.75em; color: #666; letter-spacing: 0.1em; }}
+            @media (max-width: 600px) {{
+                .menu-grid {{ grid-template-columns: repeat(2, 110px); }}
+                .menu-item {{ width: 110px; height: 110px; font-size: 0.7em; }}
+                .portal-title {{ font-size: 1.4em; }}
+            }}
+        </style>
+    </head>
+    <body>
         <div class="portal-header">
             {logo_html}
             <h1 class="portal-title">HR PORTAL</h1>
         </div>
-        
         <div class="menu-grid">
             <a href="?page=employees" class="menu-item item-tl">
                 <img src="{SVG_USERS}" alt="Employees">
@@ -254,12 +295,11 @@ def render_home():
                 <span>Admin</span>
             </a>
         </div>
-        
-        <div class="portal-footer">
-            Conceptualised by Baynunah|HR|IS
-        </div>
-    </div>
-    ''', unsafe_allow_html=True)
+        <div class="portal-footer">Conceptualised by Baynunah|HR|IS</div>
+    </body>
+    </html>
+    '''
+    components.html(html_content, height=700, scrolling=False)
 
 def render_coming_soon(title):
     st.markdown(CSS, unsafe_allow_html=True)
