@@ -103,17 +103,14 @@ header {visibility: hidden;}
     color: white;
 }
 
-.menu-item:hover svg {
-    stroke: white;
+.menu-item:hover img {
+    filter: brightness(0) invert(1);
 }
 
-.menu-item svg {
+.menu-item img {
     width: 36px;
     height: 36px;
     margin-bottom: 10px;
-    stroke: #39FF14;
-    stroke-width: 1.5;
-    fill: none;
 }
 
 .item-tl { border-radius: 60px 12px 12px 12px; }
@@ -218,10 +215,14 @@ header {visibility: hidden;}
 </style>
 """
 
-SVG_USERS = '''<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'''
-SVG_CHECK = '''<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'''
-SVG_GLOBE = '''<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'''
-SVG_LOCK = '''<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'''
+def svg_to_data_uri(svg_content):
+    import urllib.parse
+    return f"data:image/svg+xml,{urllib.parse.quote(svg_content)}"
+
+SVG_USERS = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>')
+SVG_CHECK = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>')
+SVG_GLOBE = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>')
+SVG_LOCK = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>')
 
 def render_home():
     logo_b64 = get_logo_base64()
@@ -237,19 +238,19 @@ def render_home():
         
         <div class="menu-grid">
             <a href="?page=employees" class="menu-item item-tl">
-                {SVG_USERS}
+                <img src="{SVG_USERS}" alt="Employees">
                 <span>Employees</span>
             </a>
             <a href="?page=onboarding" class="menu-item item-tr">
-                {SVG_CHECK}
+                <img src="{SVG_CHECK}" alt="Onboarding">
                 <span>Onboarding</span>
             </a>
             <a href="?page=external" class="menu-item item-bl">
-                {SVG_GLOBE}
+                <img src="{SVG_GLOBE}" alt="External">
                 <span>External</span>
             </a>
             <a href="?page=admin" class="menu-item item-br">
-                {SVG_LOCK}
+                <img src="{SVG_LOCK}" alt="Admin">
                 <span>Admin</span>
             </a>
         </div>
