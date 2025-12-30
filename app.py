@@ -32,10 +32,10 @@ def svg_to_data_uri(svg_content):
     import urllib.parse
     return f"data:image/svg+xml,{urllib.parse.quote(svg_content)}"
 
-SVG_USERS = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>')
-SVG_CHECK = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>')
-SVG_GLOBE = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>')
-SVG_LOCK = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>')
+SVG_USERS = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>')
+SVG_CHECK = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>')
+SVG_GLOBE = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>')
+SVG_LOCK = svg_to_data_uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>')
 
 def render_home():
     logo_b64 = get_logo_base64()
@@ -87,45 +87,38 @@ def render_home():
             /* Header styling */
             .portal-header {{
                 text-align: center;
-                margin-bottom: 50px;
+                margin-bottom: 40px;
             }}
 
             .portal-logo {{
-                width: 90px;
+                width: 140px;
                 height: auto;
-                margin-bottom: 20px;
+                margin-bottom: 25px;
                 filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
             }}
 
             .brand-title {{
-                font-size: 3.5em;
+                font-size: 2.8em;
                 font-weight: 600;
                 color: #2c3e50;
-                letter-spacing: 0.08em;
-                margin-bottom: 8px;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            }}
-
-            .brand-subtitle {{
-                font-size: 1.1em;
-                font-weight: 400;
-                color: #7f8c8d;
-                letter-spacing: 0.4em;
+                letter-spacing: 0.5em;
+                margin-bottom: 0;
                 text-transform: uppercase;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }}
 
             /* Menu container */
             .menu-container {{
                 display: grid;
-                grid-template-columns: repeat(2, 200px);
-                gap: 15px;
+                grid-template-columns: repeat(2, 180px);
+                gap: 12px;
                 margin: 0 auto;
             }}
 
             /* Menu items */
             .menu-item {{
-                width: 200px;
-                height: 200px;
+                width: 180px;
+                height: 180px;
                 background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.25) 100%);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
@@ -183,9 +176,9 @@ def render_home():
             }}
 
             .menu-icon {{
-                width: 50px;
-                height: 50px;
-                filter: drop-shadow(0 2px 6px rgba(57, 255, 20, 0.3));
+                width: 48px;
+                height: 48px;
+                filter: drop-shadow(0 1px 3px rgba(46, 204, 113, 0.4));
                 transition: transform 0.3s ease;
             }}
 
@@ -231,8 +224,8 @@ def render_home():
 
             /* Footer */
             .portal-footer {{
-                margin-top: 50px;
-                font-size: 0.75em;
+                margin-top: 35px;
+                font-size: 0.7em;
                 color: #95a5a6;
                 letter-spacing: 0.2em;
                 text-transform: uppercase;
@@ -241,18 +234,22 @@ def render_home():
 
             /* Responsive design */
             @media (max-width: 768px) {{
+                .portal-logo {{
+                    width: 110px;
+                }}
+
                 .brand-title {{
-                    font-size: 2.5em;
+                    font-size: 2.2em;
                 }}
 
                 .menu-container {{
-                    grid-template-columns: repeat(2, 170px);
-                    gap: 12px;
+                    grid-template-columns: repeat(2, 155px);
+                    gap: 10px;
                 }}
 
                 .menu-item {{
-                    width: 170px;
-                    height: 170px;
+                    width: 155px;
+                    height: 155px;
                 }}
 
                 .menu-icon {{
@@ -266,22 +263,28 @@ def render_home():
             }}
 
             @media (max-width: 500px) {{
-                .brand-title {{
-                    font-size: 2em;
+                .portal-logo {{
+                    width: 90px;
+                    margin-bottom: 20px;
                 }}
 
-                .brand-subtitle {{
-                    font-size: 0.9em;
+                .brand-title {{
+                    font-size: 1.8em;
+                    letter-spacing: 0.3em;
+                }}
+
+                .portal-header {{
+                    margin-bottom: 30px;
                 }}
 
                 .menu-container {{
-                    grid-template-columns: repeat(2, 150px);
+                    grid-template-columns: repeat(2, 145px);
                     gap: 10px;
                 }}
 
                 .menu-item {{
-                    width: 150px;
-                    height: 150px;
+                    width: 145px;
+                    height: 145px;
                 }}
 
                 .menu-icon {{
@@ -291,7 +294,12 @@ def render_home():
 
                 .menu-label {{
                     font-size: 0.75em;
-                    letter-spacing: 0.1em;
+                    letter-spacing: 0.12em;
+                }}
+
+                .portal-footer {{
+                    margin-top: 25px;
+                    font-size: 0.65em;
                 }}
             }}
         </style>
@@ -300,8 +308,7 @@ def render_home():
         <div class="container">
             <div class="portal-header">
                 {logo_html}
-                <h1 class="brand-title">baynunah</h1>
-                <p class="brand-subtitle">HR Portal</p>
+                <h1 class="brand-title">HR Portal</h1>
             </div>
 
             <div class="menu-container">
@@ -341,7 +348,7 @@ def render_home():
     </body>
     </html>
     '''
-    components.html(html_content, height=700, scrolling=False)
+    components.html(html_content, height=650, scrolling=False)
 
 def render_coming_soon(title):
     st.markdown(f'''
