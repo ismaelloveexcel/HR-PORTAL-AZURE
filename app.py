@@ -350,9 +350,15 @@ def render_admin():
 
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
+            if st.button("🎯 Recruitment Dashboard", use_container_width=True):
+                st.query_params["page"] = "recruitment_dashboard"
+                st.rerun()
+
             if st.button("Insurance Renewal 2026", use_container_width=True):
                 st.query_params["page"] = "insurance_renewal"
                 st.rerun()
+
+            st.markdown('<br>', unsafe_allow_html=True)
 
             if st.button("Sign Out", use_container_width=True):
                 st.session_state.admin_authenticated = False
@@ -437,6 +443,90 @@ def render_medical_insurance():
             st.query_params["page"] = "insurance_renewal"
             st.rerun()
 
+def render_recruitment_dashboard():
+    if 'admin_authenticated' not in st.session_state or not st.session_state.admin_authenticated:
+        st.query_params["page"] = "admin"
+        st.rerun()
+        return
+
+    st.markdown('''
+    <div style="padding: 40px; text-align: center;">
+        <h2 style="color: #2c3e50; margin-bottom: 10px;">Recruitment Dashboard</h2>
+        <p style="color: #7f8c8d; margin-bottom: 30px;">Manage recruitment requests, candidate pool, and hiring pipeline</p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Quick actions
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("➕ Create New RRF", use_container_width=True):
+            st.success("RRF creation coming soon - use React dashboard for full functionality")
+
+        if st.button("🎫 Generate Pass", use_container_width=True):
+            st.success("Pass generation coming soon")
+
+        if st.button("📊 View Active Positions", use_container_width=True):
+            st.query_params["page"] = "recruitment_active_rrfs"
+            st.rerun()
+
+        st.markdown('<br>', unsafe_allow_html=True)
+
+        if st.button("Back to Admin", use_container_width=True):
+            st.query_params["page"] = "admin"
+            st.rerun()
+
+def render_active_rrfs():
+    if 'admin_authenticated' not in st.session_state or not st.session_state.admin_authenticated:
+        st.query_params["page"] = "admin"
+        st.rerun()
+        return
+
+    st.markdown('''
+    <div style="padding: 40px;">
+        <h2 style="color: #2c3e50; margin-bottom: 30px;">Active Recruitment Requests</h2>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Display info about the 2 positions
+    st.info("🎯 **Ready to add the 2 job positions:**\n\n1. Electronics Engineer - Baynunah Watergeneration Technologies\n2. Thermodynamics Engineer - Baynunah Watergeneration Technologies")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        ### Electronics Engineer
+        **Department:** Engineering / R&D
+        **Location:** Abu Dhabi
+        **Urgency:** High
+        **Salary:** 15,000 - 25,000 AED
+
+        **Key Responsibilities:**
+        - Design and maintain control electronics for AWG products
+        - Develop embedded firmware and control logic
+        - Lead testing, validation, and troubleshooting
+        """)
+
+    with col2:
+        st.markdown("""
+        ### Thermodynamics Engineer
+        **Department:** Engineering / R&D
+        **Location:** Abu Dhabi
+        **Urgency:** High
+        **Salary:** 15,000 - 25,000 AED
+
+        **Key Responsibilities:**
+        - Model and optimize refrigeration cycles
+        - Execute lab testing and validation
+        - Produce technical documentation
+        """)
+
+    st.markdown('<br>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("Back to Recruitment Dashboard", use_container_width=True):
+            st.query_params["page"] = "recruitment_dashboard"
+            st.rerun()
+
 def main():
     page = get_page()
 
@@ -450,6 +540,10 @@ def main():
         render_coming_soon("External Users")
     elif page == "admin":
         render_admin()
+    elif page == "recruitment_dashboard":
+        render_recruitment_dashboard()
+    elif page == "recruitment_active_rrfs":
+        render_active_rrfs()
     elif page == "insurance_renewal":
         render_insurance_renewal()
     elif page == "life_insurance":
