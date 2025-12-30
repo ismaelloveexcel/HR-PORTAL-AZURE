@@ -391,33 +391,29 @@ def render_home():
                 border-radius: 200px 5px 5px 5px; 
                 transform-origin: 100% 100%;
             }}
-            .item-tl .content {{ transform: translate(-18px, -18px); }}
-            .item-tl:hover {{ transform: translate(-8px, -8px); background: #171717; color: white; }}
-            .item-tl:hover img {{ filter: brightness(0) invert(1); }}
+            .item-tl .content {{ transform: translate(-10px, -10px); }}
+            .item-tl:hover {{ transform: translate(-6px, -6px); background: #d8d8d8; }}
             
             .item-tr {{ 
                 border-radius: 5px 200px 5px 5px;
                 transform-origin: 0% 100%;
             }}
-            .item-tr .content {{ transform: translate(18px, -18px); }}
-            .item-tr:hover {{ transform: translate(8px, -8px); background: #171717; color: white; }}
-            .item-tr:hover img {{ filter: brightness(0) invert(1); }}
+            .item-tr .content {{ transform: translate(10px, -10px); }}
+            .item-tr:hover {{ transform: translate(6px, -6px); background: #d8d8d8; }}
             
             .item-bl {{ 
                 border-radius: 5px 5px 5px 200px;
                 transform-origin: 100% 0%;
             }}
-            .item-bl .content {{ transform: translate(-18px, 18px); }}
-            .item-bl:hover {{ transform: translate(-8px, 8px); background: #171717; color: white; }}
-            .item-bl:hover img {{ filter: brightness(0) invert(1); }}
+            .item-bl .content {{ transform: translate(-10px, 10px); }}
+            .item-bl:hover {{ transform: translate(-6px, 6px); background: #d8d8d8; }}
             
             .item-br {{ 
                 border-radius: 5px 5px 200px 5px;
                 transform-origin: 0% 0%;
             }}
-            .item-br .content {{ transform: translate(18px, 18px); }}
-            .item-br:hover {{ transform: translate(8px, 8px); background: #171717; color: white; }}
-            .item-br:hover img {{ filter: brightness(0) invert(1); }}
+            .item-br .content {{ transform: translate(10px, 10px); }}
+            .item-br:hover {{ transform: translate(6px, 6px); background: #d8d8d8; }}
             
             .portal-footer {{ margin-top: 25px; text-align: center; font-size: 0.72em; color: #666; letter-spacing: 0.1em; }}
             
