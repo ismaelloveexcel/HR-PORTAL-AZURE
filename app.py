@@ -327,18 +327,18 @@ def render_home():
             * {{ margin: 0; padding: 0; box-sizing: border-box; }}
             body {{ 
                 font-family: 'Poppins', sans-serif; 
-                background: #ffffff;
+                background: #f0f0f3;
                 height: 100vh;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                padding: 10px;
+                padding: 0;
                 overflow: hidden;
             }}
-            .portal-header {{ text-align: center; margin-bottom: 15px; }}
-            .portal-logo {{ width: 80px; margin-bottom: 5px; }}
-            .portal-title {{ font-size: 1.4em; font-weight: 600; color: #333; letter-spacing: 0.05em; }}
+            .portal-header {{ text-align: center; margin-bottom: 12px; }}
+            .portal-logo {{ width: 70px; margin-bottom: 4px; }}
+            .portal-title {{ font-size: 1.3em; font-weight: 600; color: #333; letter-spacing: 0.05em; }}
             
             .menu-container {{
                 display: flex;
@@ -353,7 +353,7 @@ def render_home():
             .menu-item {{
                 width: 160px;
                 height: 160px;
-                background: transparent;
+                background: linear-gradient(145deg, #ffffff, #e6e6e6);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -371,14 +371,15 @@ def render_home():
                 text-align: center;
                 padding: 20px;
                 box-shadow:
-                    inset 2px 2px 4px rgba(255,255,255,0.9),
-                    inset -2px -2px 4px rgba(0,0,0,0.15),
-                    4px 4px 10px rgba(0,0,0,0.12);
+                    8px 8px 16px rgba(180, 180, 180, 0.5),
+                    -8px -8px 16px rgba(255, 255, 255, 0.9),
+                    inset 1px 1px 2px rgba(255,255,255,0.8),
+                    inset -1px -1px 2px rgba(0,0,0,0.05);
             }}
             .menu-item:active {{
                 box-shadow:
-                    inset 4px 4px 8px rgba(0,0,0,0.15),
-                    inset -2px -2px 4px rgba(255,255,255,0.9);
+                    inset 4px 4px 10px rgba(180, 180, 180, 0.5),
+                    inset -4px -4px 10px rgba(255, 255, 255, 0.9);
             }}
             .menu-item img {{ width: 36px; height: 36px; margin-bottom: 8px; transition: all 0.25s ease; }}
             .menu-item span {{ display: block; line-height: 1.3; }}
@@ -393,30 +394,30 @@ def render_home():
                 transform-origin: 100% 100%;
             }}
             .item-tl .content {{ transform: translate(-8px, -8px); }}
-            .item-tl:hover {{ transform: translate(-5px, -5px); background: #f0f0f0; }}
+            .item-tl:hover {{ transform: translate(-5px, -5px); background: linear-gradient(145deg, #e6e6e6, #ffffff); box-shadow: 4px 4px 8px rgba(180,180,180,0.4), -4px -4px 8px rgba(255,255,255,0.9); }}
             
             .item-tr {{ 
                 border-radius: 5px 160px 5px 5px;
                 transform-origin: 0% 100%;
             }}
             .item-tr .content {{ transform: translate(8px, -8px); }}
-            .item-tr:hover {{ transform: translate(5px, -5px); background: #f0f0f0; }}
+            .item-tr:hover {{ transform: translate(5px, -5px); background: linear-gradient(145deg, #e6e6e6, #ffffff); box-shadow: 4px 4px 8px rgba(180,180,180,0.4), -4px -4px 8px rgba(255,255,255,0.9); }}
             
             .item-bl {{ 
                 border-radius: 5px 5px 5px 160px;
                 transform-origin: 100% 0%;
             }}
             .item-bl .content {{ transform: translate(-8px, 8px); }}
-            .item-bl:hover {{ transform: translate(-5px, 5px); background: #f0f0f0; }}
+            .item-bl:hover {{ transform: translate(-5px, 5px); background: linear-gradient(145deg, #e6e6e6, #ffffff); box-shadow: 4px 4px 8px rgba(180,180,180,0.4), -4px -4px 8px rgba(255,255,255,0.9); }}
             
             .item-br {{ 
                 border-radius: 5px 5px 160px 5px;
                 transform-origin: 0% 0%;
             }}
             .item-br .content {{ transform: translate(8px, 8px); }}
-            .item-br:hover {{ transform: translate(5px, 5px); background: #f0f0f0; }}
+            .item-br:hover {{ transform: translate(5px, 5px); background: linear-gradient(145deg, #e6e6e6, #ffffff); box-shadow: 4px 4px 8px rgba(180,180,180,0.4), -4px -4px 8px rgba(255,255,255,0.9); }}
             
-            .portal-footer {{ margin-top: 15px; text-align: center; font-size: 0.68em; color: #999; letter-spacing: 0.1em; }}
+            .portal-footer {{ margin-top: 10px; text-align: center; font-size: 0.65em; color: #999; letter-spacing: 0.1em; }}
             
             @media (max-width: 500px) {{
                 .menu-item {{ width: 140px; height: 140px; font-size: 0.75em; }}
@@ -466,7 +467,7 @@ def render_home():
     </body>
     </html>
     '''
-    components.html(html_content, height=520, scrolling=False)
+    components.html(html_content, height=460, scrolling=False)
 
 def render_coming_soon(title):
     st.markdown(CSS, unsafe_allow_html=True)
