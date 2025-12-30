@@ -624,18 +624,19 @@ def render_employees():
             }}
             .glass-card {{
                 width: 400px; min-height: 450px;
-                background-color: rgba(255, 255, 255, 0.15);
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                background-color: rgba(255, 255, 255, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.9);
                 -webkit-backdrop-filter: blur(20px);
                 backdrop-filter: blur(20px);
                 border-radius: 12px;
                 overflow: hidden;
                 transition: all ease 0.3s;
                 display: flex; flex-direction: column;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
             }}
             .glass-card:hover {{
-                box-shadow: 0px 0px 20px 1px rgba(10, 35, 81, 0.3);
-                border: 1px solid rgba(255, 255, 255, 0.5);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+                border: 1px solid rgba(255, 255, 255, 1);
             }}
             .glass-header {{
                 background: #0a2351; padding: 20px; text-align: center;
@@ -756,18 +757,19 @@ def render_admin():
             }}
             .glass-card {{
                 width: 400px; min-height: 380px;
-                background-color: rgba(255, 255, 255, 0.15);
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                background-color: rgba(255, 255, 255, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.9);
                 -webkit-backdrop-filter: blur(20px);
                 backdrop-filter: blur(20px);
                 border-radius: 12px;
                 overflow: hidden;
                 transition: all ease 0.3s;
                 display: flex; flex-direction: column;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
             }}
             .glass-card:hover {{
-                box-shadow: 0px 0px 20px 1px rgba(10, 35, 81, 0.3);
-                border: 1px solid rgba(255, 255, 255, 0.5);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+                border: 1px solid rgba(255, 255, 255, 1);
             }}
             .glass-header {{
                 background: #0a2351; padding: 20px; text-align: center;
