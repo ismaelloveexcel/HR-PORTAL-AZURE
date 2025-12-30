@@ -327,31 +327,32 @@ def render_home():
             * {{ margin: 0; padding: 0; box-sizing: border-box; }}
             body {{ 
                 font-family: 'Poppins', sans-serif; 
-                background: #e8e8e8;
-                min-height: 100vh;
+                background: #ffffff;
+                height: 100vh;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                padding: 15px;
+                padding: 10px;
+                overflow: hidden;
             }}
-            .portal-header {{ text-align: center; margin-bottom: 25px; }}
-            .portal-logo {{ width: 100px; margin-bottom: 8px; }}
-            .portal-title {{ font-size: 1.6em; font-weight: 600; color: #333; letter-spacing: 0.05em; }}
+            .portal-header {{ text-align: center; margin-bottom: 15px; }}
+            .portal-logo {{ width: 80px; margin-bottom: 5px; }}
+            .portal-title {{ font-size: 1.4em; font-weight: 600; color: #333; letter-spacing: 0.05em; }}
             
             .menu-container {{
                 display: flex;
                 flex-direction: column;
-                gap: 0.5em;
+                gap: 0.4em;
             }}
             .menu-row {{
                 display: flex;
                 flex-direction: row;
-                gap: 0.5em;
+                gap: 0.4em;
             }}
             .menu-item {{
-                width: 200px;
-                height: 200px;
+                width: 160px;
+                height: 160px;
                 background: transparent;
                 display: flex;
                 flex-direction: column;
@@ -379,7 +380,7 @@ def render_home():
                     inset 4px 4px 8px rgba(0,0,0,0.15),
                     inset -2px -2px 4px rgba(255,255,255,0.9);
             }}
-            .menu-item img {{ width: 44px; height: 44px; margin-bottom: 10px; transition: all 0.25s ease; }}
+            .menu-item img {{ width: 36px; height: 36px; margin-bottom: 8px; transition: all 0.25s ease; }}
             .menu-item span {{ display: block; line-height: 1.3; }}
             .menu-item .content {{ 
                 display: flex; flex-direction: column; 
@@ -388,34 +389,34 @@ def render_home():
             }}
             
             .item-tl {{ 
-                border-radius: 200px 5px 5px 5px; 
+                border-radius: 160px 5px 5px 5px; 
                 transform-origin: 100% 100%;
             }}
-            .item-tl .content {{ transform: translate(-10px, -10px); }}
-            .item-tl:hover {{ transform: translate(-6px, -6px); background: #d8d8d8; }}
+            .item-tl .content {{ transform: translate(-8px, -8px); }}
+            .item-tl:hover {{ transform: translate(-5px, -5px); background: #f0f0f0; }}
             
             .item-tr {{ 
-                border-radius: 5px 200px 5px 5px;
+                border-radius: 5px 160px 5px 5px;
                 transform-origin: 0% 100%;
             }}
-            .item-tr .content {{ transform: translate(10px, -10px); }}
-            .item-tr:hover {{ transform: translate(6px, -6px); background: #d8d8d8; }}
+            .item-tr .content {{ transform: translate(8px, -8px); }}
+            .item-tr:hover {{ transform: translate(5px, -5px); background: #f0f0f0; }}
             
             .item-bl {{ 
-                border-radius: 5px 5px 5px 200px;
+                border-radius: 5px 5px 5px 160px;
                 transform-origin: 100% 0%;
             }}
-            .item-bl .content {{ transform: translate(-10px, 10px); }}
-            .item-bl:hover {{ transform: translate(-6px, 6px); background: #d8d8d8; }}
+            .item-bl .content {{ transform: translate(-8px, 8px); }}
+            .item-bl:hover {{ transform: translate(-5px, 5px); background: #f0f0f0; }}
             
             .item-br {{ 
-                border-radius: 5px 5px 200px 5px;
+                border-radius: 5px 5px 160px 5px;
                 transform-origin: 0% 0%;
             }}
-            .item-br .content {{ transform: translate(10px, 10px); }}
-            .item-br:hover {{ transform: translate(6px, 6px); background: #d8d8d8; }}
+            .item-br .content {{ transform: translate(8px, 8px); }}
+            .item-br:hover {{ transform: translate(5px, 5px); background: #f0f0f0; }}
             
-            .portal-footer {{ margin-top: 25px; text-align: center; font-size: 0.72em; color: #666; letter-spacing: 0.1em; }}
+            .portal-footer {{ margin-top: 15px; text-align: center; font-size: 0.68em; color: #999; letter-spacing: 0.1em; }}
             
             @media (max-width: 500px) {{
                 .menu-item {{ width: 140px; height: 140px; font-size: 0.75em; }}
@@ -465,7 +466,7 @@ def render_home():
     </body>
     </html>
     '''
-    components.html(html_content, height=700, scrolling=False)
+    components.html(html_content, height=520, scrolling=False)
 
 def render_coming_soon(title):
     st.markdown(CSS, unsafe_allow_html=True)
