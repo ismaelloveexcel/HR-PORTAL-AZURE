@@ -326,7 +326,7 @@ def render_home():
     </body>
     </html>
     '''
-    components.html(html_content, height=480, scrolling=False)
+    components.html(html_content, height=520, scrolling=False)
 
 def render_coming_soon(title):
     st.markdown(f'''
