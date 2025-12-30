@@ -379,12 +379,13 @@ def render_home():
                     inset 4px 4px 8px rgba(0,0,0,0.15),
                     inset -2px -2px 4px rgba(255,255,255,0.9);
             }}
-            .menu-item img {{ width: 44px; height: 44px; margin-bottom: 12px; transition: all 0.25s ease; }}
+            .menu-item img {{ width: 44px; height: 44px; margin-bottom: 10px; transition: all 0.25s ease; }}
             .menu-item span {{ display: block; line-height: 1.3; }}
             
             .item-tl {{ 
                 border-radius: 200px 5px 5px 5px; 
                 transform-origin: 100% 100%;
+                padding: 30px 30px 40px 40px;
             }}
             .item-tl:hover {{ transform: translate(-8px, -8px); background: #171717; color: white; }}
             .item-tl:hover img {{ filter: brightness(0) invert(1); }}
@@ -392,6 +393,7 @@ def render_home():
             .item-tr {{ 
                 border-radius: 5px 200px 5px 5px;
                 transform-origin: 0% 100%;
+                padding: 30px 40px 40px 30px;
             }}
             .item-tr:hover {{ transform: translate(8px, -8px); background: #171717; color: white; }}
             .item-tr:hover img {{ filter: brightness(0) invert(1); }}
@@ -399,6 +401,7 @@ def render_home():
             .item-bl {{ 
                 border-radius: 5px 5px 5px 200px;
                 transform-origin: 100% 0%;
+                padding: 40px 30px 30px 40px;
             }}
             .item-bl:hover {{ transform: translate(-8px, 8px); background: #171717; color: white; }}
             .item-bl:hover img {{ filter: brightness(0) invert(1); }}
@@ -406,6 +409,7 @@ def render_home():
             .item-br {{ 
                 border-radius: 5px 5px 200px 5px;
                 transform-origin: 0% 0%;
+                padding: 40px 40px 30px 30px;
             }}
             .item-br:hover {{ transform: translate(8px, 8px); background: #171717; color: white; }}
             .item-br:hover img {{ filter: brightness(0) invert(1); }}
