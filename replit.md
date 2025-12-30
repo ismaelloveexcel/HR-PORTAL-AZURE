@@ -1,7 +1,7 @@
 # Baynunah HR Portal - Landing Page
 
 ## Overview
-A clean HR portal landing page for Baynunah Group featuring a circular 2x2 quadrant menu with glassmorphism/liquid glass styling. Migrated from Streamlit to React + Express + TypeScript.
+A clean HR portal landing page for Baynunah Group featuring a circular 2x2 quadrant menu with glassmorphism/liquid glass styling. Built with React + TypeScript, served through Streamlit.
 
 ## Current State
 - **Status**: Landing Page Complete
@@ -9,11 +9,10 @@ A clean HR portal landing page for Baynunah Group featuring a circular 2x2 quadr
 - **Custom Domain**: hr.baynunah.ae (configured separately)
 
 ## Architecture
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS v4
-- **Backend**: Express.js with Vite middleware
-- **Ports**: 
-  - Streamlit wrapper on port 5000 (for Replit workflow)
-  - React/Express server on port 5001 (embedded via iframe)
+- **Frontend**: React 18 + TypeScript + Tailwind CSS v4
+- **Build Tool**: Vite with vite-plugin-singlefile (inlines all JS/CSS)
+- **Serving**: Streamlit wrapper serves the pre-built HTML via st.components.v1.html()
+- **Port**: 5000 (Streamlit)
 
 ## Features
 
@@ -47,28 +46,26 @@ A clean HR portal landing page for Baynunah Group featuring a circular 2x2 quadr
 ## Technical Details
 - **Frontend Framework**: React 18 with TypeScript
 - **Styling**: Tailwind CSS v4 with @tailwindcss/postcss
-- **Build Tool**: Vite
+- **Build Tool**: Vite with vite-plugin-singlefile
 - **Design**: Glassmorphism theme with dotted grid background
 - **Font**: Poppins (Google Fonts)
 
 ## Project Structure
 ```
 /
-├── app.py                    # Streamlit wrapper (port 5000, embeds iframe)
+├── app.py                    # Streamlit wrapper (serves pre-built HTML)
 ├── client/
 │   ├── src/
 │   │   ├── App.tsx           # Main React component with landing page
 │   │   ├── index.css         # Tailwind imports + custom styles
 │   │   └── main.tsx          # React entry point
 │   └── index.html            # HTML template
-├── server/
-│   └── index.ts              # Express server with Vite middleware
+├── dist/
+│   └── index.html            # Built single-file app (JS/CSS inlined)
 ├── attached_assets/
 │   └── logo_*.png            # Baynunah logo
-├── vite.config.js            # Vite configuration (port 5001)
-├── postcss.config.js         # PostCSS with @tailwindcss/postcss
-├── tailwind.config.js        # Tailwind configuration
-├── package.json              # Node dependencies
+├── vite.config.js            # Vite config with singlefile plugin
+├── postcss.config.js         # PostCSS config
 └── replit.md                 # This documentation
 ```
 
@@ -76,7 +73,13 @@ A clean HR portal landing page for Baynunah Group featuring a circular 2x2 quadr
 ```bash
 streamlit run app.py --server.port 5000
 ```
-This starts Streamlit which in turn launches the Express/Vite server on port 5001.
+
+## Rebuilding the React App
+If you make changes to the React code:
+```bash
+npx vite build
+```
+This regenerates `dist/index.html` with all JS/CSS inlined.
 
 ## Customization Notes
 This is a clean landing page template. To add functionality:
@@ -84,3 +87,5 @@ This is a clean landing page template. To add functionality:
 2. **Onboarding Section**: Add onboarding workflow content
 3. **External Users**: Add partner/contractor portal features
 4. **Admin Portal**: Add password protection and admin features
+
+After making React changes, remember to run `npx vite build` to rebuild.
