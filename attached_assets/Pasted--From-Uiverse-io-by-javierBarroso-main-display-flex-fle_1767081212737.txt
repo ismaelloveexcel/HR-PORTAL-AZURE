@@ -1,0 +1,144 @@
+/* From Uiverse.io by javierBarroso */ 
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.up {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  transform-style: preserve-3d;
+  perspective: 200px;
+}
+
+.down {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+}
+
+.card1 {
+  transform-origin: 100% 100%;
+  width: 90px;
+  height: 90px;
+  outline: none;
+  border: none;
+  background: transparent;
+  border-radius: 90px 5px 5px 5px;
+  box-shadow:
+    inset 2px 2px 2px #fff,
+    inset -2px -2px 2px #4442,
+    2px 2px 5px #4442;
+  transition: 0.2s ease-in-out;
+}
+
+.instagram {
+  margin-top: 1.5em;
+  margin-left: 1.2em;
+  fill: #cc39a4;
+}
+
+.card2 {
+  width: 90px;
+  height: 90px;
+  outline: none;
+  border: none;
+  background: transparent;
+  border-radius: 5px 90px 5px 5px;
+  box-shadow:
+    inset 2px 2px 2px #fff,
+    inset -2px -2px 2px #4442,
+    2px 2px 5px #4442;
+  transition: 0.2s ease-in-out;
+}
+
+.twitter {
+  margin-top: 1.5em;
+  margin-left: -0.9em;
+  fill: #03a9f4;
+}
+
+.card3 {
+  width: 90px;
+  height: 90px;
+  outline: none;
+  border: none;
+  background: transparent;
+  border-radius: 5px 5px 5px 90px;
+  box-shadow:
+    inset 2px 2px 2px #fff,
+    inset -2px -2px 2px #4442,
+    2px 2px 5px #4442;
+  transition: 0.2s ease-in-out;
+}
+
+.github {
+  margin-top: -0.6em;
+  margin-left: 1.2em;
+}
+
+.card4 {
+  width: 90px;
+  height: 90px;
+  outline: none;
+  border: none;
+  background: transparent;
+  border-radius: 5px 5px 90px 5px;
+  box-shadow:
+    inset 2px 2px 2px #fff,
+    inset -2px -2px 2px #4442,
+    2px 2px 5px #4442;
+  transition: 0.2s ease-in-out;
+}
+
+.discord {
+  margin-top: -0.9em;
+  margin-left: -1.2em;
+  fill: #8c9eff;
+}
+
+.card1:active {
+  box-shadow:
+    inset 4px 4px 8px #4442,
+    inset -2px -2px 2px #fff;
+}
+
+.card1:hover {
+  cursor: pointer;
+  transform: translate(-5px, -5px);
+}
+
+.card2:active {
+  box-shadow:
+    inset 4px 4px 8px #4442,
+    inset -2px -2px 2px #fff;
+}
+
+.card2:hover {
+  cursor: pointer;
+  transform: translate(5px, -5px);
+}
+
+.card3:active {
+  box-shadow:
+    inset 4px 4px 8px #4442,
+    inset -2px -2px 2px #fff;
+}
+
+.card3:hover {
+  cursor: pointer;
+  transform: translate(-5px, 5px);
+}
+
+.card4:active {
+  box-shadow:
+    inset 4px 4px 8px #4442,
+    inset -2px -2px 2px #fff;
+}
+
+.card4:hover {
+  cursor: pointer;
+  transform: translate(5px, 5px);
+}
