@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+"""
+HR Portal - React Application
+Serves the pre-built React app through Streamlit.
+"""
 import streamlit as st
-import streamlit.components.v1 as components
 import os
-import base64
 
 st.set_page_config(
     page_title="HR Portal | Baynunah",
@@ -469,5 +472,9 @@ def main():
     else:
         render_home()
 
-if __name__ == "__main__":
-    main()
+if os.path.exists(html_path):
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+    st.components.v1.html(html_content, height=800, scrolling=True)
+else:
+    st.error("Application not built. Please run 'npx vite build' first.")
