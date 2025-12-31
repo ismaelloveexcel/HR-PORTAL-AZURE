@@ -81,6 +81,8 @@ async def decode_jwt(token: str, settings: Settings | None = None) -> Dict[str, 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header")
 
     kid = unverified_header.get("kid")
+    if not kid:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing key ID in token")
     jwks = await _fetch_jwks(settings)
 
     key_data = jwks.get(kid)
@@ -115,7 +117,7 @@ async def decode_jwt(token: str, settings: Settings | None = None) -> Dict[str, 
 
     try:
         expires_at = datetime.fromtimestamp(float(exp), tz=timezone.utc)
-    except Exception:
+    except (ValueError, TypeError, OverflowError):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid exp claim")
 
     if expires_at <= datetime.now(timezone.utc):

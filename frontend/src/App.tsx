@@ -93,7 +93,7 @@ function App() {
               <input
                 id="token"
                 className="w-72 rounded border border-slate-200 bg-white px-2 py-1 text-xs"
-                placeholder="Paste JWT issued by IdP"
+                placeholder="Enter authentication token"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
               />
