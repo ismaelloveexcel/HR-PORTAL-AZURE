@@ -9,30 +9,44 @@ const defaultForm: RenewalRequest = {
 }
 
 function App() {
-  const [role, setRole] = useState('viewer')
-  const [health, setHealth] = useState<string>('checking…')
+  const [token, setToken] = useState('')
+  const [health, setHealth] = useState<string>('token required')
+  const [resolvedRole, setResolvedRole] = useState<string>('unknown')
   const [renewals, setRenewals] = useState<RenewalResponse[]>([])
   const [form, setForm] = useState<RenewalRequest>(defaultForm)
   const [error, setError] = useState<string>('')
   const [success, setSuccess] = useState<string>('')
 
   useEffect(() => {
+    if (!token) {
+      setHealth('token required')
+      setResolvedRole('unknown')
+      return
+    }
+
     async function fetchHealth() {
       try {
-        const response = await getHealth(role)
-        setHealth(`${response.status} (${response.role})`)
+        const response = await getHealth(token)
+        setHealth(response.status)
+        setResolvedRole(response.role)
       } catch (err) {
         setHealth('offline')
+        setResolvedRole('unknown')
       }
     }
 
     fetchHealth()
-  }, [role])
+  }, [token])
 
   useEffect(() => {
+    if (!token) {
+      setRenewals([])
+      return
+    }
+
     async function fetchRenewals() {
       try {
-        const items = await listRenewals(role)
+        const items = await listRenewals(token)
         setRenewals(items)
       } catch (err) {
         setRenewals([])
@@ -40,7 +54,7 @@ function App() {
     }
 
     fetchRenewals()
-  }, [role])
+  }, [token])
 
   const handleChange = (field: keyof RenewalRequest, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -50,8 +64,13 @@ function App() {
     event.preventDefault()
     setError('')
     setSuccess('')
+    if (!token) {
+      setError('Paste a bearer token first')
+      return
+    }
+
     try {
-      const created = await createRenewal(role, form)
+      const created = await createRenewal(token, form)
       setRenewals((prev) => [...prev, created])
       setSuccess('Renewal captured')
       setForm(defaultForm)
@@ -68,21 +87,21 @@ function App() {
             <p className="text-xs uppercase tracking-wide text-slate-500">Secure Renewals</p>
             <h1 className="text-2xl font-semibold text-slate-900">Internal Renewal Console</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-slate-700" htmlFor="role">Role</label>
-            <select
-              id="role"
-              className="rounded border border-slate-200 bg-white px-2 py-1 text-sm"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="admin">Admin</option>
-              <option value="hr">HR</option>
-              <option value="viewer">Viewer</option>
-            </select>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-              API: {health}
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col text-sm text-slate-700">
+              <label className="text-xs text-slate-500" htmlFor="token">Bearer token</label>
+              <input
+                id="token"
+                className="w-72 rounded border border-slate-200 bg-white px-2 py-1 text-xs"
+                placeholder="Paste JWT issued by IdP"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col text-xs text-slate-600">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">API: {health}</span>
+              <span className="text-[11px] text-slate-500">Resolved role: {resolvedRole}</span>
+            </div>
           </div>
         </div>
       </header>
