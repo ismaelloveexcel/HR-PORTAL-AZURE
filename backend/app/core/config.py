@@ -16,6 +16,26 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:5173"],
         description="List of allowed CORS origins",
     )
+    auth_issuer: str = Field(
+        default="https://login.microsoftonline.com/<tenant-id>/v2.0",
+        description="Expected token issuer (IdP)",
+    )
+    auth_audience: str = Field(
+        default="api://secure-renewals",
+        description="Expected audience / application ID URI",
+    )
+    auth_jwks_url: str = Field(
+        default="https://login.microsoftonline.com/common/discovery/v2.0/keys",
+        description="JWKS endpoint for verifying JWTs",
+    )
+    dev_auth_bypass: bool = Field(
+        default=False,
+        description="Allow static token validation for local development",
+    )
+    dev_static_token: str | None = Field(
+        default=None,
+        description="Pre-issued JWT used when dev_auth_bypass is enabled",
+    )
 
     class Config:
         env_file = ".env"
