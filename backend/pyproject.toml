@@ -20,6 +20,7 @@ dependencies = [
     "python-multipart>=0.0.9",
 ]
 
+
 [tool.setuptools.packages.find]
 include = ["app*"]
 exclude = ["alembic*"]
