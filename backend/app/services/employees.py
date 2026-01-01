@@ -58,6 +58,25 @@ def dob_to_password(dob: date) -> str:
     return dob.strftime("%d%m%Y")
 
 
+<<<<<<< HEAD
+=======
+def parse_dob(raw_dob: str) -> date:
+    """Parse a date of birth from DDMMYYYY or ISO formats."""
+    raw_dob = raw_dob.strip()
+    if not raw_dob:
+        raise ValueError("Date of birth is required")
+
+    if len(raw_dob) == 8 and raw_dob.isdigit():
+        return date(
+            year=int(raw_dob[4:8]),
+            month=int(raw_dob[2:4]),
+            day=int(raw_dob[0:2]),
+        )
+
+    return date.fromisoformat(raw_dob)
+
+
+>>>>>>> origin/codex/provide-assistance-with-coding-issue
 def create_access_token(employee: Employee) -> str:
     """Create JWT access token for employee."""
     settings = get_settings()
@@ -71,11 +90,16 @@ def create_access_token(employee: Employee) -> str:
     }
     secret = settings.auth_secret_key
     if secret == "dev-secret-key-change-in-production":
+<<<<<<< HEAD
         import logging
         logging.getLogger(__name__).error(
             "SECURITY WARNING: Using default auth secret key. "
             "Set AUTH_SECRET_KEY environment variable in production!"
         )
+=======
+        import warnings
+        warnings.warn("Using default auth secret key. Set AUTH_SECRET_KEY in production!")
+>>>>>>> origin/codex/provide-assistance-with-coding-issue
     return jwt.encode(payload, secret, algorithm="HS256")
 
 
@@ -209,6 +233,7 @@ class EmployeeService:
         content = await file.read()
         text = content.decode("utf-8")
         reader = csv.DictReader(StringIO(text))
+<<<<<<< HEAD
         
         created = 0
         skipped = 0
@@ -250,6 +275,51 @@ class EmployeeService:
         
         await session.commit()
         
+=======
+
+        created = 0
+        skipped = 0
+        errors = []
+        allowed_roles = {"admin", "hr", "viewer"}
+
+        for row_num, row in enumerate(reader, start=2):
+            try:
+                employee_id = row.get("employee_id", "").strip()
+                name = row.get("name", "").strip()
+
+                if not employee_id or not name:
+                    raise ValueError("Employee ID and name are required")
+
+                dob = parse_dob(row.get("date_of_birth", ""))
+                role = (row.get("role", "viewer") or "viewer").strip().lower()
+
+                if role not in allowed_roles:
+                    raise ValueError(
+                        "Invalid role. Allowed values: admin, hr, viewer"
+                    )
+
+                employee_data = EmployeeCreate(
+                    employee_id=employee_id,
+                    name=name,
+                    email=row.get("email", "").strip() or None,
+                    department=row.get("department", "").strip() or None,
+                    date_of_birth=dob,
+                    role=role,
+                )
+
+                if await self._repo.exists(session, employee_data.employee_id):
+                    skipped += 1
+                    continue
+
+                await self.create_employee(session, employee_data)
+                created += 1
+
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+
+        await session.commit()
+
+>>>>>>> origin/codex/provide-assistance-with-coding-issue
         return {
             "created": created,
             "skipped": skipped,
