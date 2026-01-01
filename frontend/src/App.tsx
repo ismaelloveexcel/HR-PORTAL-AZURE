@@ -14,49 +14,7 @@ interface UserSession {
   requiresPasswordChange: boolean
 }
 
-// Navigation Item component
-function NavItem({ 
-  icon, 
-  label, 
-  active, 
-  onClick 
-}: { 
-  icon: React.ReactNode
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-        active 
-          ? 'bg-emerald-50 text-emerald-700 border-l-4 border-emerald-500' 
-          : 'text-gray-600 hover:bg-gray-50'
-      }`}
-    >
-      {icon}
-      <span className="font-medium">{label}</span>
-    </button>
-  )
-}
-
-// Sidebar component
-function Sidebar({ activeSection, setActiveSection }: { 
-  activeSection: Section
-  setActiveSection: (section: Section) => void 
-}) {
-  return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6 border-b border-gray-200">
-        <p className="text-gray-500 text-sm tracking-wide">baynunah<span className="text-emerald-500">.</span></p>
-        <h1 className="text-xl font-semibold text-gray-800">HR Portal</h1>
-      </div>
-      
-      <nav className="flex-1 p-4 space-y-1">
-        <NavItem
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>}
-          label="Home"
+// ...existing code...
           active={activeSection === 'home'}
           onClick={() => setActiveSection('home')}
         />
@@ -150,6 +108,12 @@ function HomeSection({ setActiveSection }: { setActiveSection: (section: Section
 
 // Employees section with renewal management
 function EmployeesSection({ token }: { token: string }) {
+=======
+function App() {
+  const [role, setRole] = useState('')
+  const [health, setHealth] = useState<string>('role required')
+  const [resolvedRole, setResolvedRole] = useState<string>('unknown')
+>>>>>>> origin/codex/add-database-and-audit-layer-to-secure-renewals
   const [renewals, setRenewals] = useState<RenewalResponse[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -178,6 +142,48 @@ function EmployeesSection({ token }: { token: string }) {
     e.preventDefault()
     setSubmitting(true)
     setError(null)
+        setResolvedRole(response.role)
+      } catch (err) {
+        setHealth('offline')
+        setResolvedRole('unknown')
+      }
+    }
+
+    fetchHealth()
+  }, [role])
+
+  useEffect(() => {
+    if (!role) {
+      setRenewals([])
+      return
+    }
+
+    async function fetchRenewals() {
+      try {
+        const items = await listRenewals(role)
+        setRenewals(items)
+      } catch (err) {
+        setRenewals([])
+      }
+    }
+
+    fetchRenewals()
+  }, [role])
+
+  const handleChange = (field: keyof RenewalRequest, value: string | number) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setError('')
+    setSuccess('')
+    if (!role) {
+      setError('Provide a role context first')
+      return
+    }
+
+>>>>>>> origin/codex/add-database-and-audit-layer-to-secure-renewals
     try {
       await createRenewal(token, formData)
       setShowForm(false)
@@ -668,6 +674,22 @@ function AdminSection({ token }: { token: string }) {
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">API Base URL</span>
               <span className="text-gray-800 font-medium text-xs">Configured</span>
+=======
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col text-sm text-slate-700">
+              <label className="text-xs text-slate-500" htmlFor="role">Role (admin/hr/viewer)</label>
+              <input
+                id="role"
+                className="w-72 rounded border border-slate-200 bg-white px-2 py-1 text-xs"
+                placeholder="Provided by calling system"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col text-xs text-slate-600">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">API: {health}</span>
+              <span className="text-[11px] text-slate-500">Resolved role: {resolvedRole}</span>
+>>>>>>> origin/codex/add-database-and-audit-layer-to-secure-renewals
             </div>
           </div>
         </div>
@@ -706,6 +728,33 @@ function AdminSection({ token }: { token: string }) {
                 </tr>
               </tbody>
             </table>
+=======
+      <main className="mx-auto grid max-w-5xl gap-6 px-6 py-8 md:grid-cols-3">
+        <section className="md:col-span-2">
+          <div className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between pb-4">
+              <h2 className="text-lg font-semibold text-slate-900">Renewal Requests</h2>
+              <p className="text-sm text-slate-500">Fetched via API with role context</p>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {renewals.length === 0 && (
+                <p className="py-3 text-sm text-slate-600">No renewals captured yet.</p>
+              )}
+              {renewals.map((renewal) => (
+                <div key={renewal.id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="font-medium text-slate-900">{renewal.employee_name}</p>
+                    <p className="text-sm text-slate-500">
+                      Ends on {renewal.contract_end_date} • {renewal.renewal_period_months} months
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-blue-700">
+                    {renewal.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+>>>>>>> origin/codex/add-database-and-audit-layer-to-secure-renewals
           </div>
         </div>
       </div>

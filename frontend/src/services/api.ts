@@ -34,7 +34,6 @@ function authHeaders(token: string): Record<string, string> {
   if (!token) {
     throw new Error('Missing auth token')
   }
-
   return { Authorization: `Bearer ${token}` }
 }
 
@@ -84,6 +83,36 @@ export async function createRenewal(token: string, data: RenewalRequest): Promis
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders(token),
+=======
+function roleHeaders(role: string): Record<string, string> {
+  if (!role) {
+    throw new Error('Missing role header')
+  }
+
+  return { 'X-Role': role }
+}
+
+export async function getHealth(role: string): Promise<{ status: string; role: string }> {
+  const response = await fetch(`${API_BASE_URL}/health`, {
+    headers: roleHeaders(role),
+  })
+  return handleResponse(response)
+}
+
+export async function listRenewals(role: string): Promise<RenewalResponse[]> {
+  const response = await fetch(`${API_BASE_URL}/renewals`, {
+    headers: roleHeaders(role),
+  })
+  return handleResponse(response)
+}
+
+export async function createRenewal(role: string, data: RenewalRequest): Promise<RenewalResponse> {
+  const response = await fetch(`${API_BASE_URL}/renewals`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...roleHeaders(role),
+>>>>>>> origin/codex/add-database-and-audit-layer-to-secure-renewals
     },
     body: JSON.stringify(data),
   })

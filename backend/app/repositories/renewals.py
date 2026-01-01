@@ -20,7 +20,7 @@ class RenewalRepository:
             .order_by(Renewal.contract_end_date)
         )
         return result.scalars().all()
-
+>>>>>>> origin/codex/add-database-and-audit-layer-to-secure-renewals
     async def create(
         self,
         session: AsyncSession,
