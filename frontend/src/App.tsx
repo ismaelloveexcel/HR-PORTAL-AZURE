@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-type Section = 'login' | 'home' | 'employees' | 'onboarding' | 'external' | 'admin'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin'
 
 interface Employee {
   id: number
@@ -41,7 +41,7 @@ interface User {
 const API_BASE = '/api'
 
 function App() {
-  const [activeSection, setActiveSection] = useState<Section>('login')
+  const [activeSection, setActiveSection] = useState<Section>('home')
   const [user, setUser] = useState<User | null>(null)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [features, setFeatures] = useState<FeatureToggle[]>([])
@@ -49,6 +49,8 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loginForm, setLoginForm] = useState({ employee_id: '', password: '' })
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [pendingSection, setPendingSection] = useState<Section | null>(null)
 
   const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     const headers: Record<string, string> = {
@@ -62,6 +64,19 @@ function App() {
       headers['X-Role'] = user.role
     }
     return fetch(url, { ...options, headers })
+  }
+
+  const handleNavigate = (section: Section) => {
+    if (section === 'home') {
+      setActiveSection('home')
+      return
+    }
+    if (!user) {
+      setPendingSection(section)
+      setShowLoginModal(true)
+      return
+    }
+    setActiveSection(section)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -79,13 +94,19 @@ function App() {
         throw new Error(data.detail || 'Login failed')
       }
       const data = await res.json()
-      setUser({
+      const loggedInUser = {
         employee_id: data.employee_id,
         name: data.name,
         role: data.role,
         token: data.access_token,
-      })
-      setActiveSection('home')
+      }
+      setUser(loggedInUser)
+      setShowLoginModal(false)
+      setLoginForm({ employee_id: '', password: '' })
+      if (pendingSection) {
+        setActiveSection(pendingSection)
+        setPendingSection(null)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
@@ -95,10 +116,17 @@ function App() {
 
   const handleLogout = () => {
     setUser(null)
-    setActiveSection('login')
+    setActiveSection('home')
     setEmployees([])
     setFeatures([])
     setDashboard(null)
+  }
+
+  const closeLoginModal = () => {
+    setShowLoginModal(false)
+    setPendingSection(null)
+    setError(null)
+    setLoginForm({ employee_id: '', password: '' })
   }
 
   const fetchEmployees = async () => {
@@ -159,72 +187,95 @@ function App() {
     }
   }, [activeSection, user])
 
-  if (activeSection === 'login') {
-    return (
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
-        <div className="text-center mb-8">
-          <p className="text-gray-600 text-lg tracking-wide mb-2">baynunah<span className="text-emerald-500">.</span></p>
-          <h1 className="text-3xl font-light tracking-widest text-gray-800">HR PORTAL</h1>
+  const LoginModal = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+        <button
+          onClick={closeLoginModal}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        
+        <div className="text-center mb-6">
+          <p className="text-gray-600 text-sm tracking-wide mb-1">baynunah<span className="text-emerald-500">.</span></p>
+          <h2 className="text-xl font-semibold text-gray-800">Sign In</h2>
         </div>
-        <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Sign In</h2>
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>
-          )}
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
-              <input
-                type="text"
-                value={loginForm.employee_id}
-                onChange={e => setLoginForm({ ...loginForm, employee_id: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="e.g., EMP001"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                value={loginForm.password}
-                onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="First login: DOB as DDMMYYYY"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-          <p className="text-xs text-gray-500 text-center mt-4">
-            First-time login? Use your date of birth (DDMMYYYY) as password.
-          </p>
-        </div>
+        
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>
+        )}
+        
+        <form onSubmit={handleLogin} className="space-y-4" data-testid="login-form">
+          <div>
+            <label htmlFor="employee-id" className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+            <input
+              id="employee-id"
+              name="employee_id"
+              type="text"
+              value={loginForm.employee_id}
+              onChange={e => setLoginForm({ ...loginForm, employee_id: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="e.g., EMP001"
+              required
+              data-testid="employee-id-input"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={loginForm.password}
+              onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="First login: DOB as DDMMYYYY"
+              required
+              data-testid="password-input"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            data-testid="sign-in-button"
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+        <p className="text-xs text-gray-500 text-center mt-4">
+          First-time login? Use your date of birth (DDMMYYYY) as password.
+        </p>
       </div>
-    )
-  }
+    </div>
+  )
 
   if (activeSection === 'employees') {
     return (
       <div className="min-h-screen bg-gray-100 p-8">
+        {showLoginModal && <LoginModal />}
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-gray-600 text-sm">baynunah<span className="text-emerald-500">.</span></p>
               <h1 className="text-2xl font-semibold text-gray-800">Employees</h1>
             </div>
-            <button
-              onClick={() => setActiveSection('home')}
-              className="px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-            >
-              ← Back to Home
-            </button>
+            <div className="flex items-center gap-4">
+              {user && (
+                <span className="text-sm text-gray-600">
+                  {user.name} ({user.role})
+                </span>
+              )}
+              <button
+                onClick={() => handleNavigate('home')}
+                className="px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+              >
+                ← Back to Home
+              </button>
+            </div>
           </div>
           
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -285,11 +336,12 @@ function App() {
     if (user?.role !== 'admin') {
       return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
+          {showLoginModal && <LoginModal />}
           <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Access Denied</h2>
             <p className="text-gray-600 mb-6">You need admin privileges to access this section.</p>
             <button
-              onClick={() => setActiveSection('home')}
+              onClick={() => handleNavigate('home')}
               className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
             >
               Back to Home
@@ -301,18 +353,24 @@ function App() {
 
     return (
       <div className="min-h-screen bg-gray-100 p-8">
+        {showLoginModal && <LoginModal />}
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-gray-600 text-sm">baynunah<span className="text-emerald-500">.</span></p>
               <h1 className="text-2xl font-semibold text-gray-800">Admin Panel</h1>
             </div>
-            <button
-              onClick={() => setActiveSection('home')}
-              className="px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-            >
-              ← Back to Home
-            </button>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {user?.name} ({user?.role})
+              </span>
+              <button
+                onClick={() => handleNavigate('home')}
+                className="px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+              >
+                ← Back to Home
+              </button>
+            </div>
           </div>
 
           {dashboard && (
@@ -376,13 +434,14 @@ function App() {
   if (activeSection === 'onboarding' || activeSection === 'external') {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
+        {showLoginModal && <LoginModal />}
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-2xl w-full text-center">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4 capitalize">
             {activeSection === 'external' ? 'External Users' : activeSection}
           </h2>
           <p className="text-gray-600 mb-6">This section is under development.</p>
           <button
-            onClick={() => setActiveSection('home')}
+            onClick={() => handleNavigate('home')}
             className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
           >
             Back to Home
@@ -394,19 +453,23 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
-      <div className="absolute top-4 right-4">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">
-            {user?.name} ({user?.role})
-          </span>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-red-600 hover:text-red-700"
-          >
-            Sign Out
-          </button>
+      {showLoginModal && <LoginModal />}
+      
+      {user && (
+        <div className="absolute top-4 right-4">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              {user.name} ({user.role})
+            </span>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-red-600 hover:text-red-700"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="text-center mb-12">
         <p className="text-gray-600 text-lg tracking-wide mb-2">baynunah<span className="text-emerald-500">.</span></p>
@@ -415,7 +478,7 @@ function App() {
 
       <div className="grid grid-cols-2 gap-4 w-80">
         <button
-          onClick={() => setActiveSection('employees')}
+          onClick={() => handleNavigate('employees')}
           className="bg-white rounded-tl-[4rem] rounded-tr-lg rounded-bl-lg rounded-br-lg shadow-lg p-6 flex flex-col items-center justify-center hover:shadow-xl transition-shadow aspect-square"
         >
           <svg className="w-10 h-10 text-emerald-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -425,7 +488,7 @@ function App() {
         </button>
 
         <button
-          onClick={() => setActiveSection('onboarding')}
+          onClick={() => handleNavigate('onboarding')}
           className="bg-white rounded-tr-[4rem] rounded-tl-lg rounded-bl-lg rounded-br-lg shadow-lg p-6 flex flex-col items-center justify-center hover:shadow-xl transition-shadow aspect-square"
         >
           <svg className="w-10 h-10 text-emerald-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,7 +498,7 @@ function App() {
         </button>
 
         <button
-          onClick={() => setActiveSection('external')}
+          onClick={() => handleNavigate('external')}
           className="bg-white rounded-bl-[4rem] rounded-tl-lg rounded-tr-lg rounded-br-lg shadow-lg p-6 flex flex-col items-center justify-center hover:shadow-xl transition-shadow aspect-square"
         >
           <svg className="w-10 h-10 text-emerald-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -445,7 +508,7 @@ function App() {
         </button>
 
         <button
-          onClick={() => setActiveSection('admin')}
+          onClick={() => handleNavigate('admin')}
           className="bg-white rounded-br-[4rem] rounded-tl-lg rounded-tr-lg rounded-bl-lg shadow-lg p-6 flex flex-col items-center justify-center hover:shadow-xl transition-shadow aspect-square"
         >
           <svg className="w-10 h-10 text-emerald-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
