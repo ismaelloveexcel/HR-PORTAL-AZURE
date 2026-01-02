@@ -64,6 +64,27 @@ Four main tables with migrations managed by Alembic:
 - Frontend runs on port 5000 (Vite dev server)
 - Database migrations via `alembic upgrade head`
 
+### Pulling data from Replit & quick app analysis
+
+Use this when you need to grab the live data and a quick health snapshot from the running Replit workspace.
+
+1. Open the Replit Shell (Secrets must already include `DATABASE_URL`).
+2. Run the helper script (saves everything to `exports/` by default):
+   ```bash
+   bash scripts/replit_data_pull.sh
+   ```
+   - Optional: choose a different output folder → `bash scripts/replit_data_pull.sh ./custom_exports` (or any workspace path you prefer)
+3. Artifacts produced:
+   - `replit_db.dump` (binary `pg_dump` for restore)
+   - `replit_db.sql` (plain SQL export)
+   - `app_snapshot.tar.gz` (backend, frontend, `.replit` config, and top-level docs)
+   - `scan_report.json` (result of the built-in `proactive_scan` code analysis)
+4. Download the files from the Replit Files panel or with `wget`/`curl` if you prefer CLI.
+5. For a standalone health check without exporting data:
+   ```bash
+   python scripts/proactive_scan.py --full
+   ```
+
 ## External Dependencies
 
 ### Database
