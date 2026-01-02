@@ -745,6 +745,7 @@ async def send_probation_evaluation(employee_id: str):
 ```python
 # Backend: AI-powered job description generator
 from fastapi import APIRouter
+from datetime import datetime
 import httpx
 
 router = APIRouter()
@@ -760,6 +761,9 @@ async def generate_job_description(
     """Generate job description using local Ollama LLM"""
     
     # Build prompt
+    responsibilities_text = '\n'.join(f'- {r}' for r in key_responsibilities)
+    skills_text = '\n'.join(f'- {s}' for s in required_skills)
+    
     prompt = f"""
     Generate a professional job description for the following role:
     
@@ -768,10 +772,10 @@ async def generate_job_description(
     Experience Level: {experience_level}
     
     Key Responsibilities:
-    {chr(10).join(f'- {r}' for r in key_responsibilities)}
+    {responsibilities_text}
     
     Required Skills:
-    {chr(10).join(f'- {s}' for s in required_skills)}
+    {skills_text}
     
     Include sections for: Overview, Responsibilities, Requirements, Nice-to-Have, Benefits.
     Format in markdown.
