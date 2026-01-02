@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee'
 
 interface Employee {
   id: number
@@ -1242,6 +1242,16 @@ function App() {
                 <p className="font-medium text-gray-800">Recruitment</p>
                 <p className="text-sm text-gray-500">Requests & Benefits</p>
               </button>
+              <button 
+                onClick={() => setActiveSection('templates')}
+                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+              >
+                <svg className="w-8 h-8 text-indigo-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+                <p className="font-medium text-gray-800">Templates</p>
+                <p className="text-sm text-gray-500">Pass templates</p>
+              </button>
             </div>
           </div>
         </div>
@@ -1620,6 +1630,619 @@ function App() {
                     Close
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Templates Section
+  if (activeSection === 'templates' || activeSection === 'template-manager' || activeSection === 'template-candidate' || activeSection === 'template-onboarding' || activeSection === 'template-employee') {
+    const templateType = activeSection === 'template-manager' ? 'manager' :
+                         activeSection === 'template-candidate' ? 'candidate' :
+                         activeSection === 'template-onboarding' ? 'onboarding' :
+                         activeSection === 'template-employee' ? 'employee' : null
+
+    return (
+      <div className="min-h-screen bg-gray-100 p-8">
+        {loginModal}
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <img src="/assets/logo.png" alt="Baynunah" className="h-6 mb-1" />
+              <h1 className="text-2xl font-semibold text-gray-800">Pass Templates</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              {user && (
+                <span className="text-sm text-gray-600">
+                  {user.name} ({user.role})
+                </span>
+              )}
+              <button
+                onClick={() => templateType ? setActiveSection('templates') : handleNavigate('home')}
+                className="px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                ← {templateType ? 'Back to Templates' : 'Back to Home'}
+              </button>
+            </div>
+          </div>
+
+          {/* Template Cards Grid */}
+          {!templateType && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Manager Pass Card */}
+              <button
+                onClick={() => setActiveSection('template-manager')}
+                className="bg-white rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all border-l-4 border-blue-500"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">Manager Pass</h3>
+                    <p className="text-sm text-gray-500 mb-3">Recruitment governance, approvals, visibility, next actions</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">Approvals</span>
+                      <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">Pipeline</span>
+                      <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">Actions</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Candidate Pass Card */}
+              <button
+                onClick={() => setActiveSection('template-candidate')}
+                className="bg-white rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all border-l-4 border-purple-500"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">Candidate Pass</h3>
+                    <p className="text-sm text-gray-500 mb-3">Candidate experience, HR visibility, recruitment timeline</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-full">Stages</span>
+                      <span className="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-full">Timeline</span>
+                      <span className="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-full">Contact</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Onboarding Pass Card */}
+              <button
+                onClick={() => setActiveSection('template-onboarding')}
+                className="bg-white rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all border-l-4 border-emerald-500"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">Onboarding Pass</h3>
+                    <p className="text-sm text-gray-500 mb-3">Post-offer acceptance, new joiner checklist, document collection</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-full">Checklist</span>
+                      <span className="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-full">Documents</span>
+                      <span className="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-full">Setup</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Employee Pass Card */}
+              <button
+                onClick={() => setActiveSection('template-employee')}
+                className="bg-white rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all border-l-4 border-amber-500"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">Employee Pass</h3>
+                    <p className="text-sm text-gray-500 mb-3">Living digital identity for the employee lifecycle</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-amber-50 text-amber-600 text-xs rounded-full">Profile</span>
+                      <span className="px-2 py-1 bg-amber-50 text-amber-600 text-xs rounded-full">Requests</span>
+                      <span className="px-2 py-1 bg-amber-50 text-amber-600 text-xs rounded-full">Actions</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* Manager Pass Template */}
+          {templateType === 'manager' && (
+            <div className="space-y-6">
+              {/* Pass Preview Card */}
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-md mx-auto">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-blue-100 text-sm">Manager Name</p>
+                        <p className="text-xl font-bold">[Manager Name]</p>
+                        <p className="text-blue-200 text-sm">ID: [Manager ID]</p>
+                      </div>
+                    </div>
+                    <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="px-2 py-1 bg-white/20 rounded text-xs">Department</span>
+                    <span className="px-2 py-1 bg-green-500/80 rounded text-xs">Active</span>
+                  </div>
+                </div>
+
+                {/* Recruitment Overview */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Recruitment Overview</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Position</p>
+                      <p className="font-medium text-gray-800">[Position Title]</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Status</p>
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Open</span>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">SLA Days</p>
+                      <p className="font-medium text-gray-800">[X] days</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Pipeline</p>
+                      <p className="font-medium text-gray-800">[X] candidates</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Approvals Block */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Approvals</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-2 bg-amber-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Job Requisition</span>
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">Pending</span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Budget/Salary</span>
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Approved</span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-700">Offer Approval</span>
+                      <span className="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs rounded-full">Not Started</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pipeline Snapshot */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Pipeline Snapshot</h4>
+                  <div className="flex items-center justify-between">
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-blue-600 font-bold text-sm">5</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Screen</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-purple-600 font-bold text-sm">3</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Assess</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-amber-600 font-bold text-sm">2</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Interview</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-emerald-600 font-bold text-sm">1</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Offer</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-gray-600 font-bold text-sm">0</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Onboard</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Next Actions */}
+                <div className="p-4">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Next Actions</h4>
+                  <div className="space-y-2">
+                    <button className="w-full p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors text-left flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Approve Pending Items
+                    </button>
+                    <button className="w-full p-3 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors text-left flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Review Candidates
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Template Info */}
+              <div className="bg-blue-50 rounded-xl p-6 max-w-md mx-auto">
+                <h4 className="font-semibold text-blue-800 mb-2">Manager Pass Template</h4>
+                <p className="text-sm text-blue-700">This template provides recruitment governance, approvals visibility, candidate pipeline tracking, and actionable next steps for hiring managers.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Candidate Pass Template */}
+          {templateType === 'candidate' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-md mx-auto">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-6 text-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-purple-100 text-sm">Candidate</p>
+                        <p className="text-xl font-bold">[Candidate Name]</p>
+                        <p className="text-purple-200 text-sm">ID: [Candidate ID]</p>
+                      </div>
+                    </div>
+                    <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="px-2 py-1 bg-white/20 rounded text-xs">[Position Title]</span>
+                    <span className="px-2 py-1 bg-amber-500/80 rounded text-xs">Interview Stage</span>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="p-4 border-b flex gap-2">
+                  <button className="flex-1 p-2 bg-green-50 text-green-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    WhatsApp HR
+                  </button>
+                  <button className="flex-1 p-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    Email HR
+                  </button>
+                  <button className="flex-1 p-2 bg-gray-50 text-gray-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Download JD
+                  </button>
+                </div>
+
+                {/* Stage Panel */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Recruitment Stages</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">Application Received</span>
+                      <span className="text-xs text-gray-500">Jan 15</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">Screening</span>
+                      <span className="text-xs text-gray-500">Jan 18</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">Assessment</span>
+                      <span className="text-xs text-gray-500">Jan 22</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-amber-50 rounded-lg">
+                      <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">4</span>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1 font-medium">Interview</span>
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">In Progress</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-60">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">5</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Offer</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-60">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">6</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Onboarding</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Next Actions */}
+                <div className="p-4">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Next Actions</h4>
+                  <div className="space-y-2">
+                    <button className="w-full p-3 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors text-left flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      Attend Interview
+                    </button>
+                    <button className="w-full p-3 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors text-left flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Submit Documents
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 rounded-xl p-6 max-w-md mx-auto">
+                <h4 className="font-semibold text-purple-800 mb-2">Candidate Pass Template</h4>
+                <p className="text-sm text-purple-700">This template tracks candidate progress through recruitment stages, provides quick HR contact options, and shows clear next steps for the candidate.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Onboarding Pass Template */}
+          {templateType === 'onboarding' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-md mx-auto">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 text-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-emerald-100 text-sm">New Joiner</p>
+                        <p className="text-xl font-bold">[Employee Name]</p>
+                        <p className="text-emerald-200 text-sm">Temp ID: [TEMP-XXX]</p>
+                      </div>
+                    </div>
+                    <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="px-2 py-1 bg-white/20 rounded text-xs">[Position]</span>
+                    <span className="px-2 py-1 bg-blue-500/80 rounded text-xs">New Joiner</span>
+                  </div>
+                </div>
+
+                {/* Onboarding Checklist */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Onboarding Checklist</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-2 bg-green-50 rounded-lg">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1">Document Collection</span>
+                      <span className="text-xs text-gray-500">By HR</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-amber-50 rounded-lg">
+                      <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </div>
+                      <span className="text-sm text-gray-700 flex-1 font-medium">Visa / Clearance</span>
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">Pending</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-70">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">3</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Medical</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-70">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">4</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">IT Setup</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-70">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">5</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Induction Schedule</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-70">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">6</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Insurance Activation</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-70">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">7</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Bank Setup</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg opacity-70">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">8</span>
+                      </div>
+                      <span className="text-sm text-gray-500 flex-1">Attendance Registration</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Next Actions */}
+                <div className="p-4">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Next Actions</h4>
+                  <div className="space-y-2">
+                    <button className="w-full p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors text-left flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                      Upload Document
+                    </button>
+                    <button className="w-full p-3 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors text-left flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      Acknowledge Policies
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-emerald-50 rounded-xl p-6 max-w-md mx-auto">
+                <h4 className="font-semibold text-emerald-800 mb-2">Onboarding Pass Template</h4>
+                <p className="text-sm text-emerald-700">This template is used after offer acceptance to track new joiner onboarding progress including documents, visa, IT setup, and induction scheduling.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Employee Pass Template */}
+          {templateType === 'employee' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-md mx-auto">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-amber-100 text-sm">Employee</p>
+                        <p className="text-xl font-bold">[Employee Name]</p>
+                        <p className="text-amber-200 text-sm">ID: [EMP-XXX]</p>
+                      </div>
+                    </div>
+                    <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="px-2 py-1 bg-white/20 rounded text-xs">[Position] - [Department]</span>
+                    <span className="px-2 py-1 bg-green-500/80 rounded text-xs">Active</span>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Quick Actions</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button className="p-3 bg-green-50 text-green-700 rounded-lg text-xs font-medium flex flex-col items-center gap-1 hover:bg-green-100">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                      WhatsApp
+                    </button>
+                    <button className="p-3 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium flex flex-col items-center gap-1 hover:bg-blue-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      Email HR
+                    </button>
+                    <button className="p-3 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium flex flex-col items-center gap-1 hover:bg-amber-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Payslip
+                    </button>
+                    <button className="p-3 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium flex flex-col items-center gap-1 hover:bg-purple-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Documents
+                    </button>
+                    <button className="p-3 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium flex flex-col items-center gap-1 hover:bg-emerald-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      Leave
+                    </button>
+                    <button className="p-3 bg-gray-50 text-gray-700 rounded-lg text-xs font-medium flex flex-col items-center gap-1 hover:bg-gray-100">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                      Bank Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* Profile Snapshot */}
+                <div className="p-4 border-b">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Profile Snapshot</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Join Date</p>
+                      <p className="font-medium text-gray-800">[DD/MM/YYYY]</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Visa Expiry</p>
+                      <p className="font-medium text-gray-800">[DD/MM/YYYY]</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Insurance Plan</p>
+                      <p className="font-medium text-gray-800">[Plan Name]</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500">Work Schedule</p>
+                      <p className="font-medium text-gray-800">5 days/week</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Current Requests */}
+                <div className="p-4">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase mb-3">Current Requests</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span className="text-sm text-gray-700">Leave Request</span>
+                      </div>
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">Pending</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span className="text-sm text-gray-700">Document Request</span>
+                      </div>
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Completed</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 rounded-xl p-6 max-w-md mx-auto">
+                <h4 className="font-semibold text-amber-800 mb-2">Employee Pass Template</h4>
+                <p className="text-sm text-amber-700">This template serves as a living digital identity for employees, providing quick access to HR actions, profile information, and tracking of current requests.</p>
               </div>
             </div>
           )}
@@ -2030,6 +2653,42 @@ function App() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
           <span className="text-sm font-medium text-gray-700 uppercase tracking-wide">Admin</span>
+        </button>
+      </div>
+
+      {/* Quick Access Row */}
+      <div className="flex gap-4 mt-8">
+        <button
+          onClick={() => setActiveSection('templates')}
+          className="bg-white rounded-xl px-6 py-4 flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+          style={{ boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)' }}
+        >
+          <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+          </svg>
+          <span className="text-sm font-medium text-gray-700">Templates</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('passes')}
+          className="bg-white rounded-xl px-6 py-4 flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+          style={{ boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)' }}
+        >
+          <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+          </svg>
+          <span className="text-sm font-medium text-gray-700">Passes</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('recruitment')}
+          className="bg-white rounded-xl px-6 py-4 flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+          style={{ boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)' }}
+        >
+          <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span className="text-sm font-medium text-gray-700">Recruitment</span>
         </button>
       </div>
 
