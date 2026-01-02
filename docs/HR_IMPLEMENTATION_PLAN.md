@@ -11,7 +11,10 @@
 **Target API:** `POST /api/employees/import` (CSV with headers: `employee_id,name,email,department,date_of_birth,role`).
 
 **Migration steps (1–2 days):**
-1. **Profiling:** Open the Excel/CSV, validate headers, and normalize DOB to `DDMMYYYY` (8 digits, no separators). Convert common inputs like `DD/MM/YYYY` or `YYYY-MM-DD` into that exact 8-digit string **for the import API (it expects `DDMMYYYY`)**, and also persist an ISO `YYYY-MM-DD` column in the database for reporting and integrations.
+1. **Profiling:** Open the Excel/CSV and validate headers.  
+   - Normalize DOB to `DDMMYYYY` (8 digits, no separators) for the import API (it expects this).  
+   - Convert common inputs like `DD/MM/YYYY` or `YYYY-MM-DD` into the 8-digit string before import.  
+   - Persist an ISO `YYYY-MM-DD` column in the database for reporting and integrations.
 2. **Data hygiene:** Deduplicate `employee_id`, enforce roles (`admin|hr|viewer`), and fill missing emails/departments.
 3. **Staging import:** Use `/api/employees/import` in a non-prod environment; capture the returned summary (`created|skipped|errors`).
 4. **Fix & re-run:** Correct errored rows, re-upload until zero errors.
@@ -27,7 +30,7 @@
 
 ## 2) HR Operations Menu (under Admin)
 
-Add submenus to the Admin area so HR work is grouped and permissions stay centralized. Each item below can be backed by a feature toggle (see existing `/admin/features` and categories in `admin.py`):
+Add submenus to the Admin area so HR work is grouped and permissions stay centralized. Each item below can be backed by a feature toggle (see existing `/admin/features` and categories in `backend/app/routers/admin.py`):
 
 1. **Recruitment & Offers**  
    - Track candidates, offers, start dates, and pre-boarding tasks.  
@@ -83,9 +86,9 @@ Immediate actions (no backend rewrite required):
 
 - **Doc templates:** Store DOCX/Markdown templates per document type; render via backend service (e.g., docx templating) and return signed PDFs.  
   - Allowlist expected dynamic fields before rendering.  
-  - Sanitize and escape user-provided values with an HTML/Markdown sanitizer.  
+  - Sanitize and escape user-provided values (HTML/Markdown sanitizer for previews; plain-text escaping for PDF inputs).  
   - Use parameterized rendering with template auto-escaping to avoid injection.  
-  - Serve generated documents with a Content Security Policy (CSP) to block inline scripts and untrusted sources.  
+  - When serving HTML previews, enforce a Content Security Policy (CSP) to block inline scripts and untrusted sources.  
 - **Reminders:** Use a daily cron/worker to email or post Teams/Slack reminders for probation, onboarding tasks, and pending passes.  
 - **Exports:** Provide CSV exports for each submenu; align columns with the import schema for round-tripping data.
 
