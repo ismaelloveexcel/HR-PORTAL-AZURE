@@ -135,6 +135,10 @@ async def get_today_status(
     session: AsyncSession = Depends(get_session)
 ):
     """Get today's attendance status for current user."""
+    # Check if attendance feature is enabled
+    if not await check_feature_enabled(session, "feature_attendance"):
+        raise HTTPException(status_code=403, detail="Attendance feature is disabled")
+    
     today = date.today()
     
     result = await session.execute(
@@ -302,10 +306,12 @@ async def clock_out(
     if record.clock_out:
         raise HTTPException(status_code=400, detail="Already clocked out today")
     
-    # End break if on break
+    # End break if on break (accumulate with previous breaks)
     if record.break_start and not record.break_end:
+        previous_break_mins = record.break_duration_minutes or 0
+        this_break_mins = int((now - record.break_start).total_seconds() / 60)
         record.break_end = now
-        record.break_duration_minutes = int((now - record.break_start).total_seconds() / 60)
+        record.break_duration_minutes = previous_break_mins + this_break_mins
     
     # Store GPS coordinates if GPS feature is enabled
     gps_enabled = await check_feature_enabled(session, "feature_attendance_gps")
@@ -352,6 +358,10 @@ async def start_break(
     session: AsyncSession = Depends(get_session)
 ):
     """Start break."""
+    # Check if attendance feature is enabled
+    if not await check_feature_enabled(session, "feature_attendance"):
+        raise HTTPException(status_code=403, detail="Attendance feature is disabled")
+    
     today = date.today()
     now = datetime.now(timezone.utc)
     
@@ -374,9 +384,13 @@ async def start_break(
     if record.break_start and not record.break_end:
         raise HTTPException(status_code=400, detail="Already on break")
     
+    # Accumulate break duration from previous breaks
+    previous_break_mins = record.break_duration_minutes or 0
+    
     record.break_start = now
     record.break_end = None
-    record.break_duration_minutes = None
+    # Store previous accumulated duration to add to when break ends
+    record.break_duration_minutes = previous_break_mins
     
     await session.commit()
     await session.refresh(record)
@@ -391,6 +405,10 @@ async def end_break(
     session: AsyncSession = Depends(get_session)
 ):
     """End break."""
+    # Check if attendance feature is enabled
+    if not await check_feature_enabled(session, "feature_attendance"):
+        raise HTTPException(status_code=403, detail="Attendance feature is disabled")
+    
     today = date.today()
     now = datetime.now(timezone.utc)
     
@@ -410,8 +428,12 @@ async def end_break(
     if record.break_end:
         raise HTTPException(status_code=400, detail="Break already ended")
     
+    # Calculate this break's duration and add to accumulated total
+    this_break_mins = int((now - record.break_start).total_seconds() / 60)
+    previous_break_mins = record.break_duration_minutes or 0
+    
     record.break_end = now
-    record.break_duration_minutes = int((now - record.break_start).total_seconds() / 60)
+    record.break_duration_minutes = previous_break_mins + this_break_mins
     
     await session.commit()
     await session.refresh(record)
@@ -485,6 +507,10 @@ async def get_dashboard(
     session: AsyncSession = Depends(get_session)
 ):
     """Get attendance dashboard (admin/HR only)."""
+    # Check if attendance feature is enabled
+    if not await check_feature_enabled(session, "feature_attendance"):
+        raise HTTPException(status_code=403, detail="Attendance feature is disabled")
+    
     if current_user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -545,6 +571,12 @@ async def approve_wfh(
     session: AsyncSession = Depends(get_session)
 ):
     """Approve or reject WFH request (admin/HR/manager only)."""
+    # Check if attendance and WFH features are enabled
+    if not await check_feature_enabled(session, "feature_attendance"):
+        raise HTTPException(status_code=403, detail="Attendance feature is disabled")
+    if not await check_feature_enabled(session, "feature_attendance_wfh"):
+        raise HTTPException(status_code=403, detail="WFH feature is disabled")
+    
     if current_user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -584,6 +616,12 @@ async def approve_overtime(
     session: AsyncSession = Depends(get_session)
 ):
     """Approve or reject overtime (admin/HR only)."""
+    # Check if attendance and overtime features are enabled
+    if not await check_feature_enabled(session, "feature_attendance"):
+        raise HTTPException(status_code=403, detail="Attendance feature is disabled")
+    if not await check_feature_enabled(session, "feature_attendance_overtime"):
+        raise HTTPException(status_code=403, detail="Overtime feature is disabled")
+    
     if current_user.role not in ["admin", "hr"]:
         raise HTTPException(status_code=403, detail="Access denied")
     
