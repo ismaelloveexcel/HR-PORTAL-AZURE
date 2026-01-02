@@ -127,11 +127,7 @@ The Secure Renewals application is a well-structured internal HR portal for mana
 ### System Maintenance (Zero-Touch)
 
 | Area | Automation |
-<<<<<<< HEAD
 |------|------------|
-=======
-|------|-----------|
->>>>>>> origin/codex/provide-assistance-with-coding-issue
 | Deployments | **GitHub Actions auto-deploy on merge to main** |
 | Database migrations | **Auto-run on deployment** |
 | Dependency updates | **Dependabot with auto-merge for patches** |
@@ -142,11 +138,7 @@ The Secure Renewals application is a well-structured internal HR portal for mana
 ### Data Entry Reduction
 
 | Task | Automation |
-<<<<<<< HEAD
 |------|------------|
-=======
-|------|-----------|
->>>>>>> origin/codex/provide-assistance-with-coding-issue
 | Employee import | **CSV bulk import with auto-validation** |
 | Bulk renewals | **CSV upload with auto-validation** |
 | Reporting | **Scheduled exports to email** |
@@ -158,24 +150,15 @@ The Secure Renewals application is a well-structured internal HR portal for mana
 ### Immediate (Week 1-2) - Zero Manual Intervention Setup
 1. ✅ Create HR user documentation
 2. ✅ Document system architecture
-<<<<<<< HEAD
 3. ✅ **Employee ID + Password login** - Simple login, no complex token entry
-=======
-3. **Add SSO login** - Eliminate token entry completely
->>>>>>> origin/codex/provide-assistance-with-coding-issue
 4. **Add scheduled reminder jobs** - Auto-email for expiring contracts
 5. **Enable auto-deploy** - GitHub Actions deploys on merge
 
 ### Short-term (Month 1) - Automate Daily Tasks
 1. **Scheduled email notifications** - Contract expiry reminders (30/60/90 days)
 2. **Auto-assign onboarding checklists** - Triggered when employee added
-<<<<<<< HEAD
 3. ✅ **CSV bulk import** - Upload once, auto-validate and process
 4. ✅ **Password reset flow** - Self-service or HR-assisted reset
-=======
-3. **CSV bulk import** - Upload once, auto-validate and process
-4. **Password reset flow** - Self-service or HR-assisted reset
->>>>>>> origin/codex/provide-assistance-with-coding-issue
 
 ### Medium-term (Month 2-3) - Self-Service Everything
 1. **Self-service dashboard** - HR sees everything without manual queries
