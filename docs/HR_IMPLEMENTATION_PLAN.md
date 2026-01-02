@@ -69,7 +69,7 @@ Immediate actions (no backend rewrite required):
    - Log every attempt (timestamp, IP, user) to the audit log.
 3. **Rate limiting & alerts:** Leverage existing `slowapi` limiter (already wired in `backend/app/main.py`) for `/auth/login`; add alerting on repeated failures from the same IP.
 4. **Audit everything:** Log admin logins, feature-toggle changes, imports, password resets, and deactivations with actor + timestamp.
-5. **Network allow list (deployment):** Restrict admin routes to corporate IP/VPN at the reverse proxy level.
+5. **Network allowlist (deployment):** Restrict admin routes to corporate IP/VPN at the reverse proxy level.
 
 ---
 
@@ -85,7 +85,7 @@ Immediate actions (no backend rewrite required):
 ## 5) Automation & Templates
 
 - **Doc templates:** Store DOCX/Markdown templates per document type; render via backend service (e.g., docx templating) and return signed PDFs.  
-  - Allow list expected dynamic fields before rendering.  
+  - Allowlist expected dynamic fields before rendering.  
   - Sanitize and escape user-provided values (HTML/Markdown sanitizer for previews; plain-text escaping for PDF inputs).  
   - Use parameterized rendering with template auto-escaping to avoid injection.  
   - When serving HTML previews, enforce a Content Security Policy (CSP) to block inline scripts and untrusted sources.  
