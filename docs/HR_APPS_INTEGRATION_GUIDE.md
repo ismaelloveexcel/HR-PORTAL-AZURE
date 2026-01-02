@@ -143,7 +143,9 @@ async function fetchExternalData() {
 ```python
 # Backend integration approach
 # Option 1: Database-level integration (read OpenCATS candidates table)
-from sqlalchemy import create_engine, text
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import text
+from sqlalchemy.orm import sessionmaker
 import os
 
 # Securely retrieve connection string from environment
@@ -151,15 +153,17 @@ OPENCATS_DB_URL = os.getenv('OPENCATS_DATABASE_URL')
 if not OPENCATS_DB_URL:
     raise ValueError("OPENCATS_DATABASE_URL environment variable not set")
 
-opencats_engine = create_engine(OPENCATS_DB_URL, pool_pre_ping=True)
+# Use async engine for async operations
+opencats_engine = create_async_engine(OPENCATS_DB_URL, pool_pre_ping=True)
+AsyncSessionLocal = sessionmaker(opencats_engine, class_=AsyncSession, expire_on_commit=False)
 
 async def sync_candidates_from_opencats():
     """Periodic sync of candidates from OpenCATS"""
     # Read OpenCATS candidates using parameterized query
     query = text("SELECT * FROM candidate WHERE status = :status")
     
-    async with opencats_engine.begin() as conn:
-        result = await conn.execute(query, {"status": "active"})
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(query, {"status": "active"})
         candidates = result.fetchall()
     
     # Import into HR Portal
@@ -229,23 +233,40 @@ export function RecruitmentPipeline() {
 
 // Backend proxy endpoint (secure)
 // backend/app/routers/recruitment.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from app.auth.dependencies import get_current_user
+from app.schemas.user import User
 import httpx
 import os
 
 router = APIRouter()
-TWENTY_API_KEY = os.getenv('TWENTY_API_KEY')  # Secure storage
+
+# Validate API key is configured
+TWENTY_API_KEY = os.getenv('TWENTY_API_KEY')
+if not TWENTY_API_KEY:
+    raise ValueError("TWENTY_API_KEY environment variable not set")
 
 @router.get("/recruitment/candidates")
-async def get_candidates(current_user = Depends(get_current_user)):
+async def get_candidates(current_user: User = Depends(get_current_user)):
     """Proxy to Twenty API - keeps API key server-side"""
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            'https://twenty.yourdomain.com/api/candidates',
-            headers={'Authorization': f'Bearer {TWENTY_API_KEY}'}
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                'https://twenty.yourdomain.com/api/candidates',
+                headers={'Authorization': f'Bearer {TWENTY_API_KEY}'}
+            )
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Twenty API error: {e.response.status_code}"
         )
-        response.raise_for_status()
-        return response.json()
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to connect to Twenty API"
+        )
 ```
 
 **Integration Effort:** Low-Medium (1-2 weeks)
