@@ -143,9 +143,8 @@ async function fetchExternalData() {
 ```python
 # Backend integration approach
 # Option 1: Database-level integration (read OpenCATS candidates table)
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
-from sqlalchemy.orm import sessionmaker
 import os
 
 # Securely retrieve connection string from environment
@@ -155,8 +154,8 @@ if not OPENCATS_DB_URL:
 
 # Use async engine for async operations
 opencats_engine = create_async_engine(OPENCATS_DB_URL, pool_pre_ping=True)
-AsyncSessionLocal = sessionmaker(
-    bind=opencats_engine,
+AsyncSessionLocal = async_sessionmaker(
+    opencats_engine,
     class_=AsyncSession,
     expire_on_commit=False
 )
@@ -168,7 +167,7 @@ async def sync_candidates_from_opencats():
     
     async with AsyncSessionLocal() as session:
         result = await session.execute(query, {"status": "active"})
-        candidates = result.fetchall()
+        candidates = result.all()  # Use .all() for async results
     
     # Import into HR Portal
     for candidate in candidates:
@@ -1427,6 +1426,9 @@ import os
 from contextlib import asynccontextmanager
 
 class BaseIntegration:
+    # Subclasses should override this with their specific env var name
+    api_key_env_var = 'API_KEY'  # Default, should be overridden
+    
     def __init__(self, api_url: str, api_key: Optional[str] = None):
         self.api_url = api_url
         self.api_key = api_key or self._get_api_key_from_env()
@@ -1434,9 +1436,11 @@ class BaseIntegration:
     
     def _get_api_key_from_env(self) -> str:
         """Securely retrieve API key from environment"""
-        key = os.getenv(f'{self.__class__.__name__.upper()}_API_KEY')
+        key = os.getenv(self.api_key_env_var)
         if not key:
-            raise ValueError(f"API key not found in environment for {self.__class__.__name__}")
+            raise ValueError(
+                f"API key not found: {self.api_key_env_var} environment variable not set"
+            )
         return key
     
     @asynccontextmanager
@@ -1479,6 +1483,20 @@ class BaseIntegration:
 class IntegrationError(Exception):
     """Custom exception for integration errors"""
     pass
+
+# Example subclass implementation
+class TwentyIntegration(BaseIntegration):
+    api_key_env_var = 'TWENTY_API_KEY'  # Explicit env var name
+    
+    def __init__(self):
+        super().__init__(api_url='https://twenty.yourdomain.com/api')
+
+# Usage example
+async def get_twenty_candidates():
+    """Fetch candidates from Twenty CRM"""
+    integration = TwentyIntegration()
+    candidates = await integration.request('GET', '/candidates')
+    return candidates
 ```
 
 ---
