@@ -496,7 +496,7 @@ function App() {
         <h1 className="text-4xl font-light tracking-widest text-gray-800">HR PORTAL</h1>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 w-96">
+      <div className="grid grid-cols-2 gap-3" style={{ width: '420px' }}>
         <button
           onClick={() => handleNavigate('employees')}
           className="bg-gradient-to-br from-white to-gray-50 rounded-tl-full rounded-tr-md rounded-bl-md rounded-br-md p-8 flex flex-col items-center justify-center aspect-square transition-all duration-300 hover:scale-105 hover:-translate-y-1"
@@ -541,6 +541,8 @@ function App() {
           <span className="text-sm font-medium text-gray-700 uppercase tracking-wide">Admin</span>
         </button>
       </div>
+
+      <p className="text-gray-400 text-xs mt-12">Conceptualised by Baynunah HR|IS</p>
     </div>
   )
 }
