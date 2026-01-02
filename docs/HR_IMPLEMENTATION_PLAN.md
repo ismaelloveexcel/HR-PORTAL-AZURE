@@ -12,7 +12,7 @@
 
 **Migration steps (1–2 days):**
 1. **Profiling:** Open the Excel/CSV and validate headers.  
-   - Normalize DOB to `DDMMYYYY` (8 digits, no separators) for the import API (it expects this).  
+   - Normalize DOB to `DDMMYYYY` (8 digits, no separators) for the import API (it expects this to align with first-login password rules).  
    - Convert common inputs like `DD/MM/YYYY` or `YYYY-MM-DD` into the 8-digit string before import.  
    - Persist an ISO `YYYY-MM-DD` column in the database for reporting and integrations.
 2. **Data hygiene:** Deduplicate `employee_id`, enforce roles (`admin|hr|viewer`), and fill missing emails/departments.
@@ -30,7 +30,7 @@
 
 ## 2) HR Operations Menu (under Admin)
 
-Add submenus to the Admin area so HR work is grouped and permissions stay centralized. Each item below can be backed by a feature toggle (see existing `/admin/features` and categories in `backend/app/routers/admin.py`):
+Add submenus to the Admin area so HR work is grouped and permissions stay centralized. Each item below can be backed by a feature toggle (see existing `/admin/features` and categories in `backend/app/routers/admin.py`; use `onboarding`, `workflow`, `documents`, and `reports` categories for the new HR features):
 
 1. **Recruitment & Offers**  
    - Track candidates, offers, start dates, and pre-boarding tasks.  
@@ -67,7 +67,7 @@ Immediate actions (no backend rewrite required):
    - Minimum 12 random characters (high entropy).  
    - Rotation: daily by default; configurable to 6–12 hours for high-security environments.  
    - Log every attempt (timestamp, IP, user) to the audit log.
-3. **Rate limiting & alerts:** Leverage existing `slowapi` limiter (already wired in `main.py`) for `/auth/login`; add alerting on repeated failures from the same IP.
+3. **Rate limiting & alerts:** Leverage existing `slowapi` limiter (already wired in `backend/app/main.py`) for `/auth/login`; add alerting on repeated failures from the same IP.
 4. **Audit everything:** Log admin logins, feature-toggle changes, imports, password resets, and deactivations with actor + timestamp.
 5. **Network allowlist (deployment):** Restrict admin routes to corporate IP/VPN at the reverse proxy level.
 
