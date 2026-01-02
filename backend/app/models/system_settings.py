@@ -149,6 +149,43 @@ DEFAULT_FEATURE_TOGGLES = [
         "category": "documents"
     },
     
+    # Attendance Module
+    {
+        "key": "feature_attendance",
+        "value": "true",
+        "description": "Attendance Module - Track employee clock in/out and work hours",
+        "is_enabled": True,
+        "category": "attendance"
+    },
+    {
+        "key": "feature_attendance_gps",
+        "value": "true",
+        "description": "GPS Tracking - Capture location on clock in/out",
+        "is_enabled": True,
+        "category": "attendance"
+    },
+    {
+        "key": "feature_attendance_wfh",
+        "value": "true",
+        "description": "Work From Home - Allow WFH attendance with approval workflow",
+        "is_enabled": True,
+        "category": "attendance"
+    },
+    {
+        "key": "feature_attendance_overtime",
+        "value": "true",
+        "description": "Overtime Tracking - Calculate and approve overtime hours",
+        "is_enabled": True,
+        "category": "attendance"
+    },
+    {
+        "key": "feature_attendance_reminders",
+        "value": "false",
+        "description": "Attendance Reminders - Send 10AM/12PM/5PM escalation reminders",
+        "is_enabled": False,
+        "category": "attendance"
+    },
+    
     # Pass Generation
     {
         "key": "feature_passes",
