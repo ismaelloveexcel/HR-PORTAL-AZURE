@@ -58,3 +58,6 @@ frontend/.vite/
 # Backend
 backend/.env
 __pypackages__/
+
+# Scripts output
+scan_report.json
