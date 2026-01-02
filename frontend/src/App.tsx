@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes'
 
 interface Employee {
   id: number
@@ -38,6 +38,42 @@ interface User {
   token: string
 }
 
+interface Pass {
+  id: number
+  pass_number: string
+  pass_type: string
+  full_name: string
+  email: string | null
+  phone: string | null
+  department: string | null
+  position: string | null
+  valid_from: string
+  valid_until: string
+  access_areas: string | null
+  purpose: string | null
+  sponsor_name: string | null
+  employee_id: string | null
+  status: string
+  is_printed: boolean
+  created_by: string
+  created_at: string
+}
+
+interface PassFormData {
+  pass_type: string
+  full_name: string
+  email: string
+  phone: string
+  department: string
+  position: string
+  valid_from: string
+  valid_until: string
+  access_areas: string
+  purpose: string
+  sponsor_name: string
+  employee_id: string
+}
+
 const API_BASE = '/api'
 
 function App() {
@@ -53,6 +89,23 @@ function App() {
   const [password, setPassword] = useState('')
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [pendingSection, setPendingSection] = useState<Section | null>(null)
+  const [passes, setPasses] = useState<Pass[]>([])
+  const [showPassForm, setShowPassForm] = useState(false)
+  const [passFormData, setPassFormData] = useState<PassFormData>({
+    pass_type: 'recruitment',
+    full_name: '',
+    email: '',
+    phone: '',
+    department: '',
+    position: '',
+    valid_from: new Date().toISOString().split('T')[0],
+    valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    access_areas: '',
+    purpose: '',
+    sponsor_name: '',
+    employee_id: '',
+  })
+  const [passesLoading, setPassesLoading] = useState(false)
 
   const isAdminLogin = pendingSection === 'admin' || pendingSection === 'secret-chamber'
 
@@ -203,6 +256,71 @@ function App() {
     }
   }
 
+  const fetchPasses = async () => {
+    if (!user) return
+    setPassesLoading(true)
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/passes`)
+      if (res.ok) {
+        const data = await res.json()
+        setPasses(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch passes:', err)
+    } finally {
+      setPassesLoading(false)
+    }
+  }
+
+  const createPass = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPassesLoading(true)
+    setError(null)
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/passes`, {
+        method: 'POST',
+        body: JSON.stringify(passFormData),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to create pass')
+      }
+      setShowPassForm(false)
+      setPassFormData({
+        pass_type: 'recruitment',
+        full_name: '',
+        email: '',
+        phone: '',
+        department: '',
+        position: '',
+        valid_from: new Date().toISOString().split('T')[0],
+        valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        access_areas: '',
+        purpose: '',
+        sponsor_name: '',
+        employee_id: '',
+      })
+      await fetchPasses()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create pass')
+    } finally {
+      setPassesLoading(false)
+    }
+  }
+
+  const revokePass = async (passNumber: string) => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/passes/${passNumber}/revoke`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        await fetchPasses()
+      }
+    } catch (err) {
+      console.error('Failed to revoke pass:', err)
+    }
+  }
+
   useEffect(() => {
     if (activeSection === 'employees' && user) {
       fetchEmployees()
@@ -210,6 +328,8 @@ function App() {
       fetchAdminData()
     } else if (activeSection === 'secret-chamber' && user?.role === 'admin') {
       fetchSecretChamberData()
+    } else if (activeSection === 'passes' && user) {
+      fetchPasses()
     }
   }, [activeSection, user])
 
@@ -578,14 +698,287 @@ function App() {
     )
   }
 
-  if (activeSection === 'onboarding' || activeSection === 'external') {
+  if (activeSection === 'passes') {
+    return (
+      <div className="min-h-screen bg-gray-100 p-8">
+        {loginModal}
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <img src="/assets/logo.png" alt="Baynunah" className="h-6 mb-1" />
+              <h1 className="text-2xl font-semibold text-gray-800">Pass Generation</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              {user && (
+                <span className="text-sm text-gray-600">
+                  {user.name} ({user.role})
+                </span>
+              )}
+              <button
+                onClick={() => handleNavigate('home')}
+                className="px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+              >
+                ← Back to Home
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setShowPassForm(true)}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Generate New Pass
+            </button>
+          </div>
+
+          {showPassForm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-800">Generate New Pass</h2>
+                  <button
+                    onClick={() => setShowPassForm(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>
+                )}
+                
+                <form onSubmit={createPass} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Pass Type</label>
+                      <select
+                        value={passFormData.pass_type}
+                        onChange={e => setPassFormData({...passFormData, pass_type: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="recruitment">Recruitment</option>
+                        <option value="onboarding">Onboarding</option>
+                        <option value="visitor">Visitor</option>
+                        <option value="contractor">Contractor</option>
+                        <option value="temporary">Temporary</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                      <input
+                        type="text"
+                        value={passFormData.full_name}
+                        onChange={e => setPassFormData({...passFormData, full_name: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={passFormData.email}
+                        onChange={e => setPassFormData({...passFormData, email: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input
+                        type="tel"
+                        value={passFormData.phone}
+                        onChange={e => setPassFormData({...passFormData, phone: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                      <input
+                        type="text"
+                        value={passFormData.department}
+                        onChange={e => setPassFormData({...passFormData, department: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                      <input
+                        type="text"
+                        value={passFormData.position}
+                        onChange={e => setPassFormData({...passFormData, position: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Valid From *</label>
+                      <input
+                        type="date"
+                        value={passFormData.valid_from}
+                        onChange={e => setPassFormData({...passFormData, valid_from: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Valid Until *</label>
+                      <input
+                        type="date"
+                        value={passFormData.valid_until}
+                        onChange={e => setPassFormData({...passFormData, valid_until: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Access Areas</label>
+                    <input
+                      type="text"
+                      value={passFormData.access_areas}
+                      onChange={e => setPassFormData({...passFormData, access_areas: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      placeholder="e.g., Lobby, Meeting Rooms, Cafeteria"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
+                    <input
+                      type="text"
+                      value={passFormData.purpose}
+                      onChange={e => setPassFormData({...passFormData, purpose: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      placeholder="e.g., Interview, Training, Site Visit"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sponsor Name</label>
+                    <input
+                      type="text"
+                      value={passFormData.sponsor_name}
+                      onChange={e => setPassFormData({...passFormData, sponsor_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Name of employee sponsor"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      disabled={passesLoading}
+                      className="flex-1 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                    >
+                      {passesLoading ? 'Creating...' : 'Generate Pass'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassForm(false)}
+                      className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {passesLoading && passes.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">Loading passes...</div>
+            ) : passes.length === 0 ? (
+              <div className="p-8 text-center">
+                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                <p className="text-gray-500 mb-2">No passes generated yet</p>
+                <p className="text-sm text-gray-400">Click "Generate New Pass" to create your first pass</p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pass #</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valid</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {passes.map(pass => (
+                    <tr key={pass.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm font-mono text-gray-900">{pass.pass_number}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                          pass.pass_type === 'recruitment' ? 'bg-blue-100 text-blue-700' :
+                          pass.pass_type === 'onboarding' ? 'bg-emerald-100 text-emerald-700' :
+                          pass.pass_type === 'visitor' ? 'bg-purple-100 text-purple-700' :
+                          pass.pass_type === 'contractor' ? 'bg-orange-100 text-orange-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {pass.pass_type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{pass.full_name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {pass.valid_from} to {pass.valid_until}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                          pass.status === 'active' ? 'bg-green-100 text-green-700' :
+                          pass.status === 'expired' ? 'bg-gray-100 text-gray-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {pass.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {pass.status === 'active' && (
+                          <button
+                            onClick={() => revokePass(pass.pass_number)}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Revoke
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (activeSection === 'external') {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
         {loginModal}
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-2xl w-full text-center">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4 capitalize">
-            {activeSection === 'external' ? 'External Users' : activeSection}
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">External Users</h2>
           <p className="text-gray-600 mb-6">This section is under development.</p>
           <button
             onClick={() => handleNavigate('home')}
@@ -636,14 +1029,14 @@ function App() {
         </button>
 
         <button
-          onClick={() => handleNavigate('onboarding')}
+          onClick={() => handleNavigate('passes')}
           className="bg-gradient-to-br from-white to-gray-50 rounded-tr-full rounded-tl-md rounded-bl-md rounded-br-md p-8 flex flex-col items-center justify-center aspect-square transition-all duration-300 hover:scale-105 hover:-translate-y-1"
           style={{ boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)' }}
         >
           <svg className="w-12 h-12 text-emerald-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
           </svg>
-          <span className="text-sm font-medium text-gray-700 uppercase tracking-wide">Onboarding</span>
+          <span className="text-sm font-medium text-gray-700 uppercase tracking-wide">Passes</span>
         </button>
 
         <button
