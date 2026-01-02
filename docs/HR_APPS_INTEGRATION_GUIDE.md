@@ -10,17 +10,18 @@
 ## 📋 Table of Contents
 
 1. [Executive Summary](#executive-summary)
-2. [Recruitment & Applicant Tracking](#1-recruitment--applicant-tracking)
-3. [Onboarding Automation](#2-onboarding-automation)
-4. [Employee Requests Management](#3-employee-requests-management)
-5. [Probation Evaluation & Performance](#4-probation-evaluation--performance)
-6. [Job Description Generation](#5-job-description-generation-ai-powered)
-7. [Offboarding Workflows](#6-offboarding-workflows)
-8. [Training & Learning Management](#7-training--learning-management)
-9. [Attendance Tracking (WFH Support)](#8-attendance-tracking-wfh-support)
-10. [Overtime Tracking & Leave Management](#9-overtime-tracking--leave-management)
-11. [Integration Architecture](#integration-architecture)
-12. [Implementation Roadmap](#implementation-roadmap)
+2. [Security Best Practices](#security-best-practices)
+3. [Recruitment & Applicant Tracking](#1-recruitment--applicant-tracking)
+4. [Onboarding Automation](#2-onboarding-automation)
+5. [Employee Requests Management](#3-employee-requests-management)
+6. [Probation Evaluation & Performance](#4-probation-evaluation--performance)
+7. [Job Description Generation](#5-job-description-generation-ai-powered)
+8. [Offboarding Workflows](#6-offboarding-workflows)
+9. [Training & Learning Management](#7-training--learning-management)
+10. [Attendance Tracking (WFH Support)](#8-attendance-tracking-wfh-support)
+11. [Overtime Tracking & Leave Management](#9-overtime-tracking--leave-management)
+12. [Integration Architecture](#integration-architecture)
+13. [Implementation Roadmap](#implementation-roadmap)
 
 ---
 
@@ -38,6 +39,86 @@ This guide identifies open-source GitHub repositories suitable for integration w
 - Coverage: All 10 HR operation areas
 - Integration patterns: REST API, webhooks, database sync, embeddable widgets
 - Tech stack compatibility: Python/Node.js focus for seamless integration
+
+---
+
+## Security Best Practices
+
+🔒 **Critical:** Follow these security guidelines when integrating external HR applications.
+
+### API Key Management
+
+**DO:**
+- ✅ Store API keys in environment variables or secure secret management systems (e.g., AWS Secrets Manager, HashiCorp Vault)
+- ✅ Use different API keys for development, staging, and production
+- ✅ Rotate API keys regularly (at least quarterly)
+- ✅ Keep API keys on the backend/server-side ONLY
+- ✅ Use parameterized queries to prevent SQL injection
+
+**DON'T:**
+- ❌ Never expose API keys in frontend code (e.g., `VITE_*` variables)
+- ❌ Never commit API keys to version control
+- ❌ Never hardcode API keys in source code
+- ❌ Never log API keys in application logs
+- ❌ Never use raw SQL queries with string concatenation
+
+### Integration Security Checklist
+
+- [ ] All external API calls go through backend proxy endpoints
+- [ ] API keys retrieved from secure environment variables
+- [ ] HTTP clients properly closed to prevent resource leaks
+- [ ] All database queries use parameterized/prepared statements
+- [ ] Error messages don't expose sensitive system details
+- [ ] Rate limiting enabled on all integration endpoints
+- [ ] Input validation on all data from external systems
+- [ ] HTTPS/TLS used for all external communications
+- [ ] Authentication required on all integration endpoints
+- [ ] Regular security audits of integrated systems
+
+### Example: Secure API Integration Pattern
+
+```python
+# ✅ CORRECT: Secure backend integration
+import os
+from fastapi import APIRouter, Depends, HTTPException
+import httpx
+
+router = APIRouter()
+
+# Securely retrieve from environment
+API_KEY = os.getenv('EXTERNAL_SERVICE_API_KEY')
+if not API_KEY:
+    raise ValueError("EXTERNAL_SERVICE_API_KEY not configured")
+
+@router.get("/api/external-data")
+async def get_external_data(current_user = Depends(get_current_user)):
+    """Proxy to external service - keeps API key server-side"""
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                'https://external-service.com/api/data',
+                headers={'Authorization': f'Bearer {API_KEY}'}
+            )
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail="External service unavailable")
+```
+
+```typescript
+// ✅ CORRECT: Frontend calls backend proxy
+async function fetchExternalData() {
+  const response = await fetch('/api/external-data', {
+    headers: {
+      'Authorization': `Bearer ${getUserToken()}`  // Your app's auth
+    }
+  });
+  return response.json();
+}
+
+// ❌ WRONG: Never expose API keys in frontend
+// const API_KEY = process.env.VITE_API_KEY;  // SECURITY RISK!
+```
 
 ---
 
@@ -62,16 +143,24 @@ This guide identifies open-source GitHub repositories suitable for integration w
 ```python
 # Backend integration approach
 # Option 1: Database-level integration (read OpenCATS candidates table)
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+import os
 
-opencats_engine = create_engine('mysql://opencats_db')
+# Securely retrieve connection string from environment
+OPENCATS_DB_URL = os.getenv('OPENCATS_DATABASE_URL')
+if not OPENCATS_DB_URL:
+    raise ValueError("OPENCATS_DATABASE_URL environment variable not set")
+
+opencats_engine = create_engine(OPENCATS_DB_URL, pool_pre_ping=True)
 
 async def sync_candidates_from_opencats():
     """Periodic sync of candidates from OpenCATS"""
-    # Read OpenCATS candidates
-    candidates = await opencats_engine.execute(
-        "SELECT * FROM candidate WHERE status = 'active'"
-    )
+    # Read OpenCATS candidates using parameterized query
+    query = text("SELECT * FROM candidate WHERE status = :status")
+    
+    async with opencats_engine.begin() as conn:
+        result = await conn.execute(query, {"status": "active"})
+        candidates = result.fetchall()
     
     # Import into HR Portal
     for candidate in candidates:
@@ -106,22 +195,30 @@ async def sync_candidates_from_opencats():
 
 **Integration Strategy:**
 ```typescript
-// Frontend: Embed Twenty as iframe for recruitment pipeline
+// Frontend: Fetch recruitment data through backend proxy (secure approach)
 import { useState, useEffect } from 'react';
 
 export function RecruitmentPipeline() {
   const [candidates, setCandidates] = useState([]);
+  const [error, setError] = useState(null);
   
   useEffect(() => {
-    // Fetch from Twenty API
-    fetch('https://twenty.yourdomain.com/api/candidates', {
+    // Fetch from YOUR backend API (which securely calls Twenty API)
+    // Never expose API keys in frontend
+    fetch('/api/recruitment/candidates', {
       headers: {
-        'Authorization': `Bearer ${process.env.VITE_TWENTY_API_KEY}`
+        'Authorization': `Bearer ${getAuthToken()}` // Your app's auth token
       }
     })
-    .then(res => res.json())
-    .then(data => setCandidates(data));
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to fetch candidates');
+      return res.json();
+    })
+    .then(data => setCandidates(data))
+    .catch(err => setError(err.message));
   }, []);
+  
+  if (error) return <div>Error: {error}</div>;
   
   return (
     <div className="recruitment-module">
@@ -129,6 +226,26 @@ export function RecruitmentPipeline() {
     </div>
   );
 }
+
+// Backend proxy endpoint (secure)
+// backend/app/routers/recruitment.py
+from fastapi import APIRouter, Depends
+import httpx
+import os
+
+router = APIRouter()
+TWENTY_API_KEY = os.getenv('TWENTY_API_KEY')  # Secure storage
+
+@router.get("/recruitment/candidates")
+async def get_candidates(current_user = Depends(get_current_user)):
+    """Proxy to Twenty API - keeps API key server-side"""
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            'https://twenty.yourdomain.com/api/candidates',
+            headers={'Authorization': f'Bearer {TWENTY_API_KEY}'}
+        )
+        response.raise_for_status()
+        return response.json()
 ```
 
 **Integration Effort:** Low-Medium (1-2 weeks)
@@ -1268,30 +1385,65 @@ async def create_leave_request(
 ├── learning.py                # Moodle integration
 └── automation.py              # n8n integration
 
-# Example base integration class
+# Example base integration class with proper resource management
+from typing import Optional
+import httpx
+import os
+from contextlib import asynccontextmanager
+
 class BaseIntegration:
-    def __init__(self, api_url: str, api_key: str):
+    def __init__(self, api_url: str, api_key: Optional[str] = None):
         self.api_url = api_url
-        self.api_key = api_key
-        self.client = httpx.AsyncClient()
+        self.api_key = api_key or self._get_api_key_from_env()
+        self._client: Optional[httpx.AsyncClient] = None
+    
+    def _get_api_key_from_env(self) -> str:
+        """Securely retrieve API key from environment"""
+        key = os.getenv(f'{self.__class__.__name__.upper()}_API_KEY')
+        if not key:
+            raise ValueError(f"API key not found in environment for {self.__class__.__name__}")
+        return key
+    
+    @asynccontextmanager
+    async def get_client(self):
+        """Context manager for HTTP client to prevent resource leaks"""
+        client = httpx.AsyncClient(timeout=30.0)
+        try:
+            yield client
+        finally:
+            await client.aclose()
     
     async def request(self, method: str, endpoint: str, **kwargs):
-        """Make authenticated request"""
+        """Make authenticated request with proper error handling"""
         headers = kwargs.get('headers', {})
         headers.update(self.get_auth_headers())
         
-        response = await self.client.request(
-            method,
-            f"{self.api_url}{endpoint}",
-            headers=headers,
-            **kwargs
-        )
-        response.raise_for_status()
-        return response.json()
+        try:
+            async with self.get_client() as client:
+                response = await client.request(
+                    method,
+                    f"{self.api_url}{endpoint}",
+                    headers=headers,
+                    **kwargs
+                )
+                response.raise_for_status()
+                return response.json()
+        except httpx.HTTPStatusError as e:
+            raise IntegrationError(
+                f"{self.__class__.__name__} request failed: {e.response.status_code} - {e.response.text}"
+            ) from e
+        except httpx.RequestError as e:
+            raise IntegrationError(
+                f"{self.__class__.__name__} connection failed: {str(e)}"
+            ) from e
     
     def get_auth_headers(self):
-        """Override in subclasses"""
+        """Override in subclasses for different auth methods"""
         return {'Authorization': f'Bearer {self.api_key}'}
+
+class IntegrationError(Exception):
+    """Custom exception for integration errors"""
+    pass
 ```
 
 ---
