@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
-from app.routers import health, renewals
+from app.routers import admin, auth, employees, health, passes, renewals
 
 configure_logging()
 settings = get_settings()
@@ -34,7 +34,11 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health.router, prefix=settings.api_prefix)
+    app.include_router(auth.router, prefix=settings.api_prefix)
+    app.include_router(employees.router, prefix=settings.api_prefix)
     app.include_router(renewals.router, prefix=settings.api_prefix)
+    app.include_router(passes.router, prefix=settings.api_prefix)
+    app.include_router(admin.router, prefix=settings.api_prefix)
 
     @app.on_event("startup")
     async def on_startup():
