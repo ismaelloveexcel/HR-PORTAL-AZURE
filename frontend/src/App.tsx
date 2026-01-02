@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding'
 
 interface Employee {
   id: number
@@ -13,6 +13,11 @@ interface Employee {
   is_active: boolean
   password_changed: boolean
   created_at: string
+  job_title?: string
+  location?: string
+  probation_status?: string
+  employment_status?: string
+  profile_status?: string
 }
 
 interface FeatureToggle {
@@ -74,6 +79,58 @@ interface PassFormData {
   employee_id: string
 }
 
+interface OnboardingToken {
+  token: string
+  employee_id: string
+  employee_name: string
+  created_at: string
+  expires_at: string
+  is_used: boolean
+  is_expired: boolean
+  access_count: number
+}
+
+interface OnboardingWelcome {
+  employee_id: string
+  name: string
+  email: string | null
+  department: string | null
+  job_title: string | null
+  joining_date: string | null
+  line_manager_name: string | null
+  location: string | null
+}
+
+interface ProfileFormData {
+  emergency_contact_name: string
+  emergency_contact_phone: string
+  emergency_contact_relationship: string
+  personal_phone: string
+  personal_email: string
+  current_address: string
+  city: string
+  country: string
+  bank_name: string
+  bank_account_number: string
+  bank_iban: string
+  passport_number: string
+  passport_expiry: string
+  uae_id_number: string
+  uae_id_expiry: string
+  highest_education: string
+  shirt_size: string
+  pants_size: string
+  shoe_size: string
+}
+
+interface PendingProfile {
+  employee_id: string
+  name: string
+  department: string | null
+  job_title: string | null
+  submitted_at: string | null
+}
+
 const API_BASE = '/api'
 
 function App() {
@@ -106,8 +163,73 @@ function App() {
     employee_id: '',
   })
   const [passesLoading, setPassesLoading] = useState(false)
+  
+  // Onboarding state
+  const [onboardingTokens, setOnboardingTokens] = useState<OnboardingToken[]>([])
+  const [pendingProfiles, setPendingProfiles] = useState<PendingProfile[]>([])
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteEmployeeId, setInviteEmployeeId] = useState('')
+  const [generatedLink, setGeneratedLink] = useState('')
+  const [onboardingLoading, setOnboardingLoading] = useState(false)
+  
+  // Public onboarding state
+  const [onboardingToken, setOnboardingToken] = useState<string | null>(null)
+  const [onboardingWelcome, setOnboardingWelcome] = useState<OnboardingWelcome | null>(null)
+  const [profileFormData, setProfileFormData] = useState<ProfileFormData>({
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    emergency_contact_relationship: '',
+    personal_phone: '',
+    personal_email: '',
+    current_address: '',
+    city: '',
+    country: '',
+    bank_name: '',
+    bank_account_number: '',
+    bank_iban: '',
+    passport_number: '',
+    passport_expiry: '',
+    uae_id_number: '',
+    uae_id_expiry: '',
+    highest_education: '',
+    shirt_size: '',
+    pants_size: '',
+    shoe_size: '',
+  })
+  const [profileSubmitted, setProfileSubmitted] = useState(false)
 
   const isAdminLogin = pendingSection === 'admin' || pendingSection === 'secret-chamber'
+
+  // Check for onboarding token in URL on mount
+  useEffect(() => {
+    const path = window.location.pathname
+    if (path.startsWith('/onboarding/')) {
+      const token = path.replace('/onboarding/', '')
+      if (token) {
+        setOnboardingToken(token)
+        setActiveSection('public-onboarding')
+        validateAndLoadOnboarding(token)
+      }
+    }
+  }, [])
+
+  const validateAndLoadOnboarding = async (token: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_BASE}/onboarding/welcome/${token}`)
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Invalid or expired link')
+      }
+      const data = await res.json()
+      setOnboardingWelcome(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to validate onboarding link')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     const headers: Record<string, string> = {
@@ -321,6 +443,90 @@ function App() {
     }
   }
 
+  const fetchOnboardingData = async () => {
+    if (!user || (user.role !== 'admin' && user.role !== 'hr')) return
+    setOnboardingLoading(true)
+    try {
+      const [tokensRes, pendingRes] = await Promise.all([
+        fetchWithAuth(`${API_BASE}/onboarding/tokens`),
+        fetchWithAuth(`${API_BASE}/onboarding/pending`),
+      ])
+      if (tokensRes.ok) {
+        setOnboardingTokens(await tokensRes.json())
+      }
+      if (pendingRes.ok) {
+        setPendingProfiles(await pendingRes.json())
+      }
+    } catch (err) {
+      console.error('Failed to fetch onboarding data:', err)
+    } finally {
+      setOnboardingLoading(false)
+    }
+  }
+
+  const generateInviteLink = async () => {
+    if (!inviteEmployeeId.trim()) return
+    setOnboardingLoading(true)
+    setError(null)
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/onboarding/invite`, {
+        method: 'POST',
+        body: JSON.stringify({ employee_id: inviteEmployeeId, expires_in_days: 7 }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to generate invite')
+      }
+      const data = await res.json()
+      setGeneratedLink(`${window.location.origin}/onboarding/${data.token}`)
+      await fetchOnboardingData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate invite')
+    } finally {
+      setOnboardingLoading(false)
+    }
+  }
+
+  const approveProfile = async (empId: string) => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/onboarding/approve/${empId}`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        await fetchOnboardingData()
+      }
+    } catch (err) {
+      console.error('Failed to approve profile:', err)
+    }
+  }
+
+  const submitProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!onboardingToken) return
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_BASE}/onboarding/submit/${onboardingToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileFormData),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to submit profile')
+      }
+      setProfileSubmitted(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit profile')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+  }
+
   useEffect(() => {
     if (activeSection === 'employees' && user) {
       fetchEmployees()
@@ -330,6 +536,8 @@ function App() {
       fetchSecretChamberData()
     } else if (activeSection === 'passes' && user) {
       fetchPasses()
+    } else if (activeSection === 'onboarding' && user && (user.role === 'admin' || user.role === 'hr')) {
+      fetchOnboardingData()
     }
   }, [activeSection, user])
 
@@ -368,7 +576,7 @@ function App() {
                 value={employeeId}
                 onChange={e => setEmployeeId(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                placeholder="e.g., EMP001"
+                placeholder="e.g., BAYN00008"
                 required
                 autoComplete="username"
                 data-testid="employee-id-input"
@@ -411,6 +619,322 @@ function App() {
     </div>
   ) : null
 
+  // Public Onboarding Page (for new joiners)
+  if (activeSection === 'public-onboarding') {
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your onboarding...</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (error) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+            <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Link Invalid or Expired</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="text-sm text-gray-500">Please contact HR for a new onboarding link.</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (profileSubmitted) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+            <svg className="w-16 h-16 text-emerald-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Profile Submitted!</h2>
+            <p className="text-gray-600 mb-6">Thank you for completing your profile. HR will review your information shortly.</p>
+            <p className="text-sm text-gray-500">You can close this window now.</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (onboardingWelcome) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 py-8 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white">
+                <img src="/assets/logo.png" alt="Baynunah" className="h-8 mb-4 brightness-0 invert" />
+                <h1 className="text-2xl font-semibold mb-1">Welcome, {onboardingWelcome.name}!</h1>
+                <p className="text-emerald-100">Please complete your profile information below</p>
+              </div>
+
+              {/* Employee Info Card */}
+              <div className="p-6 bg-gray-50 border-b">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500">Employee ID</p>
+                    <p className="font-medium">{onboardingWelcome.employee_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Department</p>
+                    <p className="font-medium">{onboardingWelcome.department || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Job Title</p>
+                    <p className="font-medium">{onboardingWelcome.job_title || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Location</p>
+                    <p className="font-medium">{onboardingWelcome.location || '-'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={submitProfile} className="p-6 space-y-6">
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{error}</div>
+                )}
+
+                {/* Emergency Contact */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Emergency Contact
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Contact Name *"
+                      value={profileFormData.emergency_contact_name}
+                      onChange={e => setProfileFormData({...profileFormData, emergency_contact_name: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      required
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number *"
+                      value={profileFormData.emergency_contact_phone}
+                      onChange={e => setProfileFormData({...profileFormData, emergency_contact_phone: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      required
+                    />
+                    <select
+                      value={profileFormData.emergency_contact_relationship}
+                      onChange={e => setProfileFormData({...profileFormData, emergency_contact_relationship: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      required
+                    >
+                      <option value="">Relationship *</option>
+                      <option value="Spouse">Spouse</option>
+                      <option value="Parent">Parent</option>
+                      <option value="Sibling">Sibling</option>
+                      <option value="Friend">Friend</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Personal Contact */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Personal Contact
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="tel"
+                      placeholder="Personal Phone"
+                      value={profileFormData.personal_phone}
+                      onChange={e => setProfileFormData({...profileFormData, personal_phone: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Personal Email"
+                      value={profileFormData.personal_email}
+                      onChange={e => setProfileFormData({...profileFormData, personal_email: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Current Address
+                  </h3>
+                  <div className="space-y-4">
+                    <textarea
+                      placeholder="Street Address"
+                      value={profileFormData.current_address}
+                      onChange={e => setProfileFormData({...profileFormData, current_address: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      rows={2}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        placeholder="City"
+                        value={profileFormData.city}
+                        onChange={e => setProfileFormData({...profileFormData, city: e.target.value})}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Country"
+                        value={profileFormData.country}
+                        onChange={e => setProfileFormData({...profileFormData, country: e.target.value})}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bank Details */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Bank Details (for salary)
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Bank Name"
+                      value={profileFormData.bank_name}
+                      onChange={e => setProfileFormData({...profileFormData, bank_name: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Account Number"
+                      value={profileFormData.bank_account_number}
+                      onChange={e => setProfileFormData({...profileFormData, bank_account_number: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="IBAN"
+                      value={profileFormData.bank_iban}
+                      onChange={e => setProfileFormData({...profileFormData, bank_iban: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* ID Documents */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                    </svg>
+                    ID Documents
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Passport Number"
+                      value={profileFormData.passport_number}
+                      onChange={e => setProfileFormData({...profileFormData, passport_number: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Passport Expiry (DD/MM/YYYY)"
+                      value={profileFormData.passport_expiry}
+                      onChange={e => setProfileFormData({...profileFormData, passport_expiry: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="UAE ID Number"
+                      value={profileFormData.uae_id_number}
+                      onChange={e => setProfileFormData({...profileFormData, uae_id_number: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="UAE ID Expiry (DD/MM/YYYY)"
+                      value={profileFormData.uae_id_expiry}
+                      onChange={e => setProfileFormData({...profileFormData, uae_id_expiry: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Other Info */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Additional Information
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Highest Education"
+                      value={profileFormData.highest_education}
+                      onChange={e => setProfileFormData({...profileFormData, highest_education: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Shirt Size"
+                      value={profileFormData.shirt_size}
+                      onChange={e => setProfileFormData({...profileFormData, shirt_size: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Pants Size"
+                      value={profileFormData.pants_size}
+                      onChange={e => setProfileFormData({...profileFormData, pants_size: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Shoe Size"
+                      value={profileFormData.shoe_size}
+                      onChange={e => setProfileFormData({...profileFormData, shoe_size: e.target.value})}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50 font-medium"
+                >
+                  {loading ? 'Submitting...' : 'Submit Profile'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return null
+  }
+
   if (activeSection === 'employees') {
     return (
       <div className="min-h-screen bg-gray-100 p-8">
@@ -450,10 +974,10 @@ function App() {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job Title</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profile</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -461,22 +985,27 @@ function App() {
                     <tr key={emp.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{emp.employee_id}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{emp.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{emp.email || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{emp.job_title || '-'}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{emp.department || '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          emp.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                          emp.role === 'hr' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
+                          emp.employment_status === 'Active' ? 'bg-green-100 text-green-700' :
+                          emp.employment_status === 'Terminated' ? 'bg-red-100 text-red-700' :
+                          emp.employment_status === 'Resigned' ? 'bg-gray-100 text-gray-700' :
+                          'bg-yellow-100 text-yellow-700'
                         }`}>
-                          {emp.role}
+                          {emp.employment_status || (emp.is_active ? 'Active' : 'Inactive')}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          emp.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          emp.profile_status === 'complete' ? 'bg-emerald-100 text-emerald-700' :
+                          emp.profile_status === 'pending_review' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-500'
                         }`}>
-                          {emp.is_active ? 'Active' : 'Inactive'}
+                          {emp.profile_status === 'complete' ? 'Complete' :
+                           emp.profile_status === 'pending_review' ? 'Pending Review' :
+                           'Incomplete'}
                         </span>
                       </td>
                     </tr>
@@ -485,6 +1014,7 @@ function App() {
               </table>
             )}
           </div>
+          <p className="text-sm text-gray-500 mt-4">Total: {employees.length} employees</p>
         </div>
       </div>
     )
@@ -631,7 +1161,7 @@ function App() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <img src="/assets/logo.png" alt="Baynunah" className="h-6 mb-1" />
-              <h1 className="text-2xl font-semibold text-gray-800">Admin Panel</h1>
+              <h1 className="text-2xl font-semibold text-gray-800">Admin Dashboard</h1>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
@@ -647,7 +1177,7 @@ function App() {
           </div>
 
           {dashboard && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="bg-white rounded-xl shadow p-6">
                 <p className="text-sm text-gray-500">Total Employees</p>
                 <p className="text-3xl font-semibold text-gray-800">{dashboard.total_employees}</p>
@@ -670,26 +1200,35 @@ function App() {
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left">
+              <button 
+                onClick={() => setActiveSection('employees')}
+                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+              >
                 <svg className="w-8 h-8 text-emerald-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
                 <p className="font-medium text-gray-800">Manage Employees</p>
-                <p className="text-sm text-gray-500">Add, edit, or remove employees</p>
+                <p className="text-sm text-gray-500">View and manage employees</p>
               </button>
-              <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left">
+              <button 
+                onClick={() => setActiveSection('onboarding')}
+                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+              >
                 <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
-                <p className="font-medium text-gray-800">View Reports</p>
-                <p className="text-sm text-gray-500">Generate HR reports</p>
+                <p className="font-medium text-gray-800">Onboarding</p>
+                <p className="text-sm text-gray-500">Invite new joiners</p>
               </button>
-              <button className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left">
+              <button 
+                onClick={() => setActiveSection('passes')}
+                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+              >
                 <svg className="w-8 h-8 text-amber-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                 </svg>
-                <p className="font-medium text-gray-800">Contract Renewals</p>
-                <p className="text-sm text-gray-500">Review pending renewals</p>
+                <p className="font-medium text-gray-800">Pass Generation</p>
+                <p className="text-sm text-gray-500">Create visitor passes</p>
               </button>
             </div>
           </div>
@@ -784,48 +1323,6 @@ function App() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={passFormData.email}
-                        onChange={e => setPassFormData({...passFormData, email: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                      <input
-                        type="tel"
-                        value={passFormData.phone}
-                        onChange={e => setPassFormData({...passFormData, phone: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                      <input
-                        type="text"
-                        value={passFormData.department}
-                        onChange={e => setPassFormData({...passFormData, department: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
-                      <input
-                        type="text"
-                        value={passFormData.position}
-                        onChange={e => setPassFormData({...passFormData, position: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Valid From *</label>
                       <input
                         type="date"
@@ -845,39 +1342,6 @@ function App() {
                         required
                       />
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Access Areas</label>
-                    <input
-                      type="text"
-                      value={passFormData.access_areas}
-                      onChange={e => setPassFormData({...passFormData, access_areas: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      placeholder="e.g., Lobby, Meeting Rooms, Cafeteria"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
-                    <input
-                      type="text"
-                      value={passFormData.purpose}
-                      onChange={e => setPassFormData({...passFormData, purpose: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      placeholder="e.g., Interview, Training, Site Visit"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sponsor Name</label>
-                    <input
-                      type="text"
-                      value={passFormData.sponsor_name}
-                      onChange={e => setPassFormData({...passFormData, sponsor_name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                      placeholder="Name of employee sponsor"
-                    />
                   </div>
                   
                   <div className="flex gap-3 pt-4">
@@ -906,11 +1370,7 @@ function App() {
               <div className="p-8 text-center text-gray-500">Loading passes...</div>
             ) : passes.length === 0 ? (
               <div className="p-8 text-center">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                </svg>
                 <p className="text-gray-500 mb-2">No passes generated yet</p>
-                <p className="text-sm text-gray-400">Click "Generate New Pass" to create your first pass</p>
               </div>
             ) : (
               <table className="w-full">
@@ -932,8 +1392,6 @@ function App() {
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                           pass.pass_type === 'recruitment' ? 'bg-blue-100 text-blue-700' :
                           pass.pass_type === 'onboarding' ? 'bg-emerald-100 text-emerald-700' :
-                          pass.pass_type === 'visitor' ? 'bg-purple-100 text-purple-700' :
-                          pass.pass_type === 'contractor' ? 'bg-orange-100 text-orange-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {pass.pass_type}
@@ -946,7 +1404,6 @@ function App() {
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                           pass.status === 'active' ? 'bg-green-100 text-green-700' :
-                          pass.status === 'expired' ? 'bg-gray-100 text-gray-700' :
                           'bg-red-100 text-red-700'
                         }`}>
                           {pass.status}
@@ -973,19 +1430,223 @@ function App() {
     )
   }
 
+  // Onboarding Management (HR View)
   if (activeSection === 'onboarding') {
+    if (!user || (user.role !== 'admin' && user.role !== 'hr')) {
+      return (
+        <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
+          {loginModal}
+          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Access Required</h2>
+            <p className="text-gray-600 mb-6">Please sign in with HR or Admin access.</p>
+            <button
+              onClick={() => handleNavigate('home')}
+              className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen bg-gray-100 p-8">
         {loginModal}
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-2xl w-full text-center">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Onboarding</h2>
-          <p className="text-gray-600 mb-6">This section is under development.</p>
-          <button
-            onClick={() => handleNavigate('home')}
-            className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-          >
-            Back to Home
-          </button>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <img src="/assets/logo.png" alt="Baynunah" className="h-6 mb-1" />
+              <h1 className="text-2xl font-semibold text-gray-800">Onboarding Management</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {user.name} ({user.role})
+              </span>
+              <button
+                onClick={() => handleNavigate('home')}
+                className="px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+              >
+                ← Back to Home
+              </button>
+            </div>
+          </div>
+
+          {/* Invite New Joiner Button */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => {
+                setShowInviteModal(true)
+                setGeneratedLink('')
+                setInviteEmployeeId('')
+                setError(null)
+              }}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Invite New Joiner
+            </button>
+          </div>
+
+          {/* Invite Modal */}
+          {showInviteModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-800">Generate Onboarding Link</h2>
+                  <button
+                    onClick={() => setShowInviteModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>
+                )}
+
+                {!generatedLink ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
+                      <input
+                        type="text"
+                        value={inviteEmployeeId}
+                        onChange={e => setInviteEmployeeId(e.target.value)}
+                        placeholder="e.g., BAYN00010"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <button
+                      onClick={generateInviteLink}
+                      disabled={onboardingLoading || !inviteEmployeeId.trim()}
+                      className="w-full py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                    >
+                      {onboardingLoading ? 'Generating...' : 'Generate Link'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-emerald-50 p-4 rounded-lg">
+                      <p className="text-sm text-emerald-800 mb-2">Share this link with the new joiner:</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={generatedLink}
+                          readOnly
+                          className="flex-1 px-3 py-2 bg-white border border-emerald-200 rounded-lg text-sm"
+                        />
+                        <button
+                          onClick={() => copyToClipboard(generatedLink)}
+                          className="px-3 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-500">This link expires in 7 days.</p>
+                    <button
+                      onClick={() => setShowInviteModal(false)}
+                      className="w-full py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Done
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Pending Profiles */}
+          {pendingProfiles.length > 0 && (
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                Pending Profile Reviews ({pendingProfiles.length})
+              </h2>
+              <div className="space-y-3">
+                {pendingProfiles.map(profile => (
+                  <div key={profile.employee_id} className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-800">{profile.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {profile.employee_id} • {profile.department || 'No department'} • {profile.job_title || 'No title'}
+                      </p>
+                      {profile.submitted_at && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Submitted: {new Date(profile.submitted_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => approveProfile(profile.employee_id)}
+                      className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm"
+                    >
+                      Approve
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Onboarding Tokens */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800">Onboarding Invites</h2>
+            </div>
+            {onboardingLoading && onboardingTokens.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">Loading...</div>
+            ) : onboardingTokens.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-gray-500">No onboarding invites yet</p>
+                <p className="text-sm text-gray-400 mt-1">Click "Invite New Joiner" to create one</p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Views</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {onboardingTokens.map(token => (
+                    <tr key={token.token} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-medium text-gray-900">{token.employee_name}</p>
+                        <p className="text-xs text-gray-500">{token.employee_id}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {new Date(token.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {new Date(token.expires_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                          token.is_used ? 'bg-emerald-100 text-emerald-700' :
+                          token.is_expired ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {token.is_used ? 'Completed' : token.is_expired ? 'Expired' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{token.access_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     )
