@@ -495,9 +495,9 @@ function App() {
     
     try {
       const updateData: Record<string, string> = {}
-      // Only send non-empty fields
+      // Only send non-empty string fields
       Object.entries(employeeFormData).forEach(([key, value]) => {
-        if (value && value.trim() !== '') {
+        if (typeof value === 'string' && value.trim() !== '') {
           updateData[key] = value
         }
       })
