@@ -353,7 +353,8 @@ async def migrate_layer_1(csv_path: str):
     success_count = 0
     for _, row in df.iterrows():
         employee_data = {
-            v: row.get(k) for k, v in layer1_mapping.items() if pd.notna(row.get(k))
+            v: row.get(k) for k, v in layer1_mapping.items() 
+            if row.get(k) and pd.notna(row.get(k))  # Filter out NaN and empty values
         }
         
         # Create in database
@@ -462,6 +463,20 @@ async def get_compliance_alerts(current_user = Depends(require_hr_role)):
 **Best GitHub App:** Custom + Frappe HRMS payroll module
 
 ```python
+import re
+from datetime import datetime
+
+# UAE IBAN validation helper
+def is_valid_uae_iban(iban: str) -> bool:
+    """Validate UAE IBAN format: AE + 2 check digits + 19 alphanumeric characters"""
+    if not iban:
+        return False
+    # Remove spaces and convert to uppercase
+    iban = iban.replace(' ', '').upper()
+    # UAE IBAN pattern: AE followed by 21 characters (2 check digits + 19 alphanumeric)
+    pattern = r'^AE\d{2}[A-Z0-9]{19}$'
+    return bool(re.match(pattern, iban))
+
 # Bank details with employee submit + HR validation
 @router.post("/bank-details/submit")
 async def submit_bank_details(
@@ -512,6 +527,25 @@ async def validate_bank_details(
 **Best GitHub App:** Paperless-ngx or DocuSeal
 
 ```python
+from datetime import date
+from typing import Optional
+
+# Document status calculation helper
+def calculate_status(expiry_date: Optional[date]) -> str:
+    """Calculate document status based on expiry date"""
+    if not expiry_date:
+        return 'No Expiry'
+    
+    today = date.today()
+    days_until = (expiry_date - today).days
+    
+    if days_until < 0:
+        return 'Expired'
+    elif days_until <= 30:
+        return 'Expiring Soon'
+    else:
+        return 'Valid'
+
 # Document upload with metadata-first approach
 @router.post("/documents/register")
 async def register_document(
@@ -710,20 +744,24 @@ async def get_compliance_dashboard():
                 
             days_until = (expiry - today).days
             
+            # Create alert entry
+            alert_entry = {
+                'employee_id': emp.employee_id,
+                'name': emp.name,
+                'item': field,
+                'expiry': expiry,
+                'days_remaining': days_until
+            }
+            
             if days_until < 0:
-                alerts['expired'].append({
-                    'employee_id': emp.employee_id,
-                    'name': emp.name,
-                    'item': field,
-                    'expiry': expiry,
-                    'days_overdue': abs(days_until)
-                })
+                alert_entry['days_overdue'] = abs(days_until)
+                alerts['expired'].append(alert_entry)
             elif days_until <= 7:
-                alerts['7_days'].append({...})
+                alerts['7_days'].append(alert_entry)
             elif days_until <= 30:
-                alerts['30_days'].append({...})
+                alerts['30_days'].append(alert_entry)
             elif days_until <= 60:
-                alerts['60_days'].append({...})
+                alerts['60_days'].append(alert_entry)
     
     return alerts
 
