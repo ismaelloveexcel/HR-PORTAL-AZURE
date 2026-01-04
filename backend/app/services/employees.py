@@ -16,6 +16,7 @@ from app.schemas.employee import (
     EmployeeCreate,
     EmployeeCSVRow,
     EmployeeResponse,
+    EmployeeUpdate,
     LoginRequest,
     LoginResponse,
     PasswordChangeRequest,
@@ -294,7 +295,7 @@ class EmployeeService:
         return employee
 
     async def update_employee(
-        self, session: AsyncSession, employee_id: str, data
+        self, session: AsyncSession, employee_id: str, data: EmployeeUpdate
     ) -> Employee:
         """Update an employee's information."""
         if not await self._repo.exists(session, employee_id):
@@ -327,10 +328,8 @@ class EmployeeService:
         - expired: Already expired
         - days_7: Expiring within 7 days
         - days_30: Expiring within 30 days
-        - days_60: Expiring within specified days (default 60)
+        - days_custom: Expiring within specified days (default 60)
         """
-        from datetime import date as date_type, timedelta
-        
         # Validate days parameter
         if days < 1 or days > 365:
             raise HTTPException(
@@ -338,14 +337,14 @@ class EmployeeService:
                 detail="Days must be between 1 and 365",
             )
         
-        today = date_type.today()
+        today = date.today()
         employees = await self._repo.get_all_active_for_compliance(session)
         
         alerts = {
             'expired': [],
             'days_7': [],
             'days_30': [],
-            'days_60': []
+            'days_custom': []
         }
         
         # Fields to check for expiry
@@ -379,7 +378,7 @@ class EmployeeService:
                     elif days_until <= 30:
                         alerts['days_30'].append(alert)
                     elif days_until <= days:
-                        alerts['days_60'].append(alert)
+                        alerts['days_custom'].append(alert)
         
         return alerts
 

@@ -352,7 +352,7 @@ class ComplianceAlertItem(BaseModel):
     employee_id: str = Field(..., description="Employee ID")
     name: str = Field(..., description="Employee name")
     document_type: str = Field(..., description="Type of document (Visa, Emirates ID, etc.)")
-    expiry_date: date = Field(..., description="Expiry date")
+    expiry_date: str = Field(..., description="Expiry date (ISO format)")
     days_remaining: int = Field(..., description="Days until expiry (negative if expired)")
     days_overdue: Optional[int] = Field(None, description="Days overdue (if expired)")
 
@@ -363,12 +363,12 @@ class ComplianceAlertsResponse(BaseModel):
     expired: list[ComplianceAlertItem] = Field(default_factory=list, description="Expired documents")
     days_7: list[ComplianceAlertItem] = Field(default_factory=list, description="Expiring within 7 days")
     days_30: list[ComplianceAlertItem] = Field(default_factory=list, description="Expiring within 30 days")
-    days_60: list[ComplianceAlertItem] = Field(default_factory=list, description="Expiring within 60 days")
+    days_custom: list[ComplianceAlertItem] = Field(default_factory=list, description="Expiring within specified days")
     
     @property
     def total_alerts(self) -> int:
         """Total number of alerts."""
-        return len(self.expired) + len(self.days_7) + len(self.days_30) + len(self.days_60)
+        return len(self.expired) + len(self.days_7) + len(self.days_30) + len(self.days_custom)
 
 
 # Onboarding Token Schemas
