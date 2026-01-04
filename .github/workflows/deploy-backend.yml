@@ -56,29 +56,8 @@ jobs:
       - name: Create deployment package
         working-directory: backend
         run: |
-          # Create startup script for Azure
-          cat > startup.sh << 'EOF'
-          #!/bin/bash
-          cd /home/site/wwwroot
-          
-          # Install uv if not present
-          if ! command -v uv &> /dev/null; then
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            export PATH="$HOME/.local/bin:$PATH"
-          fi
-          
-          # Sync dependencies
-          uv sync --no-dev
-          
-          # Run database migrations
-          uv run alembic upgrade head
-          
-          # Start the application
-          uv run gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
-          EOF
-          chmod +x startup.sh
-          
           # Create zip package excluding unnecessary files
+          # Note: Dependencies are installed on Azure via the build process
           zip -r ../backend-deploy.zip . \
             -x "*.pyc" \
             -x "__pycache__/*" \
@@ -140,6 +119,8 @@ jobs:
               }
             ]
 
+      # Note: This startup command matches the one in scripts/azure-setup.sh
+      # Keep them in sync for consistency between manual and automated deployments
       - name: Set startup command
         uses: azure/CLI@v2
         with:

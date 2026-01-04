@@ -91,7 +91,8 @@ print_info "Using subscription: $SUBSCRIPTION"
 # ============================================================================
 
 if [ -z "$PG_PASSWORD" ]; then
-    PG_PASSWORD=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9!@#$%' | head -c 20)
+    # Use alphanumeric characters only to avoid URL encoding issues in connection strings
+    PG_PASSWORD=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 24)
     print_warning "Generated PostgreSQL password. Save this securely!"
 fi
 
@@ -205,6 +206,9 @@ else
 fi
 
 # Allow Azure services to access PostgreSQL
+# Note: 0.0.0.0-0.0.0.0 is Azure's documented pattern for allowing Azure services
+# For enhanced security in production, consider using Private Link or VNet integration
+# See: https://learn.microsoft.com/azure/postgresql/flexible-server/concepts-firewall-rules
 az postgres flexible-server firewall-rule create \
     --resource-group $RESOURCE_GROUP \
     --name $PG_SERVER \
@@ -271,7 +275,9 @@ print_success "Configured backend environment variables"
 print_header "Creating Service Principal for GitHub Actions"
 
 SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-SP_NAME="secure-renewals-github-$RANDOM"
+# Use timestamp for unique service principal name to avoid conflicts in shared tenants
+SP_TIMESTAMP=$(date +%Y%m%d%H%M%S)
+SP_NAME="secure-renewals-github-${SP_TIMESTAMP}"
 
 SP_OUTPUT=$(az ad sp create-for-rbac \
     --name "$SP_NAME" \
