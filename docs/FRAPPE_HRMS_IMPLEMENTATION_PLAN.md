@@ -117,16 +117,16 @@ ERPNEXT_VERSION=v15
 FRAPPE_SITE_NAME=hrms.yourdomain.com
 POSTGRES_HOST=your-postgres-host
 POSTGRES_PORT=5432
-DB_PASSWORD=your-secure-password
-ADMIN_PASSWORD=admin-password
+DB_PASSWORD=your-secure-db-password-here  # CHANGE THIS - use a strong password
+ADMIN_PASSWORD=your-secure-admin-password-here  # CHANGE THIS - use a strong password
 EOF
 
 # Start containers
 docker-compose -f compose.yaml up -d
 
-# Create HRMS site
+# Create HRMS site (replace with your actual secure password)
 docker-compose exec backend bench new-site hrms.yourdomain.com \
-  --admin-password admin-password \
+  --admin-password "YOUR_SECURE_ADMIN_PASSWORD" \
   --db-name frappe_hrms
 
 # Install HRMS app
@@ -332,11 +332,21 @@ class FrappeHRMSClient:
     
     async def get_employee_documents(self, employee_id: str) -> List[Dict]:
         """Get all documents attached to an employee"""
+        # Validate employee_id to prevent filter injection
+        if not employee_id or not employee_id.isalnum() and '-' not in employee_id:
+            raise ValueError("Invalid employee ID format")
+        
+        # Use safe filter construction
+        filters = [
+            ["attached_to_doctype", "=", "Employee"],
+            ["attached_to_name", "=", employee_id]
+        ]
+        
         result = await self._request(
             'GET',
             '/api/resource/File',
             params={
-                'filters': f'[["attached_to_doctype","=","Employee"],["attached_to_name","=","{employee_id}"]]'
+                'filters': str(filters).replace("'", '"')
             }
         )
         return result.get('data', [])
@@ -359,18 +369,36 @@ class FrappeHRMSClient:
     # ============== UAE COMPLIANCE ==============
     
     async def get_expiring_documents(self, days: int = 30) -> List[Dict]:
-        """Get employees with documents expiring within specified days"""
+        """Get employees with documents expiring within specified days
+        
+        Args:
+            days: Number of days to look ahead (1-365, default 30)
+        """
         from datetime import datetime, timedelta
+        
+        # Validate days parameter to prevent abuse
+        if days < 1 or days > 365:
+            raise ValueError("Days must be between 1 and 365")
         
         expiry_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
         today = datetime.now().strftime('%Y-%m-%d')
+        
+        # Build filters using structured approach (dates are controlled internally)
+        visa_filters = [
+            ["visa_expiry_date", ">=", today],
+            ["visa_expiry_date", "<=", expiry_date]
+        ]
+        eid_filters = [
+            ["emirates_id_expiry", ">=", today],
+            ["emirates_id_expiry", "<=", expiry_date]
+        ]
         
         # Check visa expiry
         visa_expiring = await self._request(
             'GET',
             '/api/resource/Employee',
             params={
-                'filters': f'[["visa_expiry_date",">=","{today}"],["visa_expiry_date","<=","{expiry_date}"]]',
+                'filters': str(visa_filters).replace("'", '"'),
                 'fields': '["name","employee_name","visa_expiry_date"]'
             }
         )
@@ -380,7 +408,7 @@ class FrappeHRMSClient:
             'GET',
             '/api/resource/Employee',
             params={
-                'filters': f'[["emirates_id_expiry",">=","{today}"],["emirates_id_expiry","<=","{expiry_date}"]]',
+                'filters': str(eid_filters).replace("'", '"'),
                 'fields': '["name","employee_name","emirates_id_expiry"]'
             }
         )
@@ -450,7 +478,15 @@ async def get_frappe_employee(
     employee_id: str,
     current_user = Depends(get_current_user)
 ):
-    """Get specific employee from Frappe HRMS"""
+    """Get specific employee from Frappe HRMS
+    
+    Authorization: Employees can only access their own data.
+    HR users can access any employee data.
+    """
+    # Authorization check - employees can only view their own data
+    if current_user.role not in ['admin', 'hr'] and current_user.employee_id != employee_id:
+        raise HTTPException(403, "You can only access your own employee data")
+    
     return await frappe_client.get_employee(employee_id)
 
 
@@ -467,6 +503,9 @@ async def sync_employee(
 @router.post("/sync/all")
 async def sync_all_employees(current_user = Depends(require_hr_role)):
     """Sync all employees from Frappe to local database"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     employees = await frappe_client.get_all_employees()
     
     synced = 0
@@ -477,7 +516,9 @@ async def sync_all_employees(current_user = Depends(require_hr_role)):
             await frappe_client.sync_employee_to_local(emp['name'], employee_service)
             synced += 1
         except Exception as e:
-            errors.append({'employee': emp['name'], 'error': str(e)})
+            # Log detailed error server-side, return sanitized message to client
+            logger.error(f"Sync failed for {emp['name']}: {str(e)}")
+            errors.append({'employee': emp['name'], 'error': 'Sync failed - see server logs'})
     
     return {
         "status": "completed",
@@ -491,7 +532,15 @@ async def get_expiring_compliance(
     days: int = 30,
     current_user = Depends(require_hr_role)
 ):
-    """Get employees with expiring documents"""
+    """Get employees with expiring documents
+    
+    Args:
+        days: Number of days to look ahead (1-365, default 30)
+    """
+    # Validate days parameter
+    if days < 1 or days > 365:
+        raise HTTPException(400, "Days must be between 1 and 365")
+    
     return await frappe_client.get_expiring_documents(days)
 
 
@@ -500,7 +549,15 @@ async def get_employee_documents(
     employee_id: str,
     current_user = Depends(get_current_user)
 ):
-    """Get documents for an employee"""
+    """Get documents for an employee
+    
+    Authorization: Employees can only access their own documents.
+    HR users can access any employee's documents.
+    """
+    # Authorization check
+    if current_user.role not in ['admin', 'hr'] and current_user.employee_id != employee_id:
+        raise HTTPException(403, "You can only access your own documents")
+    
     return await frappe_client.get_employee_documents(employee_id)
 ```
 
@@ -844,16 +901,25 @@ async def check_renewal_readiness(employee_id: str) -> dict:
 Add to your `.env` file:
 
 ```env
+# ⚠️ IMPORTANT: Replace ALL placeholder values below before deployment!
+# Never commit actual credentials to version control.
+
 # Frappe HRMS Integration
-FRAPPE_HRMS_URL=https://hrms.yourdomain.com
-FRAPPE_API_KEY=your-api-key
-FRAPPE_API_SECRET=your-api-secret
-FRAPPE_SITE_NAME=hrms.yourdomain.com
+FRAPPE_HRMS_URL=https://hrms.yourdomain.com  # Replace with your actual Frappe URL
+FRAPPE_API_KEY=REPLACE_WITH_ACTUAL_API_KEY  # Generate from Frappe > User > API Access
+FRAPPE_API_SECRET=REPLACE_WITH_ACTUAL_API_SECRET  # Generate from Frappe > User > API Access
+FRAPPE_SITE_NAME=hrms.yourdomain.com  # Replace with your actual site name
 
 # Sync settings
 FRAPPE_SYNC_INTERVAL_MINUTES=15
 FRAPPE_ENABLE_AUTO_SYNC=true
 ```
+
+**Security Notes:**
+- Generate API keys in Frappe: User > API Access > Generate Keys
+- Store secrets in a secure vault (e.g., Azure Key Vault, AWS Secrets Manager)
+- Never commit `.env` files with real credentials to version control
+- Rotate API keys periodically (recommended: every 90 days)
 
 ---
 
