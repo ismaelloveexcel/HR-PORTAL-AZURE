@@ -281,5 +281,107 @@ class EmployeeService:
         await session.commit()
         return result
 
+    async def get_employee(
+        self, session: AsyncSession, employee_id: str
+    ) -> Employee:
+        """Get a single employee by their employee ID."""
+        employee = await self._repo.get_by_employee_id(session, employee_id)
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Employee {employee_id} not found",
+            )
+        return employee
+
+    async def update_employee(
+        self, session: AsyncSession, employee_id: str, data
+    ) -> Employee:
+        """Update an employee's information."""
+        if not await self._repo.exists(session, employee_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee not found",
+            )
+        
+        # Get update data, excluding unset fields
+        update_data = data.model_dump(exclude_unset=True)
+        
+        if not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No fields to update",
+            )
+        
+        employee = await self._repo.update(session, employee_id, update_data)
+        await session.commit()
+        await session.refresh(employee)
+        return employee
+
+    async def get_compliance_alerts(
+        self, session: AsyncSession, days: int = 60
+    ) -> dict:
+        """
+        Get employees with expiring compliance documents.
+        
+        Returns alerts grouped by urgency:
+        - expired: Already expired
+        - days_7: Expiring within 7 days
+        - days_30: Expiring within 30 days
+        - days_60: Expiring within specified days (default 60)
+        """
+        from datetime import date as date_type, timedelta
+        
+        # Validate days parameter
+        if days < 1 or days > 365:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Days must be between 1 and 365",
+            )
+        
+        today = date_type.today()
+        employees = await self._repo.get_all_active_for_compliance(session)
+        
+        alerts = {
+            'expired': [],
+            'days_7': [],
+            'days_30': [],
+            'days_60': []
+        }
+        
+        # Fields to check for expiry
+        compliance_fields = [
+            ('visa_expiry_date', 'Visa'),
+            ('emirates_id_expiry', 'Emirates ID'),
+            ('medical_fitness_expiry', 'Medical Fitness'),
+            ('iloe_expiry', 'ILOE'),
+            ('contract_end_date', 'Contract'),
+        ]
+        
+        for emp in employees:
+            for field_name, label in compliance_fields:
+                expiry = getattr(emp, field_name, None)
+                if expiry:
+                    days_until = (expiry - today).days
+                    
+                    alert = {
+                        'employee_id': emp.employee_id,
+                        'name': emp.name,
+                        'document_type': label,
+                        'expiry_date': expiry.isoformat(),
+                        'days_remaining': days_until
+                    }
+                    
+                    if days_until < 0:
+                        alert['days_overdue'] = abs(days_until)
+                        alerts['expired'].append(alert)
+                    elif days_until <= 7:
+                        alerts['days_7'].append(alert)
+                    elif days_until <= 30:
+                        alerts['days_30'].append(alert)
+                    elif days_until <= days:
+                        alerts['days_60'].append(alert)
+        
+        return alerts
+
 
 employee_service = EmployeeService(EmployeeRepository())

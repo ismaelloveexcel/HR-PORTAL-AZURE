@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, UploadFile, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import require_role
@@ -8,7 +8,10 @@ from app.database import get_session
 from app.schemas.employee import (
     EmployeeCreate,
     EmployeeResponse,
+    EmployeeDetailResponse,
+    EmployeeUpdate,
     PasswordResetRequest,
+    ComplianceAlertsResponse,
 )
 from app.services.employees import employee_service
 
@@ -73,6 +76,74 @@ async def import_employees_csv(
     - Existing employees are skipped
     """
     return await employee_service.import_from_csv(session, file)
+
+
+@router.get(
+    "/compliance/alerts",
+    summary="Get compliance expiry alerts",
+)
+async def get_compliance_alerts(
+    days: int = Query(default=60, ge=1, le=365, description="Days to look ahead"),
+    role: str = Depends(require_role(["admin", "hr"])),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Get employees with expiring compliance documents.
+    
+    Returns alerts grouped by urgency:
+    - **expired**: Already expired documents
+    - **days_7**: Expiring within 7 days
+    - **days_30**: Expiring within 30 days  
+    - **days_60**: Expiring within specified days (default 60)
+    
+    Checks: Visa, Emirates ID, Medical Fitness, ILOE, Contract
+    """
+    return await employee_service.get_compliance_alerts(session, days)
+
+
+@router.get(
+    "/{employee_id}",
+    response_model=EmployeeDetailResponse,
+    summary="Get employee by ID",
+)
+async def get_employee(
+    employee_id: str,
+    role: str = Depends(require_role(["admin", "hr", "viewer"])),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Get a specific employee by their employee ID.
+    
+    Returns full employee details including UAE compliance fields.
+    """
+    return await employee_service.get_employee(session, employee_id)
+
+
+@router.put(
+    "/{employee_id}",
+    response_model=EmployeeDetailResponse,
+    summary="Update employee",
+)
+async def update_employee(
+    employee_id: str,
+    data: EmployeeUpdate,
+    role: str = Depends(require_role(["admin", "hr"])),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Update an employee's information.
+    
+    Only HR and Admin can update employee data.
+    All fields are optional - only provided fields will be updated.
+    
+    **UAE Compliance fields:**
+    - visa_number, visa_issue_date, visa_expiry_date
+    - emirates_id_number, emirates_id_expiry
+    - medical_fitness_date, medical_fitness_expiry
+    - iloe_status, iloe_expiry
+    - contract_type, contract_start_date, contract_end_date
+    """
+    return await employee_service.update_employee(session, employee_id, data)
 
 
 @router.post(
