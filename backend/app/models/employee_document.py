@@ -28,6 +28,8 @@ class DocumentType(str, enum.Enum):
     SECURITY_CLEARANCE = "security_clearance"
     BANK_LETTER = "bank_letter"
     JOB_DESCRIPTION = "job_description"
+    PROFILE_PHOTO = "profile_photo"
+    PERSONAL_DOCUMENT = "personal_document"
     OTHER = "other"
 
 

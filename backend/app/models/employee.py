@@ -45,6 +45,20 @@ class Employee(Base):
     gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     nationality: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     company_phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    personal_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    mobile_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    
+    # Profile photo (stored as document attachment path)
+    profile_photo_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    
+    # GPS/Location coordinates
+    gps_coordinates: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    
+    # Communication preferences
+    communication_channel: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # Email, WhatsApp
+    
+    # Notes
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Line manager (self-referential)
     line_manager_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
@@ -53,6 +67,7 @@ class Employee(Base):
     
     # Employment dates
     joining_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    date_of_exit: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     last_promotion_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     last_increment_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
