@@ -119,10 +119,16 @@ def map_probation_status(status: Optional[str]) -> Optional[str]:
     return mapping.get(status_lower, status)
 
 
-async def import_employees(csv_path: str):
-    """Import employees from CSV file."""
+async def import_employees(csv_path: str, update_existing: bool = False):
+    """Import employees from CSV file.
+    
+    Args:
+        csv_path: Path to the CSV file
+        update_existing: If True, update existing employee records; if False, skip them
+    """
     
     print(f"Reading CSV file: {csv_path}")
+    print(f"Update mode: {'UPDATE existing records' if update_existing else 'SKIP existing records'}")
     
     # Read CSV with UTF-8-BOM encoding (Excel exported)
     with open(csv_path, "r", encoding="utf-8-sig") as f:
@@ -133,6 +139,7 @@ async def import_employees(csv_path: str):
     
     stats = {
         "created": 0,
+        "updated": 0,
         "skipped": 0,
         "errors": 0,
     }
@@ -153,7 +160,7 @@ async def import_employees(csv_path: str):
             )
             existing = result.scalar_one_or_none()
             
-            if existing:
+            if existing and not update_existing:
                 print(f"  Skipping existing employee: {employee_id} ({name})")
                 stats["skipped"] += 1
                 continue
