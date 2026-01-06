@@ -109,6 +109,13 @@ class Candidate(Base):
     programming_languages: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     hardware_platforms: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     protocols_tools: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    
+    # References for reference checks
+    references: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # [{name, relationship, company, email, phone}]
+    
+    # Evaluations (HR/Hiring Manager only)
+    soft_skills: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # {communication: 4, teamwork: 5, ...}
+    technical_skills: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # {domain_knowledge: 4, ...}
 
     # Status & stage
     status: Mapped[str] = mapped_column(String(50), default="applied", nullable=False)

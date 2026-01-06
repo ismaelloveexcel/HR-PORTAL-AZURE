@@ -3065,287 +3065,160 @@ function App() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content - Streamlined for hiring managers */}
                 <div className="p-6 space-y-4">
-                  {/* 1. POSITION APPLIED FOR */}
-                  {selectedCandidate.position && (
-                    <div className="border border-gray-200 rounded-lg p-4">
-                      <h3 className="text-sm font-semibold text-gray-600 mb-3">Position Applied For</h3>
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                        <div>
-                          <p className="text-xs text-gray-400">Position Title</p>
-                          <p className="font-medium text-gray-800">{selectedCandidate.position.position_title}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400">Department</p>
-                          <p className="font-medium text-gray-800">{selectedCandidate.position.department}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400">Employment Type</p>
-                          <p className="font-medium text-gray-800">{selectedCandidate.position.employment_type}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400">Salary Range</p>
-                          <p className="font-medium text-gray-800">
-                            {selectedCandidate.position.salary_range_min && selectedCandidate.position.salary_range_max
-                              ? `AED ${Number(selectedCandidate.position.salary_range_min).toLocaleString()} - ${Number(selectedCandidate.position.salary_range_max).toLocaleString()}`
-                              : 'Pending candidate input'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400">Hiring Manager</p>
-                          <p className="font-medium text-gray-800">{selectedCandidate.position.hiring_manager_id || 'Pending candidate input'}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400">Job Requisition ID</p>
-                          <p className="font-medium text-gray-800">{selectedCandidate.position.request_number}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 2. CONTACT INFORMATION */}
+                  {/* CV Section */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Contact Information</h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400">Email</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Phone</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.phone || 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">LinkedIn</p>
-                        {selectedCandidate.linkedin_url ? (
-                          <a href={selectedCandidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">View Profile</a>
-                        ) : (
-                          <p className="font-medium text-gray-500">Pending candidate input</p>
-                        )}
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-600">CV / Resume</h3>
+                      {selectedCandidate.resume_path ? (
+                        <a href={selectedCandidate.resume_path} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                          View CV
+                        </a>
+                      ) : (
+                        <span className="text-gray-500 text-sm">Pending upload</span>
+                      )}
                     </div>
+                    {selectedCandidate.linkedin_url && (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <a href={selectedCandidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                          LinkedIn Profile
+                        </a>
+                      </div>
+                    )}
                   </div>
 
-                  {/* 3A. PROFESSIONAL SUMMARY */}
+                  {/* Availability & Expectations */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Professional Summary</h3>
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Availability & Expectations</h3>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                       <div>
-                        <p className="text-xs text-gray-400">Current Position</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.current_position || 'Pending candidate input'}</p>
+                        <p className="text-xs text-gray-400">Notice Period</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.notice_period_days ? `${selectedCandidate.notice_period_days} days` : 'Pending'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Current Company</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.current_company || 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Total Years of Experience</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.years_experience ? `${selectedCandidate.years_experience} years` : 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Industry / Function</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.industry_function || 'Pending candidate input'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 3B. AVAILABILITY & COMPENSATION */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Availability & Compensation</h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400">Notice Period {selectedCandidate.stage !== 'applied' && <span className="text-red-500">*</span>}</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.notice_period_days ? `${selectedCandidate.notice_period_days} days` : 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Availability Date</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.availability_date || 'Pending candidate input'}</p>
+                        <p className="text-xs text-gray-400">Earliest Start Date</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.availability_date || 'Pending'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Expected Salary</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.expected_salary ? `${selectedCandidate.salary_currency || 'AED'} ${Number(selectedCandidate.expected_salary).toLocaleString()}` : 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Current Salary</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.current_salary ? `${selectedCandidate.salary_currency || 'AED'} ${Number(selectedCandidate.current_salary).toLocaleString()}` : 'Pending candidate input'}</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.expected_salary ? `${selectedCandidate.salary_currency || 'AED'} ${Number(selectedCandidate.expected_salary).toLocaleString()}` : 'Pending'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Negotiable</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.salary_negotiable === true ? 'Yes' : selectedCandidate.salary_negotiable === false ? 'No' : 'Pending candidate input'}</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.salary_negotiable === true ? 'Yes' : selectedCandidate.salary_negotiable === false ? 'No' : 'Pending'}</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* 4. LOCATION & WORK ELIGIBILITY */}
+                  {/* Work Eligibility */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Location & Work Eligibility</h3>
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Work Eligibility</h3>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                       <div>
-                        <p className="text-xs text-gray-400">Current Country</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.current_country || 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Emirate</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.current_location || 'Pending candidate input'}</p>
+                        <p className="text-xs text-gray-400">Current Location</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.current_country ? `${selectedCandidate.current_location || ''}, ${selectedCandidate.current_country}`.replace(/^, /, '') : selectedCandidate.current_location || 'Pending'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Visa Status</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.visa_status || 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Visa Expiry Date</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.visa_expiry_date || 'Pending candidate input'}</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.visa_status || 'Pending'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Willing to Relocate</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.willing_to_relocate === true ? 'Yes' : selectedCandidate.willing_to_relocate === false ? 'No' : 'Pending candidate input'}</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.willing_to_relocate === true ? 'Yes' : selectedCandidate.willing_to_relocate === false ? 'No' : 'Pending'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Driving License</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.has_driving_license === true ? 'Yes' : selectedCandidate.has_driving_license === false ? 'No' : 'Pending candidate input'}</p>
+                        <p className="font-medium text-gray-800">{selectedCandidate.has_driving_license === true ? 'Yes' : selectedCandidate.has_driving_license === false ? 'No' : 'Pending'}</p>
                       </div>
-                      {selectedCandidate.emirates_id && (
-                        <div>
-                          <p className="text-xs text-gray-400">Emirates ID</p>
-                          <p className="font-medium text-gray-800">{selectedCandidate.emirates_id}</p>
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* 5. DOCUMENTS */}
+                  {/* References */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Documents</h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400">CV / Resume</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.resume_path ? (
-                          <span className="text-blue-600">Uploaded</span>
-                        ) : 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Portfolio</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.portfolio_url ? (
-                          <a href={selectedCandidate.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View</a>
-                        ) : 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Certificates</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.documents?.certificates?.length > 0 ? `${selectedCandidate.documents.certificates.length} uploaded` : 'Pending candidate input'}</p>
-                      </div>
-                      {(selectedCandidate.stage === 'offer' || selectedCandidate.stage === 'hired') && (
-                        <>
-                          <div>
-                            <p className="text-xs text-gray-400">Passport Copy</p>
-                            <p className="font-medium text-gray-800">{selectedCandidate.documents?.passport ? 'Uploaded' : 'Pending candidate input'}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-400">Visa Copy</p>
-                            <p className="font-medium text-gray-800">{selectedCandidate.documents?.visa ? 'Uploaded' : 'Pending candidate input'}</p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 6. SKILLS SNAPSHOT */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Skills Snapshot</h3>
+                    <h3 className="text-sm font-semibold text-gray-600 mb-2">References</h3>
+                    <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded mb-3">
+                      References will only be contacted if candidate is finalised for the position.
+                    </p>
                     <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Core Skills</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCandidate.core_skills?.length > 0 ? selectedCandidate.core_skills.map((skill: string, i: number) => (
-                            <span key={i} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">{skill}</span>
-                          )) : <span className="text-gray-500 text-sm">Pending candidate input</span>}
+                      {selectedCandidate.references?.length > 0 ? selectedCandidate.references.map((ref: any, i: number) => (
+                        <div key={i} className="bg-gray-50 p-3 rounded-lg">
+                          <p className="font-medium text-gray-800">{ref.name}</p>
+                          <p className="text-sm text-gray-600">{ref.relationship} at {ref.company}</p>
+                          <p className="text-sm text-gray-500">{ref.email} • {ref.phone}</p>
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Programming Languages</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCandidate.programming_languages?.length > 0 ? selectedCandidate.programming_languages.map((lang: string, i: number) => (
-                            <span key={i} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">{lang}</span>
-                          )) : <span className="text-gray-500 text-sm">Pending candidate input</span>}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Hardware / Platforms</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCandidate.hardware_platforms?.length > 0 ? selectedCandidate.hardware_platforms.map((hw: string, i: number) => (
-                            <span key={i} className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">{hw}</span>
-                          )) : <span className="text-gray-500 text-sm">Pending candidate input</span>}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Protocols / Tools</p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCandidate.protocols_tools?.length > 0 ? selectedCandidate.protocols_tools.map((tool: string, i: number) => (
-                            <span key={i} className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs">{tool}</span>
-                          )) : <span className="text-gray-500 text-sm">Pending candidate input</span>}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 7. RECRUITER NOTES */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Recruiter Notes</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Notes</p>
-                        <p className="text-gray-700 text-sm whitespace-pre-wrap">{selectedCandidate.recruiter_notes || selectedCandidate.notes || 'No notes added'}</p>
-                      </div>
-                      {selectedCandidate.interview_observations && (
-                        <div>
-                          <p className="text-xs text-gray-400 mb-1">Interview Observations</p>
-                          <p className="text-gray-700 text-sm whitespace-pre-wrap">{selectedCandidate.interview_observations}</p>
-                        </div>
-                      )}
-                      {selectedCandidate.risk_flags && (
-                        <div>
-                          <p className="text-xs text-red-500 mb-1">Risk Flags</p>
-                          <p className="text-red-700 text-sm whitespace-pre-wrap">{selectedCandidate.risk_flags}</p>
+                      )) : (
+                        <div className="text-center py-4 text-gray-500">
+                          <p className="text-sm">No references provided yet</p>
+                          <p className="text-xs mt-1">Candidate will be asked to provide 2-3 professional references</p>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* 8. CANDIDATE CONFIRMATION & AUDIT */}
-                  <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Confirmation & Audit</h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                      <div>
-                        <p className="text-xs text-gray-400">Details Confirmed by Candidate</p>
-                        <p className="font-medium text-gray-800">
-                          {selectedCandidate.details_confirmed_by_candidate ? (
-                            <span className="text-green-600 flex items-center gap-1">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                              Confirmed {selectedCandidate.details_confirmed_at && `on ${new Date(selectedCandidate.details_confirmed_at).toLocaleDateString()}`}
-                            </span>
-                          ) : 'Not yet confirmed'}
-                        </p>
+                  {/* HIRING MANAGER ONLY SECTIONS */}
+                  {user?.role === 'admin' || user?.role === 'hr' ? (
+                    <>
+                      {/* Soft Skills Evaluation */}
+                      <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/30">
+                        <h3 className="text-sm font-semibold text-purple-700 mb-3">Soft Skills Evaluation</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                          {['Communication', 'Teamwork', 'Problem Solving', 'Leadership', 'Adaptability', 'Time Management'].map((skill) => (
+                            <div key={skill} className="flex items-center justify-between bg-white p-2 rounded">
+                              <span className="text-sm text-gray-700">{skill}</span>
+                              <div className="flex gap-1">
+                                {[1,2,3,4,5].map((score) => (
+                                  <div key={score} className={`w-4 h-4 rounded-full ${score <= (selectedCandidate.soft_skills?.[skill.toLowerCase().replace(' ', '_')] || 0) ? 'bg-purple-500' : 'bg-gray-200'}`} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {!selectedCandidate.soft_skills && (
+                          <p className="text-xs text-gray-500 mt-2 text-center">Evaluation pending</p>
+                        )}
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Last Updated By</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.last_updated_by || 'System'}</p>
+
+                      {/* Technical Skills Evaluation */}
+                      <div className="border border-blue-200 rounded-lg p-4 bg-blue-50/30">
+                        <h3 className="text-sm font-semibold text-blue-700 mb-3">Technical Skills Evaluation</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                          {['Domain Knowledge', 'Technical Proficiency', 'Analytical Thinking', 'Tool Expertise', 'Industry Experience', 'Quality of Work'].map((skill) => (
+                            <div key={skill} className="flex items-center justify-between bg-white p-2 rounded">
+                              <span className="text-sm text-gray-700">{skill}</span>
+                              <div className="flex gap-1">
+                                {[1,2,3,4,5].map((score) => (
+                                  <div key={score} className={`w-4 h-4 rounded-full ${score <= (selectedCandidate.technical_skills?.[skill.toLowerCase().replace(/ /g, '_')] || 0) ? 'bg-blue-500' : 'bg-gray-200'}`} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {!selectedCandidate.technical_skills && (
+                          <p className="text-xs text-gray-500 mt-2 text-center">Evaluation pending</p>
+                        )}
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Last Updated</p>
-                        <p className="font-medium text-gray-800">{new Date(selectedCandidate.updated_at).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Created</p>
-                        <p className="font-medium text-gray-800">{new Date(selectedCandidate.created_at).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
+
+                      {/* Recruiter Notes */}
+                      {(selectedCandidate.recruiter_notes || selectedCandidate.notes || selectedCandidate.interview_observations) && (
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <h3 className="text-sm font-semibold text-gray-600 mb-3">Internal Notes</h3>
+                          <p className="text-gray-700 text-sm whitespace-pre-wrap">{selectedCandidate.recruiter_notes || selectedCandidate.notes}</p>
+                          {selectedCandidate.interview_observations && (
+                            <div className="mt-3 pt-3 border-t">
+                              <p className="text-xs text-gray-400 mb-1">Interview Observations</p>
+                              <p className="text-gray-700 text-sm whitespace-pre-wrap">{selectedCandidate.interview_observations}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : null}
 
                   {/* Actions */}
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <button className="px-4 py-2 text-orange-600 hover:bg-orange-50 rounded-lg font-medium text-sm">
-                      Request Update from Candidate
-                    </button>
+                  <div className="flex justify-end pt-4 border-t">
                     <button
                       onClick={() => { setShowCandidateProfileModal(false); setSelectedCandidate(null); }}
                       className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"

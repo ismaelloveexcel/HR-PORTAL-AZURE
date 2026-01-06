@@ -81,6 +81,9 @@ class CandidateBase(BaseModel):
     programming_languages: Optional[List[str]] = None
     hardware_platforms: Optional[List[str]] = None
     protocols_tools: Optional[List[str]] = None
+    references: Optional[List[Dict[str, Any]]] = None
+    soft_skills: Optional[Dict[str, int]] = None
+    technical_skills: Optional[Dict[str, int]] = None
     notes: Optional[str] = None
     recruiter_notes: Optional[str] = None
     interview_observations: Optional[str] = None
@@ -124,6 +127,9 @@ class CandidateUpdate(BaseModel):
     programming_languages: Optional[List[str]] = None
     hardware_platforms: Optional[List[str]] = None
     protocols_tools: Optional[List[str]] = None
+    references: Optional[List[Dict[str, Any]]] = None
+    soft_skills: Optional[Dict[str, int]] = None
+    technical_skills: Optional[Dict[str, int]] = None
     notes: Optional[str] = None
     recruiter_notes: Optional[str] = None
     interview_observations: Optional[str] = None
