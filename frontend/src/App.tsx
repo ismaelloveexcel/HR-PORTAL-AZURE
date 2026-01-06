@@ -3006,8 +3006,16 @@ function App() {
           {showCandidateProfileModal && selectedCandidate && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6 rounded-t-2xl">
+                {/* Header - Dynamic color based on entity */}
+                <div className={`text-white p-6 rounded-t-2xl ${
+                  selectedCandidate.entity === 'Baynunah Watergeneration Technologies SP LLC' ? '' :
+                  selectedCandidate.entity === 'Baynunah Agriculture LLC' ? '' :
+                  'bg-gradient-to-r from-slate-700 to-slate-800'
+                }`} style={{
+                  background: selectedCandidate.entity === 'Baynunah Watergeneration Technologies SP LLC' ? 'linear-gradient(to right, #00B0F0, #0090D0)' :
+                              selectedCandidate.entity === 'Baynunah Agriculture LLC' ? 'linear-gradient(to right, #92D050, #72B030)' :
+                              undefined
+                }}>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
@@ -3085,11 +3093,11 @@ function App() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Hiring Manager <span className="text-orange-500 text-[10px]">HR Only</span></p>
+                          <p className="text-xs text-gray-400">Hiring Manager</p>
                           <p className="font-medium text-gray-800">{selectedCandidate.position.hiring_manager_id || 'Pending candidate input'}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Job Requisition ID <span className="text-orange-500 text-[10px]">HR Only</span></p>
+                          <p className="text-xs text-gray-400">Job Requisition ID</p>
                           <p className="font-medium text-gray-800">{selectedCandidate.position.request_number}</p>
                         </div>
                       </div>
@@ -3115,14 +3123,6 @@ function App() {
                         ) : (
                           <p className="font-medium text-gray-500">Pending candidate input</p>
                         )}
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Preferred Contact</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.preferred_contact_method || 'Pending candidate input'}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Timezone</p>
-                        <p className="font-medium text-gray-800">{selectedCandidate.timezone || 'Pending candidate input'}</p>
                       </div>
                     </div>
                   </div>
@@ -3288,9 +3288,9 @@ function App() {
                     </div>
                   </div>
 
-                  {/* 7. RECRUITER NOTES (HR-only) */}
-                  <div className="border border-orange-200 rounded-lg p-4 bg-orange-50/50">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Recruiter Notes <span className="text-orange-500 text-xs font-normal">HR Only</span></h3>
+                  {/* 7. RECRUITER NOTES */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3">Recruiter Notes</h3>
                     <div className="space-y-3">
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Notes</p>

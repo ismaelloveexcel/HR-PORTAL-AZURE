@@ -62,8 +62,7 @@ class CandidateBase(BaseModel):
     full_name: str = Field(..., min_length=1, max_length=200)
     email: EmailStr
     phone: Optional[str] = Field(None, max_length=50)
-    preferred_contact_method: Optional[str] = Field(None, max_length=50)
-    timezone: Optional[str] = Field(None, max_length=100)
+    entity: Optional[str] = Field(None, max_length=200)
     current_position: Optional[str] = Field(None, max_length=200)
     current_company: Optional[str] = Field(None, max_length=200)
     years_experience: Optional[int] = Field(None, ge=0)
@@ -105,8 +104,7 @@ class CandidateUpdate(BaseModel):
     full_name: Optional[str] = Field(None, min_length=1, max_length=200)
     email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, max_length=50)
-    preferred_contact_method: Optional[str] = Field(None, max_length=50)
-    timezone: Optional[str] = Field(None, max_length=100)
+    entity: Optional[str] = Field(None, max_length=200)
     current_position: Optional[str] = Field(None, max_length=200)
     current_company: Optional[str] = Field(None, max_length=200)
     years_experience: Optional[int] = Field(None, ge=0)

@@ -76,9 +76,8 @@ class Candidate(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     
-    # Contact preferences (NEW)
-    preferred_contact_method: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # Email, WhatsApp, Call
-    timezone: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    # Entity (for multi-company recruitment)
+    entity: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
 
     # Professional Summary
     current_position: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
