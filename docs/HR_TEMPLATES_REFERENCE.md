@@ -1,131 +1,303 @@
 # HR Templates Reference Guide
 
-This document provides a reference for the HR templates available in the Secure Renewals HR Portal.
+This document provides a reference for the modern, flexible HR templates available in the Secure Renewals HR Portal.
+
+## Template Architecture
+
+All templates use a **JSON-based schema** (v2.0) that provides:
+- 🔧 **Configurable competencies** - Add, remove, or reweight criteria
+- ⭐ **Modern rating scales** - Stars, emojis, color-coded indicators
+- 📊 **OKR support** - Objectives and Key Results tracking
+- 🔄 **Continuous feedback** - Year-round feedback logging
+- 📱 **Dynamic sections** - Flexible forms that adapt to your needs
+- 🔔 **Workflow automation** - Built-in notifications and deadlines
+
+---
 
 ## Available Templates
 
 ### 1. Performance Evaluation 2025 - Non-Managerial Positions
 
-**Type:** Document  
-**Purpose:** Annual performance evaluation for non-managerial employees  
-**Target Users:** Line Managers, HR  
+**Type:** `performance_evaluation`  
+**Category:** `non_managerial`  
+**Schema Version:** 2.0
 
-#### Template Sections:
-- **Section A:** Employee Information
-- **Section B:** Performance Criteria (7 criteria with weighted scoring)
-  - Job Knowledge & Skills (20%)
-  - Quality of Work (20%)
-  - Productivity & Efficiency (15%)
-  - Communication & Teamwork (15%)
-  - Initiative & Problem Solving (15%)
-  - Attendance & Punctuality (10%)
-  - Adherence to Policies (5%)
-- **Section C:** Overall Performance Score Calculation
-- **Section D:** Achievements & Key Accomplishments
-- **Section E:** Areas for Improvement
-- **Section F:** Development Goals for 2026
-- **Section G:** Employee Self-Assessment
-- **Section H:** Signatures
+#### Key Features:
+- ⭐ Star-based ratings with emoji indicators
+- 📈 Configurable competency weights
+- 🎯 SMART goal tracking with OKR format
+- 💬 Continuous feedback throughout the year
+- ✍️ Self-assessment with guided prompts
+- 📧 Automated workflow notifications
+
+#### Competency Categories:
+
+**Core Competencies (85% total weight)**
+| Competency | Weight | Configurable |
+|------------|--------|--------------|
+| Job Knowledge & Skills | 20% | ✅ |
+| Quality of Work | 20% | ✅ |
+| Productivity & Efficiency | 15% | ✅ |
+| Communication & Collaboration | 15% | ✅ |
+| Initiative & Problem Solving | 15% | ✅ |
+
+**Values & Culture (15% total weight)**
+| Competency | Weight | Required |
+|------------|--------|----------|
+| Integrity & Ethics | 10% | ✅ |
+| Adaptability & Growth Mindset | 5% | Optional |
 
 #### Rating Scale:
-| Rating | Description |
-|--------|-------------|
-| 5 | Outstanding |
-| 4 | Exceeds Expectations |
-| 3 | Meets Expectations |
-| 2 | Needs Improvement |
-| 1 | Needs Significant Improvement |
+| Rating | Label | Visual |
+|--------|-------|--------|
+| 5 | Outstanding | ⭐ |
+| 4 | Exceeds Expectations | 🟢 |
+| 3 | Meets Expectations | 🟡 |
+| 2 | Developing | 🟠 |
+| 1 | Needs Development | 🔴 |
+
+#### Workflow Steps:
+1. **Self Assessment** (Employee, 7 days)
+2. **Manager Review** (Manager, 7 days)
+3. **Calibration** (HR, optional)
+4. **Review Discussion** (Employee + Manager, 5 days)
+5. **Acknowledgment** (Employee, 3 days)
 
 ---
 
 ### 2. Performance Evaluation 2025 - Managerial Positions
 
-**Type:** Document  
-**Purpose:** Annual performance evaluation for managers and leaders  
-**Target Users:** Senior Leadership, HR  
+**Type:** `performance_evaluation`  
+**Category:** `managerial`  
+**Schema Version:** 2.0
 
-#### Template Sections:
-- **Section A:** Manager Information
-- **Section B:** Leadership Competencies (8 criteria with weighted scoring)
-  - Strategic Thinking & Planning (15%)
-  - Team Leadership & Development (20%)
-  - Decision Making & Problem Solving (15%)
-  - Communication & Stakeholder Management (15%)
-  - Performance Management (10%)
-  - Operational Excellence (10%)
-  - Financial Acumen (10%)
-  - Innovation & Change Management (5%)
-- **Section C:** Departmental KPIs & Achievements
-- **Section D:** Team Development
-- **Section E:** Overall Performance Score
-- **Section F:** Areas for Improvement
-- **Section G:** Leadership Development Goals for 2026
-- **Section H:** Manager Self-Assessment
-- **Section I:** 360-Degree Feedback Summary (Optional)
-- **Section J:** Signatures
+#### Key Features:
+- 📊 360° feedback integration
+- 📈 KPI tracking dashboard
+- 👥 Team performance metrics
+- 🎯 Strategic OKR tracking
+- 💼 Leadership competency framework
+
+#### Leadership Competencies:
+
+| Competency | Weight |
+|------------|--------|
+| Strategic Thinking & Vision | 15% |
+| People Leadership & Development | 20% |
+| Decision Making & Judgment | 15% |
+| Stakeholder Management | 15% |
+| Performance Management | 10% |
+| Operational Efficiency | 10% |
+| Financial Acumen | 10% |
+| Innovation & Change Leadership | 5% |
+
+#### Team Metrics (Auto-Populated):
+- Team size and turnover rate
+- Engagement scores
+- Promotions this year
+- Average training hours
+
+#### Workflow Steps:
+1. **Self Assessment** (Manager, 10 days)
+2. **360° Feedback Collection** (System, 14 days)
+3. **Supervisor Review** (Supervisor, 7 days)
+4. **Leadership Calibration** (HR, required)
+5. **Review Discussion** (Manager + Supervisor, 5 days)
+6. **Acknowledgment** (Manager, 3 days)
 
 ---
 
 ### 3. Employee of the Year Nomination 2025
 
-**Type:** Document  
-**Purpose:** Nomination form for the annual Employee of the Year recognition program  
-**Target Users:** All Employees  
+**Type:** `recognition_nomination`  
+**Award Type:** `employee_of_the_year`  
+**Schema Version:** 2.0
 
-#### Template Sections:
-- **About This Award:** Criteria and eligibility
-- **Section A:** Nominee Information
-- **Section B:** Nominator Information
-- **Section C:** Nomination Criteria (5 rating areas)
-  - Job Performance
-  - Company Values
-  - Teamwork & Collaboration
-  - Innovation & Initiative
-  - Customer/Stakeholder Focus
-- **Section D:** Key Achievements in 2025
-- **Section E:** Impact on the Organization
-- **Section F:** Nomination Statement (250 words)
-- **Section G:** Supporting Endorsements (Optional)
-- **Section H:** Nominator Declaration
-- **HR Use Only:** Processing section
+#### Key Features:
+- 🏆 Modern nomination experience
+- 📸 Media upload support (photos, videos)
+- 👥 Endorsement requests
+- 📊 Automatic scoring
+- 🔔 Status notifications
+
+#### Nomination Categories:
+
+| Category | Weight | Emoji |
+|----------|--------|-------|
+| Outstanding Performance | 25% | ⭐ |
+| Living Our Values | 20% | 💎 |
+| Team Player | 20% | 🤝 |
+| Innovation & Initiative | 20% | 💡 |
+| Business Impact | 15% | 📈 |
+
+#### Workflow:
+1. **Draft** - Save and edit nomination
+2. **Submitted** - Notification sent to HR
+3. **HR Review** - Eligibility verification (5 days)
+4. **Selection Committee** - Evaluation and scoring
+5. **Winner Selected** - Committee decision
+6. **Announced** - Winner notification
 
 ---
 
-## How to Use Templates
+## API Usage
 
-### Via API
-
+### List All Templates
 ```http
-# List all templates
 GET /api/templates
+```
 
-# Get specific template by ID
+### Get Template by Type
+```http
+GET /api/templates?type=performance_evaluation
+```
+
+### Get Specific Template
+```http
 GET /api/templates/{template_id}
+```
 
-# Filter by type
-GET /api/templates?type=document
-
-# Create new template (HR/Admin only)
+### Create New Template
+```http
 POST /api/templates
 Content-Type: application/json
 
 {
-  "name": "Template Name",
-  "type": "document",
-  "content": "Template content with {{placeholders}}"
+  "name": "Custom Evaluation",
+  "type": "performance_evaluation",
+  "content": { /* JSON schema */ }
 }
 ```
 
-### Via HR Portal
+### Create Template Revision
+```http
+POST /api/templates/{template_id}/revision
+Content-Type: application/json
 
-1. Navigate to **Templates** section
-2. Select the desired template type
-3. Click on the template to view/edit
-4. Use "Generate Document" to create filled version
+{
+  "content": { /* Updated JSON schema */ },
+  "revision_note": "Added new competency category"
+}
+```
 
-### Seeding Templates
+---
 
-To add these templates to a fresh database:
+## JSON Schema Reference
+
+### Template Structure
+```json
+{
+  "schema_version": "2.0",
+  "template_type": "performance_evaluation",
+  "category": "non_managerial",
+  "settings": {
+    "allow_self_assessment": true,
+    "enable_continuous_feedback": true,
+    "rating_style": "stars"
+  },
+  "rating_scales": { ... },
+  "competencies": { ... },
+  "sections": [ ... ],
+  "workflow": { ... },
+  "signatures": { ... }
+}
+```
+
+### Competency Definition
+```json
+{
+  "id": "job_knowledge",
+  "name": "Job Knowledge & Skills",
+  "description": "Understanding of role, technical skills",
+  "weight": 20,
+  "required": true,
+  "behaviors": [
+    "Demonstrates understanding of responsibilities",
+    "Applies technical skills effectively"
+  ]
+}
+```
+
+### Section Types
+| Type | Description |
+|------|-------------|
+| `dynamic_list` | Add multiple items (achievements, goals) |
+| `goal_tracker` | SMART goals with OKR support |
+| `feedback_log` | Continuous feedback entries |
+| `rich_text` | Long-form text with prompts |
+| `tag_select` | Select from predefined tags |
+| `kpi_tracker` | KPI metrics with targets |
+| `metrics_dashboard` | Auto-populated metrics |
+| `okr_tracker` | Objectives and Key Results |
+| `feedback_360` | 360° feedback collection |
+| `achievement_cards` | Visual achievement cards |
+| `media_upload` | File attachments |
+
+---
+
+## Customization Guide
+
+### Adding Custom Competencies
+```json
+{
+  "competencies": {
+    "allow_custom": true,
+    "categories": [
+      {
+        "id": "custom_skills",
+        "name": "Department-Specific Skills",
+        "items": [
+          {
+            "id": "custom_1",
+            "name": "Your Custom Competency",
+            "weight": 10,
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Changing Rating Style
+Options: `"stars"`, `"numeric"`, `"emoji"`, `"slider"`
+
+```json
+{
+  "settings": {
+    "rating_style": "emoji"
+  },
+  "rating_scales": {
+    "default": {
+      "type": "emoji",
+      "options": ["🔴", "🟠", "🟡", "🟢", "⭐"]
+    }
+  }
+}
+```
+
+### Configuring Workflows
+```json
+{
+  "workflow": {
+    "steps": [
+      {"id": "step1", "name": "Review", "actor": "manager", "deadline_days": 7}
+    ],
+    "notifications": {
+      "enabled": true,
+      "channels": ["email", "in_app"],
+      "reminders": [7, 3, 1]
+    }
+  }
+}
+```
+
+---
+
+## Seeding Templates
+
+To populate templates in a fresh database:
 
 ```bash
 cd backend
@@ -134,51 +306,14 @@ uv run python ../scripts/seed_hr_templates.py
 
 ---
 
-## Template Variables
-
-Templates use `{{variable_name}}` syntax for dynamic content. When generating documents, these placeholders are replaced with actual employee data.
-
-### Common Variables
-
-| Variable | Description |
-|----------|-------------|
-| `{{employee_name}}` | Full name of the employee |
-| `{{employee_number}}` | Employee ID |
-| `{{job_title}}` | Current job title |
-| `{{department}}` | Department name |
-| `{{line_manager}}` | Direct manager's name |
-| `{{evaluation_date}}` | Date of evaluation |
-
----
-
-## Customization
-
-Templates can be customized through:
-1. **Revisions:** Create a new version while keeping history
-2. **Direct Edit:** Update existing template (HR/Admin only)
-3. **Clone:** Create a copy with different name/settings
-
-### Creating a Revision
-
-```http
-POST /api/templates/{template_id}/revision
-Content-Type: application/json
-
-{
-  "content": "Updated template content",
-  "revision_note": "Added new section for compliance"
-}
-```
-
----
-
 ## Best Practices
 
-1. **Version Control:** Always use revisions for major changes
-2. **Testing:** Preview generated documents before distribution
-3. **Consistency:** Use standard variable names across templates
-4. **Accessibility:** Ensure templates are clear and easy to complete
-5. **Compliance:** Update templates annually to reflect policy changes
+1. 🔧 **Customize weights** to match your organization's priorities
+2. 📅 **Enable mid-year reviews** for continuous performance management
+3. 💬 **Use continuous feedback** instead of annual-only reviews
+4. 🎯 **Set clear OKRs** with measurable key results
+5. 👥 **Enable 360° feedback** for leadership roles
+6. 📊 **Track metrics** that matter to your business
 
 ---
 
@@ -190,4 +325,4 @@ Content-Type: application/json
 
 ---
 
-*Last Updated: January 2025*
+*Last Updated: January 2025 | Schema Version 2.0*
