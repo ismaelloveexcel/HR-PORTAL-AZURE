@@ -73,6 +73,7 @@ Ask: "Scan for security vulnerabilities"
 |----------|-------------|----------|
 | [Contributing Guide](CONTRIBUTING.md) | **NEW!** Setup instructions, Copilot best practices, troubleshooting | Contributors/Developers |
 | [HR User Guide](docs/HR_USER_GUIDE.md) | How to use the portal | HR Users |
+| [HR Templates Reference](docs/HR_TEMPLATES_REFERENCE.md) | **NEW!** Performance Evaluation & Employee of the Year templates | HR Users/Managers |
 | [App Analysis Report](docs/APP_ANALYSIS_REPORT.md) | **NEW!** Comprehensive codebase analysis and issue remediation | Admins/Developers |
 | [Process Simplification (UAE)](docs/PROCESS_SIMPLIFICATION_UAE.md) | **NEW!** Automated workflows for solo HR/multi-entity operations | HR Leadership |
 | [Copilot Agents Guide](docs/COPILOT_AGENTS.md) | AI agents for development assistance | Developers |
