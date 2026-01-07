@@ -352,47 +352,60 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
 
           {/* ===== JOURNEY TIMELINE (Fixed) ===== */}
           <div className="mx-4 mb-4 flex-shrink-0">
-            <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-3 font-bold">Journey</p>
-            <div className="relative">
-              {/* Progress Line with Gradient */}
-              <div className="absolute top-4 left-4 right-4 h-1 bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{ 
-                    width: `${(currentStageIndex / 4) * 100}%`,
-                    background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)'
-                  }}
-                ></div>
-              </div>
-              <div className="flex items-center justify-between relative z-10">
-                {[
-                  { full: 'Application', short: 'Apply' },
-                  { full: 'Screening', short: 'Screen' },
-                  { full: 'Interview', short: 'Interview' },
-                  { full: 'Offer', short: 'Offer' },
-                  { full: 'Onboarding', short: 'Onboard' }
-                ].map((stage, idx) => {
-                  const isCompleted = idx < currentStageIndex
-                  const isCurrent = idx === currentStageIndex
-                  return (
-                    <div key={stage.full} className="flex flex-col items-center w-14">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all duration-300 shadow-sm ${
-                        isCompleted ? 'bg-emerald-500 border-emerald-500 text-white shadow-emerald-200' :
-                        isCurrent ? 'bg-white border-emerald-500 text-emerald-600 shadow-emerald-100 ring-4 ring-emerald-50' :
-                        'bg-slate-50 border-slate-200 text-slate-400'
-                      }`}>
-                        {isCompleted ? (
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            <div className="bg-slate-800 rounded-2xl p-4">
+              <div className="relative">
+                {/* Progress Line */}
+                <div className="absolute top-6 left-8 right-8 h-0.5 bg-slate-600 z-0">
+                  <div 
+                    className="h-full transition-all duration-500 ease-out"
+                    style={{ 
+                      width: `${(currentStageIndex / 4) * 100}%`,
+                      background: 'linear-gradient(90deg, #00B0F0 0%, #10b981 100%)'
+                    }}
+                  ></div>
+                </div>
+                <div className="flex items-start justify-between relative z-10">
+                  {[
+                    { full: 'Application', label: 'Application', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+                    { full: 'Screening', label: 'Assessment', icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
+                    { full: 'Interview', label: 'Interview', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+                    { full: 'Offer', label: 'Offer', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+                    { full: 'Onboarding', label: 'Onboarding', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }
+                  ].map((stage, idx) => {
+                    const isCompleted = idx < currentStageIndex
+                    const isCurrent = idx === currentStageIndex
+                    return (
+                      <div key={stage.full} className="flex flex-col items-center" style={{ width: '60px' }}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                          isCompleted ? 'bg-slate-700 ring-2 ring-cyan-400' :
+                          isCurrent ? 'bg-slate-700 ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20' :
+                          'bg-slate-700'
+                        }`}>
+                          <svg 
+                            className={`w-5 h-5 transition-colors ${
+                              isCompleted ? 'text-cyan-400' : 
+                              isCurrent ? 'text-emerald-400' : 
+                              'text-slate-500'
+                            }`} 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            strokeWidth={1.5}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d={stage.icon} />
                           </svg>
-                        ) : idx + 1}
+                        </div>
+                        <span className={`text-[9px] font-medium mt-2 text-center leading-tight ${
+                          isCurrent ? 'text-emerald-400' : 
+                          isCompleted ? 'text-cyan-400' : 
+                          'text-slate-500'
+                        }`}>
+                          {stage.label}
+                        </span>
                       </div>
-                      <span className={`text-[8px] font-medium mt-1.5 text-center leading-tight ${isCurrent ? 'text-emerald-600' : isCompleted ? 'text-slate-600' : 'text-slate-400'}`}>
-                        {stage.short}
-                      </span>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
