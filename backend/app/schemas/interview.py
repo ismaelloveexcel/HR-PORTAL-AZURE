@@ -147,6 +147,20 @@ class RecruitmentDocumentResponse(RecruitmentDocumentBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ActivityLogResponse(BaseModel):
+    """Response for activity log entry."""
+    id: int
+    candidate_id: int
+    stage: str
+    action_type: str
+    action_description: str
+    performed_by: str
+    timestamp: datetime
+    visibility: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CandidatePassData(BaseModel):
     """Data structure for candidate pass view."""
     # Pass info
@@ -179,6 +193,9 @@ class CandidatePassData(BaseModel):
     
     # Actions
     next_actions: List[dict] = []  # [{action_id, label, type}]
+    
+    # Activity history (candidate-visible only)
+    activity_history: List[ActivityLogResponse] = []
     
     # Contact
     hr_whatsapp: str = "+971564966546"

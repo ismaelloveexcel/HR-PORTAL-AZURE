@@ -1,17 +1,8 @@
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, Text, Enum
+from sqlalchemy import String, Integer, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.models.employee import Base
-import enum
 
-class PerformedBy(str, enum.Enum):
-    CANDIDATE = "candidate"
-    HR = "hr"
-    SYSTEM = "system"
-
-class Visibility(str, enum.Enum):
-    INTERNAL = "internal"
-    CANDIDATE = "candidate"
 
 class ActivityLog(Base):
     __tablename__ = "activity_logs"
@@ -20,7 +11,7 @@ class ActivityLog(Base):
     stage: Mapped[str] = mapped_column(String(50), nullable=False)
     action_type: Mapped[str] = mapped_column(String(100), nullable=False)
     action_description: Mapped[str] = mapped_column(Text, nullable=False)
-    performed_by: Mapped[PerformedBy] = mapped_column(Enum(PerformedBy), nullable=False)
+    performed_by: Mapped[str] = mapped_column(String(20), nullable=False)
     performed_by_id: Mapped[str] = mapped_column(String(50), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
-    visibility: Mapped[Visibility] = mapped_column(Enum(Visibility), default=Visibility.INTERNAL, nullable=False)
+    visibility: Mapped[str] = mapped_column(String(20), default="internal", nullable=False)

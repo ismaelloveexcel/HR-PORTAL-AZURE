@@ -8,12 +8,13 @@ from fastapi import HTTPException, status
 
 from app.models.interview import InterviewSetup, InterviewSlot, PassMessage, RecruitmentDocument
 from app.models.recruitment import Candidate, RecruitmentRequest
+from app.models.activity_log import ActivityLog
 from app.schemas.interview import (
     InterviewSetupCreate, InterviewSetupUpdate, InterviewSetupResponse,
     InterviewSlotCreate, InterviewSlotBulkCreate, InterviewSlotResponse,
     SlotBookingRequest, PassMessageCreate, PassMessageResponse,
     RecruitmentDocumentCreate, RecruitmentDocumentResponse,
-    CandidatePassData, ManagerPassData
+    CandidatePassData, ManagerPassData, ActivityLogResponse
 )
 
 
@@ -160,6 +161,16 @@ class InterviewService:
         response = InterviewSlotResponse.model_validate(slot)
         if candidate:
             response.candidate_name = candidate.full_name
+            await self.log_activity(
+                session,
+                candidate_id=candidate_id,
+                stage="Interview",
+                action_type="interview_booked",
+                action_description=f"Interview slot booked for {slot.slot_date.strftime('%d %b %Y')} at {slot.start_time.strftime('%H:%M')}",
+                performed_by="candidate",
+                performed_by_id=str(candidate_id),
+                visibility="candidate"
+            )
         
         return response
     
@@ -185,6 +196,18 @@ class InterviewService:
         
         await session.commit()
         await session.refresh(slot)
+        
+        await self.log_activity(
+            session,
+            candidate_id=candidate_id,
+            stage="Interview",
+            action_type="interview_confirmed",
+            action_description=f"Interview confirmed for {slot.slot_date.strftime('%d %b %Y')} at {slot.start_time.strftime('%H:%M')}",
+            performed_by="candidate",
+            performed_by_id=str(candidate_id),
+            visibility="candidate"
+        )
+        
         return InterviewSlotResponse.model_validate(slot)
     
     async def get_confirmed_interviews(
@@ -427,6 +450,9 @@ class InterviewService:
         elif c_stage_lower == "offer":
             next_actions.append({"action_id": "review_offer", "label": "Review Offer", "type": "document"})
         
+        # Get candidate-visible activity history
+        activity_history = await self.get_candidate_activity_history(session, candidate_id)
+        
         return CandidatePassData(
             pass_id=f"CPASS-{candidate.candidate_number}",
             pass_token=self.generate_pass_token(),
@@ -444,7 +470,8 @@ class InterviewService:
             interview_slots=available_slots,
             booked_slot=booked_slot_response,
             unread_messages=unread,
-            next_actions=next_actions
+            next_actions=next_actions,
+            activity_history=activity_history
         )
     
     async def get_manager_pass_data(
@@ -511,6 +538,60 @@ class InterviewService:
             confirmed_interviews=confirmed,
             unread_messages=unread
         )
+
+    async def log_activity(
+        self, 
+        session: AsyncSession, 
+        candidate_id: int,
+        stage: str,
+        action_type: str,
+        action_description: str,
+        performed_by: str = "system",
+        performed_by_id: str = None,
+        visibility: str = "internal"
+    ) -> ActivityLog:
+        """Log an activity entry (immutable audit trail)."""
+        log = ActivityLog(
+            candidate_id=candidate_id,
+            stage=stage,
+            action_type=action_type,
+            action_description=action_description,
+            performed_by=performed_by,
+            performed_by_id=performed_by_id,
+            visibility=visibility,
+            timestamp=datetime.utcnow()
+        )
+        session.add(log)
+        await session.commit()
+        await session.refresh(log)
+        return log
+
+    async def get_candidate_activity_history(
+        self, session: AsyncSession, candidate_id: int
+    ) -> List[ActivityLogResponse]:
+        """Get candidate-visible activity history only."""
+        result = await session.execute(
+            select(ActivityLog).where(
+                and_(
+                    ActivityLog.candidate_id == candidate_id,
+                    ActivityLog.visibility == "candidate"
+                )
+            ).order_by(ActivityLog.timestamp.desc()).limit(20)
+        )
+        logs = result.scalars().all()
+        return [ActivityLogResponse.model_validate(l) for l in logs]
+
+    async def get_full_activity_history(
+        self, session: AsyncSession, candidate_id: int
+    ) -> List[ActivityLogResponse]:
+        """Get full activity history (HR/admin only)."""
+        result = await session.execute(
+            select(ActivityLog).where(
+                ActivityLog.candidate_id == candidate_id
+            ).order_by(ActivityLog.timestamp.desc())
+        )
+        logs = result.scalars().all()
+        return [ActivityLogResponse.model_validate(l) for l in logs]
 
 
 interview_service = InterviewService()
