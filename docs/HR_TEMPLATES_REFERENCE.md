@@ -1,158 +1,180 @@
 # HR Templates Reference Guide
 
-This document provides a reference for the modern, flexible HR templates available in the Secure Renewals HR Portal.
+This document provides a comprehensive reference for the professional HR templates available in the Secure Renewals HR Portal.
 
 ## Template Architecture
 
-All templates use a **JSON-based schema** (v2.0) that provides:
-- 🔧 **Configurable competencies** - Add, remove, or reweight criteria
-- ⭐ **Modern rating scales** - Stars, emojis, color-coded indicators
-- 📊 **OKR support** - Objectives and Key Results tracking
-- 🔄 **Continuous feedback** - Year-round feedback logging
-- 📱 **Dynamic sections** - Flexible forms that adapt to your needs
-- 🔔 **Workflow automation** - Built-in notifications and deadlines
+All templates utilize a **JSON-based schema** (v2.0) designed for enterprise-grade HR operations:
+
+- **Configurable Competencies** - Customize evaluation criteria and weighting
+- **Professional Rating Scales** - Numeric ratings with descriptive labels
+- **OKR Framework Support** - Objectives and Key Results methodology
+- **Continuous Feedback Integration** - Year-round performance documentation
+- **Dynamic Sections** - Flexible forms adapted to organizational needs
+- **Workflow Automation** - Built-in notifications and approval processes
+- **Confidentiality Controls** - Role-based access and data protection
 
 ---
 
 ## Available Templates
 
-### 1. Performance Evaluation 2025 - Non-Managerial Positions
+### 1. Annual Performance Evaluation - Non-Managerial Staff
 
 **Type:** `performance_evaluation`  
 **Category:** `non_managerial`  
 **Schema Version:** 2.0
 
-#### Key Features:
-- ⭐ Star-based ratings with emoji indicators
-- 📈 Configurable competency weights
-- 🎯 SMART goal tracking with OKR format
-- 💬 Continuous feedback throughout the year
-- ✍️ Self-assessment with guided prompts
-- 📧 Automated workflow notifications
+#### Overview
+A comprehensive evaluation framework for individual contributors, designed to assess core competencies, document achievements, and establish development goals aligned with organizational objectives.
 
-#### Competency Categories:
+#### Key Features:
+- Professional numeric rating scale (1-5) with detailed descriptors
+- Configurable competency weights totaling 100%
+- SMART goal tracking with OKR format support
+- Continuous feedback documentation throughout the evaluation period
+- Structured self-assessment with guided prompts
+- Automated workflow with configurable deadlines and notifications
+
+#### Competency Framework:
 
 **Core Competencies (85% total weight)**
-| Competency | Weight | Configurable |
-|------------|--------|--------------|
-| Job Knowledge & Skills | 20% | ✅ |
-| Quality of Work | 20% | ✅ |
-| Productivity & Efficiency | 15% | ✅ |
-| Communication & Collaboration | 15% | ✅ |
-| Initiative & Problem Solving | 15% | ✅ |
+
+| Competency | Weight | Description |
+|------------|--------|-------------|
+| Job Knowledge & Skills | 20% | Technical proficiency, role understanding, continuous learning |
+| Quality of Work | 20% | Accuracy, thoroughness, attention to detail |
+| Productivity & Efficiency | 15% | Output volume, deadline management, resource optimization |
+| Communication & Collaboration | 15% | Written/verbal skills, teamwork, relationship building |
+| Initiative & Problem Solving | 15% | Proactivity, analytical thinking, solution development |
 
 **Values & Culture (15% total weight)**
-| Competency | Weight | Required |
-|------------|--------|----------|
-| Integrity & Ethics | 10% | ✅ |
+
+| Competency | Weight | Status |
+|------------|--------|--------|
+| Integrity & Ethics | 10% | Required |
 | Adaptability & Growth Mindset | 5% | Optional |
 
 #### Rating Scale:
-| Rating | Label | Visual |
-|--------|-------|--------|
-| 5 | Outstanding | ⭐ |
-| 4 | Exceeds Expectations | 🟢 |
-| 3 | Meets Expectations | 🟡 |
-| 2 | Developing | 🟠 |
-| 1 | Needs Development | 🔴 |
 
-#### Workflow Steps:
-1. **Self Assessment** (Employee, 7 days)
-2. **Manager Review** (Manager, 7 days)
-3. **Calibration** (HR, optional)
-4. **Review Discussion** (Employee + Manager, 5 days)
-5. **Acknowledgment** (Employee, 3 days)
+| Rating | Label | Code | Description |
+|--------|-------|------|-------------|
+| 5 | Outstanding | O | Exceptional performance; consistently exceeds expectations |
+| 4 | Exceeds Expectations | EE | Frequently surpasses job requirements |
+| 3 | Meets Expectations | ME | Consistently meets job requirements |
+| 2 | Developing | D | Occasionally meets expectations; development needed |
+| 1 | Needs Improvement | NI | Performance below expectations; immediate action required |
+
+#### Workflow Process:
+1. **Self Assessment** — Employee (7 business days)
+2. **Manager Review** — Direct Manager (7 business days)
+3. **Calibration** — HR (optional)
+4. **Review Discussion** — Employee + Manager (5 business days)
+5. **Employee Acknowledgment** — Employee (3 business days)
 
 ---
 
-### 2. Performance Evaluation 2025 - Managerial Positions
+### 2. Leadership Performance Evaluation - Managerial Staff
 
 **Type:** `performance_evaluation`  
 **Category:** `managerial`  
 **Schema Version:** 2.0
 
+#### Overview
+A comprehensive leadership assessment framework designed for managers and supervisors, incorporating multi-rater feedback, team performance metrics, and strategic objective tracking.
+
 #### Key Features:
-- 📊 360° feedback integration
-- 📈 KPI tracking dashboard
-- 👥 Team performance metrics
-- 🎯 Strategic OKR tracking
-- 💼 Leadership competency framework
+- Multi-rater (360°) feedback integration
+- Key Performance Indicator (KPI) tracking
+- Team performance metrics dashboard
+- Strategic OKR tracking and alignment
+- Leadership competency framework
 
 #### Leadership Competencies:
 
-| Competency | Weight |
-|------------|--------|
-| Strategic Thinking & Vision | 15% |
-| People Leadership & Development | 20% |
-| Decision Making & Judgment | 15% |
-| Stakeholder Management | 15% |
-| Performance Management | 10% |
-| Operational Efficiency | 10% |
-| Financial Acumen | 10% |
-| Innovation & Change Leadership | 5% |
+| Competency | Weight | Description |
+|------------|--------|-------------|
+| Strategic Thinking & Vision | 15% | Direction setting, organizational alignment |
+| People Leadership & Development | 20% | Coaching, talent development, succession planning |
+| Decision Making & Judgment | 15% | Analytical thinking, accountability |
+| Stakeholder Management | 15% | Relationship building, influence, communication |
+| Performance Management | 10% | Expectations setting, feedback, development |
+| Operational Efficiency | 10% | Process improvement, resource optimization |
+| Financial Acumen | 10% | Budget management, cost awareness |
+| Innovation & Change Leadership | 5% | Change management, innovation culture |
 
-#### Team Metrics (Auto-Populated):
-- Team size and turnover rate
-- Engagement scores
-- Promotions this year
-- Average training hours
+#### Team Performance Metrics (Auto-Populated):
+- Current team size and organizational structure
+- Annual turnover rate and retention metrics
+- Employee engagement survey scores
+- Internal promotions and career progression
+- Average training and development hours
 
-#### Workflow Steps:
-1. **Self Assessment** (Manager, 10 days)
-2. **360° Feedback Collection** (System, 14 days)
-3. **Supervisor Review** (Supervisor, 7 days)
-4. **Leadership Calibration** (HR, required)
-5. **Review Discussion** (Manager + Supervisor, 5 days)
-6. **Acknowledgment** (Manager, 3 days)
+#### Workflow Process:
+1. **Self Assessment** — Manager (10 business days)
+2. **Multi-Rater Feedback Collection** — System (14 business days)
+3. **Supervisor Review** — Senior Manager (7 business days)
+4. **Leadership Calibration** — HR (required)
+5. **Review Discussion** — Manager + Supervisor (5 business days)
+6. **Acknowledgment** — Manager (3 business days)
 
 ---
 
-### 3. Employee of the Year Nomination 2025
+### 3. Employee of the Year Award Nomination
 
 **Type:** `recognition_nomination`  
 **Award Type:** `employee_of_the_year`  
 **Schema Version:** 2.0
 
-#### Key Features:
-- 🏆 Modern nomination experience
-- 📸 Media upload support (photos, videos)
-- 👥 Endorsement requests
-- 📊 Automatic scoring
-- 🔔 Status notifications
+#### Overview
+A formal nomination process for the organization's most prestigious employee recognition award, designed to identify and celebrate exceptional contributors who exemplify organizational values and deliver outstanding results.
 
-#### Nomination Categories:
+#### Eligibility Criteria:
+- Minimum one (1) year of continuous service
+- No active performance improvement plans or disciplinary actions
+- Demonstrated excellence across multiple performance dimensions
+- Strong record of attendance and professional conduct
 
-| Category | Weight | Emoji |
-|----------|--------|-------|
-| Outstanding Performance | 25% | ⭐ |
-| Living Our Values | 20% | 💎 |
-| Team Player | 20% | 🤝 |
-| Innovation & Initiative | 20% | 💡 |
-| Business Impact | 15% | 📈 |
+#### Evaluation Categories:
 
-#### Workflow:
-1. **Draft** - Save and edit nomination
-2. **Submitted** - Notification sent to HR
-3. **HR Review** - Eligibility verification (5 days)
-4. **Selection Committee** - Evaluation and scoring
-5. **Winner Selected** - Committee decision
-6. **Announced** - Winner notification
+| Category | Weight | Description |
+|----------|--------|-------------|
+| Professional Excellence | 25% | Exceptional performance exceeding expectations |
+| Values & Culture Ambassador | 20% | Consistent demonstration of organizational values |
+| Collaboration & Team Contribution | 20% | Exceptional teamwork and colleague support |
+| Innovation & Continuous Improvement | 20% | Process improvements and innovative solutions |
+| Business Impact & Results | 15% | Measurable positive organizational impact |
+
+#### Nomination Components:
+- Nominee information and eligibility verification
+- Professional relationship and nominator credentials
+- Significant achievements with business impact documentation
+- Comprehensive nomination rationale statement
+- Optional professional endorsements
+- Supporting documentation and evidence
+
+#### Selection Workflow:
+1. **Draft Nomination** — Nominator creates nomination
+2. **Submission** — Formal submission with confirmation
+3. **HR Eligibility Review** — Verification (5 business days)
+4. **Selection Committee Evaluation** — Scoring and ranking
+5. **Final Selection** — Committee decision
+6. **Award Announcement** — Public recognition
 
 ---
 
-## API Usage
+## API Reference
 
 ### List All Templates
 ```http
 GET /api/templates
 ```
 
-### Get Template by Type
+### Filter Templates by Type
 ```http
 GET /api/templates?type=performance_evaluation
 ```
 
-### Get Specific Template
+### Retrieve Specific Template
 ```http
 GET /api/templates/{template_id}
 ```
@@ -163,7 +185,7 @@ POST /api/templates
 Content-Type: application/json
 
 {
-  "name": "Custom Evaluation",
+  "name": "Custom Evaluation Template",
   "type": "performance_evaluation",
   "content": { /* JSON schema */ }
 }
@@ -176,7 +198,7 @@ Content-Type: application/json
 
 {
   "content": { /* Updated JSON schema */ },
-  "revision_note": "Added new competency category"
+  "revision_note": "Updated competency weightings per HR policy review"
 }
 ```
 
@@ -190,10 +212,13 @@ Content-Type: application/json
   "schema_version": "2.0",
   "template_type": "performance_evaluation",
   "category": "non_managerial",
+  "title": "Annual Performance Evaluation",
+  "confidentiality_notice": "CONFIDENTIAL",
   "settings": {
     "allow_self_assessment": true,
     "enable_continuous_feedback": true,
-    "rating_style": "stars"
+    "rating_style": "numeric",
+    "display_mode": "professional"
   },
   "rating_scales": { ... },
   "competencies": { ... },
@@ -208,49 +233,54 @@ Content-Type: application/json
 {
   "id": "job_knowledge",
   "name": "Job Knowledge & Skills",
-  "description": "Understanding of role, technical skills",
+  "description": "Technical proficiency, role understanding, continuous learning",
   "weight": 20,
   "required": true,
   "behaviors": [
-    "Demonstrates understanding of responsibilities",
-    "Applies technical skills effectively"
+    "Demonstrates thorough understanding of job responsibilities",
+    "Applies technical skills effectively",
+    "Seeks opportunities for professional development"
   ]
 }
 ```
 
 ### Section Types
+
 | Type | Description |
 |------|-------------|
-| `dynamic_list` | Add multiple items (achievements, goals) |
-| `goal_tracker` | SMART goals with OKR support |
-| `feedback_log` | Continuous feedback entries |
-| `rich_text` | Long-form text with prompts |
-| `tag_select` | Select from predefined tags |
-| `kpi_tracker` | KPI metrics with targets |
-| `metrics_dashboard` | Auto-populated metrics |
-| `okr_tracker` | Objectives and Key Results |
-| `feedback_360` | 360° feedback collection |
-| `achievement_cards` | Visual achievement cards |
-| `media_upload` | File attachments |
+| `dynamic_list` | Add multiple structured items (achievements, goals) |
+| `goal_tracker` | SMART goals with OKR framework support |
+| `feedback_log` | Continuous feedback documentation |
+| `rich_text` | Long-form narrative with guided prompts |
+| `tag_select` | Selection from predefined categories |
+| `kpi_tracker` | Key Performance Indicator metrics |
+| `metrics_dashboard` | Auto-populated performance metrics |
+| `okr_tracker` | Objectives and Key Results tracking |
+| `feedback_360` | Multi-rater feedback collection |
+| `achievement_cards` | Structured achievement documentation |
+| `media_upload` | Supporting document attachments |
+| `structured_reflection` | Guided self-assessment questions |
 
 ---
 
-## Customization Guide
+## Configuration Guide
 
-### Adding Custom Competencies
+### Customizing Competency Weights
 ```json
 {
   "competencies": {
+    "configurable": true,
     "allow_custom": true,
     "categories": [
       {
-        "id": "custom_skills",
-        "name": "Department-Specific Skills",
+        "id": "department_specific",
+        "name": "Department-Specific Competencies",
         "items": [
           {
-            "id": "custom_1",
-            "name": "Your Custom Competency",
-            "weight": 10,
+            "id": "custom_competency",
+            "name": "Custom Competency Name",
+            "description": "Detailed description of expected behaviors",
+            "weight": 15,
             "required": true
           }
         ]
@@ -260,29 +290,38 @@ Content-Type: application/json
 }
 ```
 
-### Changing Rating Style
-Options: `"stars"`, `"numeric"`, `"emoji"`, `"slider"`
-
+### Configuring Rating Labels
 ```json
 {
-  "settings": {
-    "rating_style": "emoji"
-  },
   "rating_scales": {
     "default": {
-      "type": "emoji",
-      "options": ["🔴", "🟠", "🟡", "🟢", "⭐"]
+      "type": "numeric",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "5": {
+          "text": "Outstanding",
+          "short": "O",
+          "color": "#059669",
+          "description": "Exceptional performance in all areas"
+        }
+      }
     }
   }
 }
 ```
 
-### Configuring Workflows
+### Workflow Configuration
 ```json
 {
   "workflow": {
     "steps": [
-      {"id": "step1", "name": "Review", "actor": "manager", "deadline_days": 7}
+      {
+        "id": "review_step",
+        "name": "Manager Review",
+        "actor": "manager",
+        "deadline_days": 7
+      }
     ],
     "notifications": {
       "enabled": true,
@@ -295,9 +334,9 @@ Options: `"stars"`, `"numeric"`, `"emoji"`, `"slider"`
 
 ---
 
-## Seeding Templates
+## Database Seeding
 
-To populate templates in a fresh database:
+To populate templates in a new environment:
 
 ```bash
 cd backend
@@ -308,12 +347,12 @@ uv run python ../scripts/seed_hr_templates.py
 
 ## Best Practices
 
-1. 🔧 **Customize weights** to match your organization's priorities
-2. 📅 **Enable mid-year reviews** for continuous performance management
-3. 💬 **Use continuous feedback** instead of annual-only reviews
-4. 🎯 **Set clear OKRs** with measurable key results
-5. 👥 **Enable 360° feedback** for leadership roles
-6. 📊 **Track metrics** that matter to your business
+1. **Align with Organizational Strategy** — Ensure competency weights reflect strategic priorities
+2. **Establish Consistent Timelines** — Define realistic deadlines for each workflow stage
+3. **Enable Continuous Feedback** — Document performance throughout the year, not just annually
+4. **Set Measurable Objectives** — Use the OKR framework for clear, quantifiable goals
+5. **Implement Multi-Rater Feedback** — Leverage 360° feedback for leadership assessments
+6. **Maintain Confidentiality** — Apply appropriate access controls to sensitive information
 
 ---
 
@@ -325,4 +364,5 @@ uv run python ../scripts/seed_hr_templates.py
 
 ---
 
-*Last Updated: January 2025 | Schema Version 2.0*
+*Last Updated: January 2025 | Schema Version 2.0*  
+*CONFIDENTIAL — Internal Use Only*

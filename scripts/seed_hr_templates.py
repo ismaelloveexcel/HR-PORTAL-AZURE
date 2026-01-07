@@ -27,11 +27,14 @@ from app.models.template import Template
 from sqlalchemy import select
 
 
-# Modern Performance Evaluation Template - Non-Managerial Positions
+# Professional Performance Evaluation Template - Non-Managerial Positions
 PERFORMANCE_EVAL_NON_MANAGERIAL = json.dumps({
     "schema_version": "2.0",
     "template_type": "performance_evaluation",
     "category": "non_managerial",
+    "title": "Annual Performance Evaluation",
+    "subtitle": "Non-Managerial Staff Assessment",
+    "confidentiality_notice": "CONFIDENTIAL - This document contains sensitive personnel information and should be handled in accordance with company policy.",
     "evaluation_period": {
         "year": 2025,
         "start_date": "2025-01-01",
@@ -45,7 +48,9 @@ PERFORMANCE_EVAL_NON_MANAGERIAL = json.dumps({
         "max_goals": 5,
         "enable_continuous_feedback": True,
         "enable_mid_year_review": True,
-        "rating_style": "stars",
+        "rating_style": "numeric",
+        "display_mode": "professional",
+        "show_visual_indicators": True,
         "allow_anonymous_peer_feedback": False,
         "auto_calculate_score": True
     },
@@ -55,21 +60,21 @@ PERFORMANCE_EVAL_NON_MANAGERIAL = json.dumps({
             "min": 1,
             "max": 5,
             "labels": {
-                "1": {"text": "Needs Development", "emoji": "🔴", "color": "#dc2626"},
-                "2": {"text": "Developing", "emoji": "🟠", "color": "#ea580c"},
-                "3": {"text": "Meets Expectations", "emoji": "🟡", "color": "#ca8a04"},
-                "4": {"text": "Exceeds Expectations", "emoji": "🟢", "color": "#16a34a"},
-                "5": {"text": "Outstanding", "emoji": "⭐", "color": "#059669"}
+                "1": {"text": "Needs Improvement", "short": "NI", "color": "#dc2626", "description": "Performance consistently falls below expectations; immediate improvement required"},
+                "2": {"text": "Developing", "short": "D", "color": "#ea580c", "description": "Performance occasionally meets expectations; development plan recommended"},
+                "3": {"text": "Meets Expectations", "short": "ME", "color": "#ca8a04", "description": "Performance consistently meets job requirements and expectations"},
+                "4": {"text": "Exceeds Expectations", "short": "EE", "color": "#16a34a", "description": "Performance frequently exceeds job requirements; role model in key areas"},
+                "5": {"text": "Outstanding", "short": "O", "color": "#059669", "description": "Exceptional performance in all areas; consistently delivers beyond expectations"}
             }
         },
         "overall": {
             "type": "percentage_bands",
             "bands": [
-                {"min": 90, "max": 100, "label": "Outstanding", "emoji": "🏆"},
-                {"min": 75, "max": 89, "label": "Exceeds Expectations", "emoji": "⭐"},
-                {"min": 60, "max": 74, "label": "Meets Expectations", "emoji": "✅"},
-                {"min": 40, "max": 59, "label": "Developing", "emoji": "📈"},
-                {"min": 0, "max": 39, "label": "Needs Development", "emoji": "🎯"}
+                {"min": 90, "max": 100, "label": "Outstanding Performance", "code": "A"},
+                {"min": 75, "max": 89, "label": "Exceeds Expectations", "code": "B"},
+                {"min": 60, "max": 74, "label": "Meets Expectations", "code": "C"},
+                {"min": 40, "max": 59, "label": "Developing", "code": "D"},
+                {"min": 0, "max": 39, "label": "Needs Improvement", "code": "E"}
             ]
         }
     },
@@ -191,74 +196,77 @@ PERFORMANCE_EVAL_NON_MANAGERIAL = json.dumps({
     "sections": [
         {
             "id": "achievements",
-            "name": "Key Achievements",
+            "name": "Key Achievements & Accomplishments",
             "type": "dynamic_list",
-            "description": "Highlight your top accomplishments this year",
+            "description": "Document significant accomplishments during the evaluation period",
             "min_items": 1,
             "max_items": 10,
             "item_schema": {
-                "title": {"type": "text", "label": "Achievement", "max_length": 200},
-                "description": {"type": "textarea", "label": "Details", "max_length": 1000},
-                "impact": {"type": "select", "label": "Impact Level", "options": ["Individual", "Team", "Department", "Organization"]},
-                "date": {"type": "date", "label": "Date Achieved"}
+                "title": {"type": "text", "label": "Achievement Title", "max_length": 200},
+                "description": {"type": "textarea", "label": "Description & Context", "max_length": 1000},
+                "impact": {"type": "select", "label": "Scope of Impact", "options": ["Individual Contributor", "Team Level", "Department Level", "Organization-Wide"]},
+                "date": {"type": "date", "label": "Date Achieved"},
+                "quantifiable_results": {"type": "text", "label": "Measurable Outcomes (if applicable)", "required": False}
             }
         },
         {
             "id": "goals",
-            "name": "Development Goals",
+            "name": "Professional Development Goals",
             "type": "goal_tracker",
-            "description": "Set SMART goals for the next period",
+            "description": "Establish SMART objectives for the upcoming evaluation period",
             "enable_okr_format": True,
             "item_schema": {
-                "goal": {"type": "text", "label": "Goal", "required": True},
-                "key_results": {"type": "dynamic_list", "label": "Key Results", "max_items": 5},
-                "target_date": {"type": "date", "label": "Target Date", "required": True},
-                "resources": {"type": "textarea", "label": "Resources Needed"},
-                "progress": {"type": "slider", "label": "Progress", "min": 0, "max": 100, "step": 5}
+                "goal": {"type": "text", "label": "Objective", "required": True},
+                "key_results": {"type": "dynamic_list", "label": "Key Results / Success Metrics", "max_items": 5},
+                "target_date": {"type": "date", "label": "Target Completion Date", "required": True},
+                "resources": {"type": "textarea", "label": "Required Resources & Support"},
+                "progress": {"type": "slider", "label": "Progress (%)", "min": 0, "max": 100, "step": 5}
             }
         },
         {
             "id": "feedback",
-            "name": "Continuous Feedback",
+            "name": "Continuous Performance Feedback",
             "type": "feedback_log",
-            "description": "Record ongoing feedback throughout the year",
+            "description": "Documented feedback received throughout the evaluation period",
             "auto_populated": True,
             "item_schema": {
-                "date": {"type": "date"},
-                "from": {"type": "text"},
-                "type": {"type": "select", "options": ["Praise", "Constructive", "Suggestion"]},
-                "content": {"type": "textarea"}
+                "date": {"type": "date", "label": "Date"},
+                "from": {"type": "text", "label": "Source"},
+                "type": {"type": "select", "label": "Feedback Type", "options": ["Recognition", "Developmental", "Recommendation"]},
+                "content": {"type": "textarea", "label": "Feedback Details"}
             }
         },
         {
             "id": "self_assessment",
-            "name": "Self Assessment",
+            "name": "Employee Self-Assessment",
             "type": "rich_text",
-            "description": "Reflect on your performance and growth",
+            "description": "Provide a comprehensive reflection on your performance during this period",
             "prompts": [
-                "What are you most proud of this year?",
-                "What challenges did you overcome?",
-                "How have you grown professionally?",
-                "What would you do differently?"
+                "Summarize your key contributions and achievements this evaluation period.",
+                "Describe challenges you encountered and how you addressed them.",
+                "Identify areas where you have demonstrated professional growth.",
+                "Outline opportunities for continued development."
             ],
             "max_length": 3000
         },
         {
             "id": "manager_comments",
-            "name": "Manager Comments",
+            "name": "Manager Assessment & Comments",
             "type": "rich_text",
             "role_restricted": ["manager", "hr"],
+            "description": "Provide comprehensive feedback on employee performance",
             "max_length": 3000
         },
         {
             "id": "development_areas",
-            "name": "Areas for Development",
+            "name": "Recommended Development Areas",
             "type": "tag_select",
             "allow_custom": True,
             "suggested_tags": [
-                "Technical Skills", "Communication", "Leadership", "Time Management",
-                "Project Management", "Stakeholder Management", "Data Analysis",
-                "Presentation Skills", "Strategic Thinking", "Delegation"
+                "Technical Proficiency", "Business Communication", "Leadership Development", 
+                "Time Management", "Project Management", "Stakeholder Engagement", 
+                "Analytical Skills", "Presentation Skills", "Strategic Planning", 
+                "Team Collaboration", "Process Improvement", "Industry Knowledge"
             ]
         }
     ],
@@ -284,11 +292,14 @@ PERFORMANCE_EVAL_NON_MANAGERIAL = json.dumps({
 }, indent=2)
 
 
-# Modern Performance Evaluation Template - Managerial Positions
+# Professional Performance Evaluation Template - Managerial Positions
 PERFORMANCE_EVAL_MANAGERIAL = json.dumps({
     "schema_version": "2.0",
     "template_type": "performance_evaluation",
     "category": "managerial",
+    "title": "Leadership Performance Evaluation",
+    "subtitle": "Managerial & Supervisory Staff Assessment",
+    "confidentiality_notice": "CONFIDENTIAL - This document contains sensitive personnel information and should be handled in accordance with company policy.",
     "evaluation_period": {
         "year": 2025,
         "start_date": "2025-01-01",
@@ -303,7 +314,8 @@ PERFORMANCE_EVAL_MANAGERIAL = json.dumps({
         "enable_continuous_feedback": True,
         "enable_mid_year_review": True,
         "enable_360_feedback": True,
-        "rating_style": "stars",
+        "rating_style": "numeric",
+        "display_mode": "professional",
         "auto_calculate_score": True,
         "include_team_metrics": True
     },
@@ -313,11 +325,11 @@ PERFORMANCE_EVAL_MANAGERIAL = json.dumps({
             "min": 1,
             "max": 5,
             "labels": {
-                "1": {"text": "Needs Development", "emoji": "🔴", "color": "#dc2626"},
-                "2": {"text": "Developing", "emoji": "🟠", "color": "#ea580c"},
-                "3": {"text": "Meets Expectations", "emoji": "🟡", "color": "#ca8a04"},
-                "4": {"text": "Exceeds Expectations", "emoji": "🟢", "color": "#16a34a"},
-                "5": {"text": "Outstanding", "emoji": "⭐", "color": "#059669"}
+                "1": {"text": "Needs Improvement", "short": "NI", "color": "#dc2626", "description": "Performance consistently falls below expectations; immediate improvement required"},
+                "2": {"text": "Developing", "short": "D", "color": "#ea580c", "description": "Performance occasionally meets expectations; development plan recommended"},
+                "3": {"text": "Meets Expectations", "short": "ME", "color": "#ca8a04", "description": "Performance consistently meets job requirements and expectations"},
+                "4": {"text": "Exceeds Expectations", "short": "EE", "color": "#16a34a", "description": "Performance frequently exceeds job requirements; role model in key areas"},
+                "5": {"text": "Outstanding", "short": "O", "color": "#059669", "description": "Exceptional performance in all areas; consistently delivers beyond expectations"}
             }
         }
     },
@@ -431,83 +443,91 @@ PERFORMANCE_EVAL_MANAGERIAL = json.dumps({
             "id": "kpis",
             "name": "Key Performance Indicators",
             "type": "kpi_tracker",
-            "description": "Track departmental KPIs and metrics",
+            "description": "Document departmental performance against established KPIs",
             "item_schema": {
-                "kpi_name": {"type": "text", "label": "KPI"},
-                "target": {"type": "number", "label": "Target"},
-                "achieved": {"type": "number", "label": "Achieved"},
-                "unit": {"type": "select", "options": ["%", "AED", "Count", "Days", "Score"]},
-                "trend": {"type": "select", "options": ["↑ Improving", "→ Stable", "↓ Declining"]}
+                "kpi_name": {"type": "text", "label": "Performance Indicator"},
+                "target": {"type": "number", "label": "Target Value"},
+                "achieved": {"type": "number", "label": "Actual Value"},
+                "unit": {"type": "select", "label": "Unit of Measure", "options": ["%", "AED", "Count", "Days", "Score", "Rating"]},
+                "trend": {"type": "select", "label": "Performance Trend", "options": ["Improving", "Stable", "Declining"]},
+                "variance_explanation": {"type": "textarea", "label": "Variance Analysis (if applicable)", "required": False}
             }
         },
         {
             "id": "team_metrics",
-            "name": "Team Performance Dashboard",
+            "name": "Team Performance Metrics",
             "type": "metrics_dashboard",
+            "description": "Automated team performance indicators",
             "auto_populated": True,
             "metrics": [
-                {"id": "team_size", "label": "Team Size", "source": "hr_system"},
-                {"id": "turnover_rate", "label": "Turnover Rate", "source": "hr_system"},
-                {"id": "engagement_score", "label": "Engagement Score", "source": "survey"},
-                {"id": "promotions", "label": "Promotions This Year", "source": "hr_system"},
-                {"id": "training_hours", "label": "Avg Training Hours", "source": "lms"}
+                {"id": "team_size", "label": "Current Team Size", "source": "hr_system"},
+                {"id": "turnover_rate", "label": "Annual Turnover Rate", "source": "hr_system"},
+                {"id": "engagement_score", "label": "Employee Engagement Score", "source": "survey"},
+                {"id": "promotions", "label": "Internal Promotions", "source": "hr_system"},
+                {"id": "training_hours", "label": "Average Training Hours per Employee", "source": "lms"},
+                {"id": "performance_distribution", "label": "Team Performance Distribution", "source": "hr_system"}
             ]
         },
         {
             "id": "achievements",
-            "name": "Major Achievements",
+            "name": "Key Accomplishments & Business Impact",
             "type": "dynamic_list",
+            "description": "Document significant leadership accomplishments and their business impact",
             "min_items": 2,
             "max_items": 10,
             "item_schema": {
-                "title": {"type": "text", "label": "Achievement"},
-                "description": {"type": "textarea", "label": "Details & Impact"},
-                "metrics": {"type": "text", "label": "Quantifiable Results"},
-                "category": {"type": "select", "options": ["Revenue", "Cost Savings", "Process Improvement", "Team Development", "Innovation", "Customer Success"]}
+                "title": {"type": "text", "label": "Accomplishment"},
+                "description": {"type": "textarea", "label": "Description & Context"},
+                "metrics": {"type": "text", "label": "Quantifiable Business Impact"},
+                "category": {"type": "select", "label": "Category", "options": ["Revenue Growth", "Cost Optimization", "Process Excellence", "Talent Development", "Innovation", "Customer Success", "Risk Management", "Strategic Initiative"]}
             }
         },
         {
             "id": "goals",
-            "name": "Strategic Goals & OKRs",
+            "name": "Strategic Objectives & Key Results",
             "type": "okr_tracker",
+            "description": "Establish strategic goals aligned with organizational priorities",
             "item_schema": {
-                "objective": {"type": "text", "label": "Objective"},
+                "objective": {"type": "text", "label": "Strategic Objective"},
                 "key_results": {
                     "type": "dynamic_list",
+                    "label": "Key Results",
                     "max_items": 5,
                     "item_schema": {
-                        "kr": {"type": "text"},
-                        "target": {"type": "number"},
-                        "current": {"type": "number"},
-                        "unit": {"type": "text"}
+                        "kr": {"type": "text", "label": "Key Result"},
+                        "target": {"type": "number", "label": "Target"},
+                        "current": {"type": "number", "label": "Current"},
+                        "unit": {"type": "text", "label": "Unit"}
                     }
                 },
-                "status": {"type": "select", "options": ["On Track", "At Risk", "Behind", "Completed"]}
+                "status": {"type": "select", "label": "Status", "options": ["On Track", "At Risk", "Behind Schedule", "Completed", "Deferred"]}
             }
         },
         {
             "id": "feedback_360",
-            "name": "360° Feedback Summary",
+            "name": "Multi-Rater Feedback Summary",
             "type": "feedback_360",
-            "sources": ["direct_reports", "peers", "senior_leadership", "cross_functional"],
+            "description": "Consolidated feedback from multiple stakeholder perspectives",
+            "sources": ["direct_reports", "peers", "senior_leadership", "cross_functional_partners"],
             "anonymous": True,
             "item_schema": {
-                "source": {"type": "text"},
-                "strengths": {"type": "textarea"},
-                "development_areas": {"type": "textarea"},
-                "themes": {"type": "tag_list"}
+                "source_category": {"type": "text", "label": "Feedback Source"},
+                "strengths": {"type": "textarea", "label": "Identified Strengths"},
+                "development_areas": {"type": "textarea", "label": "Development Opportunities"},
+                "themes": {"type": "tag_list", "label": "Key Themes"}
             }
         },
         {
             "id": "self_assessment",
-            "name": "Leadership Self-Reflection",
+            "name": "Leadership Self-Assessment",
             "type": "structured_reflection",
+            "description": "Comprehensive reflection on leadership performance",
             "prompts": [
-                {"id": "proud", "text": "What leadership achievements are you most proud of?"},
-                {"id": "challenges", "text": "What were your biggest challenges and how did you overcome them?"},
-                {"id": "team_growth", "text": "How have you contributed to your team's growth?"},
-                {"id": "learning", "text": "What have you learned about yourself as a leader?"},
-                {"id": "next_year", "text": "What will you focus on in the coming year?"}
+                {"id": "accomplishments", "text": "Summarize your most significant leadership accomplishments during this evaluation period."},
+                {"id": "challenges", "text": "Describe the primary challenges you encountered and the strategies employed to address them."},
+                {"id": "team_development", "text": "Detail your contributions to team development and talent growth."},
+                {"id": "leadership_growth", "text": "Reflect on your own leadership development and lessons learned."},
+                {"id": "strategic_priorities", "text": "Outline your strategic priorities and focus areas for the upcoming period."}
             ]
         }
     ],
@@ -529,11 +549,13 @@ PERFORMANCE_EVAL_MANAGERIAL = json.dumps({
 }, indent=2)
 
 
-# Modern Employee of the Year Nomination Form
+# Professional Employee of the Year Nomination Form
 EMPLOYEE_OF_YEAR_NOMINATION = json.dumps({
     "schema_version": "2.0",
     "template_type": "recognition_nomination",
     "award_type": "employee_of_the_year",
+    "title": "Employee of the Year Award Nomination",
+    "subtitle": "Annual Excellence Recognition Program",
     "year": 2025,
     "settings": {
         "allow_self_nomination": False,
@@ -543,135 +565,144 @@ EMPLOYEE_OF_YEAR_NOMINATION = json.dumps({
         "anonymous_nominations": False,
         "multiple_nominations_allowed": True,
         "voting_enabled": False,
-        "nomination_deadline": "2025-12-15"
+        "nomination_deadline": "2025-12-15",
+        "display_mode": "professional"
     },
     "award_info": {
-        "name": "Employee of the Year",
-        "description": "Recognizes an exceptional individual who exemplifies our values and makes outstanding contributions",
-        "emoji": "🏆",
+        "name": "Employee of the Year Award",
+        "description": "This prestigious award recognizes an exceptional employee who has demonstrated outstanding performance, exemplified our organizational values, and made significant contributions to our company's success throughout the year.",
         "eligibility": [
-            "Minimum 1 year of service",
-            "No active disciplinary actions",
-            "Demonstrated excellence across multiple areas"
+            "Minimum one (1) year of continuous service as of December 31, 2025",
+            "No active performance improvement plans or disciplinary actions",
+            "Demonstrated excellence across multiple performance dimensions",
+            "Strong record of attendance and professional conduct"
         ],
-        "prize": {
+        "selection_criteria": "Nominees will be evaluated by a Selection Committee comprising senior leadership and HR representatives. The Committee's decision is final.",
+        "recognition": {
             "type": "configurable",
-            "default": ["Certificate", "Trophy", "Cash Bonus", "Extra Leave Days"]
+            "components": [
+                "Official Certificate of Recognition",
+                "Commemorative Award Trophy",
+                "Monetary Recognition Bonus",
+                "Additional Paid Leave Days",
+                "Recognition at Annual Company Event"
+            ]
         }
     },
     "categories": [
         {
             "id": "performance",
-            "name": "Outstanding Performance",
-            "emoji": "⭐",
+            "name": "Professional Excellence",
             "weight": 25,
-            "description": "Exceptional job performance exceeding expectations",
-            "rating": {"type": "stars", "max": 5},
+            "description": "Consistently exceeds performance expectations and delivers exceptional results",
+            "rating": {"type": "numeric", "min": 1, "max": 5},
             "evidence_required": True,
-            "evidence_prompt": "Describe specific examples of exceptional performance"
+            "evidence_prompt": "Provide specific examples of exceptional performance and quantifiable achievements"
         },
         {
             "id": "values",
-            "name": "Living Our Values",
-            "emoji": "💎",
+            "name": "Values & Culture Ambassador",
             "weight": 20,
-            "description": "Embodies and champions company values daily",
-            "rating": {"type": "stars", "max": 5},
+            "description": "Consistently demonstrates and promotes organizational values",
+            "rating": {"type": "numeric", "min": 1, "max": 5},
             "evidence_required": True,
-            "company_values": ["Integrity", "Excellence", "Innovation", "Collaboration", "Customer Focus"]
+            "company_values": ["Integrity", "Excellence", "Innovation", "Collaboration", "Customer Focus", "Accountability"]
         },
         {
             "id": "teamwork",
-            "name": "Team Player",
-            "emoji": "🤝",
+            "name": "Collaboration & Team Contribution",
             "weight": 20,
-            "description": "Exceptional collaboration and support for colleagues",
-            "rating": {"type": "stars", "max": 5},
-            "evidence_required": True
+            "description": "Demonstrates exceptional teamwork and supports colleagues' success",
+            "rating": {"type": "numeric", "min": 1, "max": 5},
+            "evidence_required": True,
+            "evidence_prompt": "Describe how the nominee contributes to team success and supports colleagues"
         },
         {
             "id": "innovation",
-            "name": "Innovation & Initiative",
-            "emoji": "💡",
+            "name": "Innovation & Continuous Improvement",
             "weight": 20,
-            "description": "Brings fresh ideas and drives positive change",
-            "rating": {"type": "stars", "max": 5},
-            "evidence_required": True
+            "description": "Introduces innovative solutions and drives positive organizational change",
+            "rating": {"type": "numeric", "min": 1, "max": 5},
+            "evidence_required": True,
+            "evidence_prompt": "Detail specific innovations, process improvements, or initiatives led by the nominee"
         },
         {
             "id": "impact",
-            "name": "Business Impact",
-            "emoji": "📈",
+            "name": "Business Impact & Results",
             "weight": 15,
-            "description": "Measurable positive impact on the organization",
-            "rating": {"type": "stars", "max": 5},
+            "description": "Delivers measurable positive impact on organizational objectives",
+            "rating": {"type": "numeric", "min": 1, "max": 5},
             "evidence_required": True,
-            "impact_types": ["Revenue", "Cost Savings", "Efficiency", "Customer Satisfaction", "Employee Engagement"]
+            "impact_categories": ["Revenue Enhancement", "Cost Optimization", "Operational Efficiency", "Customer Satisfaction", "Employee Engagement", "Risk Mitigation"]
         }
     ],
     "nominee_info": {
         "fields": [
-            {"id": "nominee_name", "label": "Nominee Name", "type": "employee_picker", "required": True},
+            {"id": "nominee_name", "label": "Nominee Full Name", "type": "employee_picker", "required": True},
             {"id": "employee_number", "label": "Employee ID", "type": "text", "auto_populated": True},
-            {"id": "job_title", "label": "Job Title", "type": "text", "auto_populated": True},
+            {"id": "job_title", "label": "Current Position", "type": "text", "auto_populated": True},
             {"id": "department", "label": "Department", "type": "text", "auto_populated": True},
-            {"id": "tenure", "label": "Years of Service", "type": "number", "auto_populated": True}
+            {"id": "tenure", "label": "Years of Service", "type": "number", "auto_populated": True},
+            {"id": "line_manager", "label": "Direct Manager", "type": "text", "auto_populated": True}
         ]
     },
     "nominator_info": {
         "fields": [
-            {"id": "nominator_name", "label": "Your Name", "type": "text", "auto_populated": True},
-            {"id": "relationship", "label": "Relationship to Nominee", "type": "select", "options": ["Manager", "Peer", "Direct Report", "Cross-functional Colleague", "Senior Leader"]}
+            {"id": "nominator_name", "label": "Nominator Name", "type": "text", "auto_populated": True},
+            {"id": "nominator_position", "label": "Nominator Position", "type": "text", "auto_populated": True},
+            {"id": "nominator_department", "label": "Nominator Department", "type": "text", "auto_populated": True},
+            {"id": "relationship", "label": "Professional Relationship to Nominee", "type": "select", "options": ["Direct Manager", "Senior Manager", "Peer Colleague", "Direct Report", "Cross-Functional Partner", "Executive Leadership"]},
+            {"id": "nomination_date", "label": "Date of Nomination", "type": "date", "auto_populated": True}
         ]
     },
     "sections": [
         {
             "id": "achievements",
-            "name": "Key Achievements",
+            "name": "Significant Achievements",
             "type": "achievement_cards",
-            "description": "Highlight the nominee's top accomplishments",
+            "description": "Document the nominee's most significant accomplishments during the evaluation period",
             "min_items": 1,
             "max_items": 5,
             "item_schema": {
                 "title": {"type": "text", "label": "Achievement Title", "max_length": 100},
-                "description": {"type": "textarea", "label": "What did they do?", "max_length": 500},
-                "impact": {"type": "textarea", "label": "What was the impact?", "max_length": 300},
-                "date": {"type": "month", "label": "When"}
+                "description": {"type": "textarea", "label": "Description of Achievement", "max_length": 500},
+                "impact": {"type": "textarea", "label": "Business Impact & Results", "max_length": 300},
+                "date": {"type": "month", "label": "Date of Achievement"}
             }
         },
         {
             "id": "nomination_statement",
-            "name": "Why This Person?",
+            "name": "Nomination Rationale",
             "type": "rich_text",
-            "description": "Tell us why this person deserves to win",
+            "description": "Provide a comprehensive statement explaining why this individual merits the Employee of the Year Award",
             "min_length": 100,
             "max_length": 1500,
-            "prompts": [
-                "What makes this person stand out?",
-                "How do they inspire others?",
-                "What would we lose without them?"
+            "guidance": [
+                "Describe the unique qualities that distinguish this nominee from peers",
+                "Explain how the nominee has positively influenced colleagues and the organization",
+                "Articulate the lasting impact and value this individual brings to the company"
             ]
         },
         {
             "id": "endorsements",
-            "name": "Supporting Endorsements",
+            "name": "Professional Endorsements",
             "type": "endorsement_request",
             "optional": True,
-            "description": "Invite colleagues to support this nomination",
+            "description": "Request supporting statements from colleagues who can attest to the nominee's contributions",
             "item_schema": {
-                "endorser": {"type": "employee_picker"},
-                "relationship": {"type": "text"},
-                "comment": {"type": "textarea", "max_length": 500},
-                "status": {"type": "select", "options": ["Pending", "Submitted", "Declined"]}
+                "endorser": {"type": "employee_picker", "label": "Endorser"},
+                "relationship": {"type": "text", "label": "Professional Relationship"},
+                "statement": {"type": "textarea", "label": "Endorsement Statement", "max_length": 500},
+                "status": {"type": "select", "label": "Status", "options": ["Pending Response", "Submitted", "Declined"]}
             }
         },
         {
-            "id": "media",
-            "name": "Supporting Evidence",
+            "id": "supporting_documentation",
+            "name": "Supporting Documentation",
             "type": "media_upload",
             "optional": True,
-            "description": "Upload photos, videos, or documents",
-            "allowed_types": ["image/jpeg", "image/png", "application/pdf", "video/mp4"],
+            "description": "Attach relevant documentation supporting the nomination (e.g., project reports, customer feedback, awards)",
+            "allowed_types": ["image/jpeg", "image/png", "application/pdf"],
             "max_files": 5,
             "max_file_size_mb": 10
         }
@@ -682,31 +713,41 @@ EMPLOYEE_OF_YEAR_NOMINATION = json.dumps({
         "display": {
             "show_score_to_nominator": False,
             "show_score_to_nominee": False,
-            "show_score_to_hr": True
+            "show_score_to_hr": True,
+            "show_score_to_committee": True
         }
     },
     "workflow": {
         "steps": [
-            {"id": "draft", "name": "Draft", "actor": "nominator"},
-            {"id": "submitted", "name": "Submitted", "actor": "nominator", "notification": True},
-            {"id": "hr_review", "name": "HR Review", "actor": "hr", "deadline_days": 5},
-            {"id": "committee_review", "name": "Selection Committee", "actor": "committee"},
-            {"id": "winner_selected", "name": "Winner Selected", "actor": "committee"},
-            {"id": "announced", "name": "Announced", "actor": "hr"}
+            {"id": "draft", "name": "Draft Nomination", "actor": "nominator"},
+            {"id": "submitted", "name": "Nomination Submitted", "actor": "nominator", "notification": True},
+            {"id": "hr_screening", "name": "HR Eligibility Review", "actor": "hr", "deadline_days": 5},
+            {"id": "committee_evaluation", "name": "Selection Committee Evaluation", "actor": "committee"},
+            {"id": "final_selection", "name": "Final Selection", "actor": "committee"},
+            {"id": "announcement", "name": "Award Announcement", "actor": "hr"}
         ],
         "notifications": {
-            "on_submission": {"to": ["hr", "nominator"], "template": "nomination_received"},
-            "on_endorsement": {"to": ["nominator"], "template": "endorsement_added"},
-            "on_winner": {"to": ["nominee", "nominator"], "template": "winner_announcement"}
+            "on_submission": {"to": ["hr", "nominator"], "template": "nomination_confirmation"},
+            "on_endorsement": {"to": ["nominator"], "template": "endorsement_received"},
+            "on_shortlist": {"to": ["nominator"], "template": "nominee_shortlisted"},
+            "on_winner": {"to": ["nominee", "nominator", "hr"], "template": "winner_announcement"}
         }
     },
+    "nominator_declaration": {
+        "text": "I hereby confirm that the information provided in this nomination is accurate to the best of my knowledge. I have a professional relationship with the nominee and believe they meet the eligibility criteria for this award.",
+        "required": True,
+        "signature_required": True
+    },
     "hr_admin": {
+        "section_title": "For HR Administration Use Only",
         "fields": [
-            {"id": "received_date", "label": "Received Date", "type": "datetime", "auto": True},
+            {"id": "received_date", "label": "Date Received", "type": "datetime", "auto": True},
             {"id": "reviewed_by", "label": "Reviewed By", "type": "employee_picker"},
-            {"id": "eligibility_check", "label": "Eligibility Verified", "type": "checkbox"},
-            {"id": "status", "label": "Status", "type": "select", "options": ["Pending", "Under Review", "Shortlisted", "Winner", "Not Selected"]},
-            {"id": "notes", "label": "Internal Notes", "type": "textarea"}
+            {"id": "eligibility_verified", "label": "Eligibility Verified", "type": "checkbox"},
+            {"id": "verification_notes", "label": "Verification Notes", "type": "textarea"},
+            {"id": "status", "label": "Nomination Status", "type": "select", "options": ["Pending Review", "Under Evaluation", "Shortlisted", "Selected as Winner", "Not Selected"]},
+            {"id": "committee_score", "label": "Committee Score", "type": "number"},
+            {"id": "internal_notes", "label": "Internal Notes", "type": "textarea", "confidential": True}
         ]
     }
 }, indent=2)
