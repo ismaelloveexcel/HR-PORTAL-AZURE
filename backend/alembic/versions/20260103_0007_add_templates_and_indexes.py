@@ -5,11 +5,14 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = '20260103_0007_add_templates_and_indexes'
-down_revision = '20250102_0006_add_attendance_records_table'
+down_revision = '20260103_0007_add_indexes_for_employee_and_renewal'
 branch_labels = None
 depends_on = None
 
 def upgrade():
+    from sqlalchemy import inspect
+    from sqlalchemy import create_engine
+    
     op.create_table(
         'templates',
         sa.Column('id', sa.Integer(), primary_key=True),
@@ -28,17 +31,7 @@ def upgrade():
     op.create_index('idx_templates_is_active', 'templates', ['is_active'])
     op.create_index('idx_templates_parent_id', 'templates', ['parent_id'])
 
-    # Add indexes to employees and renewals
-    op.create_index('idx_employees_email', 'employees', ['email'])
-    op.create_index('idx_employees_department', 'employees', ['department'])
-    op.create_index('idx_renewals_employee_id', 'renewals', ['employee_id'])
-    op.create_index('idx_renewals_end_date', 'renewals', ['end_date'])
-
 def downgrade():
-    op.drop_index('idx_renewals_end_date', 'renewals')
-    op.drop_index('idx_renewals_employee_id', 'renewals')
-    op.drop_index('idx_employees_department', 'employees')
-    op.drop_index('idx_employees_email', 'employees')
     op.drop_index('idx_templates_parent_id', 'templates')
     op.drop_index('idx_templates_is_active', 'templates')
     op.drop_index('idx_templates_name', 'templates')

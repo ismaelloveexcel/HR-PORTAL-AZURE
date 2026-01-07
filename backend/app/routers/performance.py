@@ -3,8 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.auth.dependencies import get_current_user
-from app.auth.roles import require_roles
+from app.auth.dependencies import require_auth, require_hr
 from app.models.employee import Employee
 from app.schemas.performance import (
     PerformanceCycleCreate, PerformanceCycleUpdate, PerformanceCycleResponse,
@@ -21,7 +20,7 @@ router = APIRouter(prefix="/performance", tags=["Performance Management"])
 async def list_cycles(
     status: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     cycles = await performance_service.get_cycles(db, status)
     result = []
@@ -46,7 +45,7 @@ async def list_cycles(
 async def create_cycle(
     data: PerformanceCycleCreate,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(require_roles(["admin", "hr"]))
+    current_user: Employee = Depends(require_hr)
 ):
     cycle = await performance_service.create_cycle(db, data, current_user.employee_id)
     return {
@@ -67,7 +66,7 @@ async def create_cycle(
 async def get_cycle(
     cycle_id: int,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     cycle = await performance_service.get_cycle(db, cycle_id)
     if not cycle:
@@ -92,7 +91,7 @@ async def update_cycle(
     cycle_id: int,
     data: PerformanceCycleUpdate,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(require_roles(["admin", "hr"]))
+    current_user: Employee = Depends(require_hr)
 ):
     cycle = await performance_service.update_cycle(db, cycle_id, data)
     if not cycle:
@@ -116,7 +115,7 @@ async def update_cycle(
 async def get_cycle_stats(
     cycle_id: int,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     stats = await performance_service.get_cycle_stats(db, cycle_id)
     return stats
@@ -128,7 +127,7 @@ async def list_reviews(
     employee_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     reviews = await performance_service.get_reviews(db, cycle_id, employee_id, status=status)
     return reviews
@@ -138,7 +137,7 @@ async def list_reviews(
 async def create_review(
     data: PerformanceReviewCreate,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(require_roles(["admin", "hr"]))
+    current_user: Employee = Depends(require_hr)
 ):
     review = await performance_service.create_review(db, data)
     return await performance_service.get_review(db, review.id)
@@ -148,7 +147,7 @@ async def create_review(
 async def create_bulk_reviews(
     data: BulkReviewCreate,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(require_roles(["admin", "hr"]))
+    current_user: Employee = Depends(require_hr)
 ):
     reviews = await performance_service.create_bulk_reviews(db, data)
     return {"created": len(reviews)}
@@ -158,7 +157,7 @@ async def create_bulk_reviews(
 async def get_review(
     review_id: int,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     review = await performance_service.get_review(db, review_id)
     if not review:
@@ -171,7 +170,7 @@ async def submit_self_assessment(
     review_id: int,
     data: SelfAssessmentSubmit,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     review = await performance_service.get_review(db, review_id)
     if not review:
@@ -188,7 +187,7 @@ async def submit_manager_review(
     review_id: int,
     data: ManagerReviewSubmit,
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     review = await performance_service.get_review(db, review_id)
     if not review:
@@ -203,7 +202,7 @@ async def submit_manager_review(
 @router.get("/my-reviews", response_model=List[PerformanceReviewResponse])
 async def get_my_reviews(
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     reviews = await performance_service.get_employee_reviews(db, current_user.id)
     return reviews
@@ -212,7 +211,7 @@ async def get_my_reviews(
 @router.get("/team-reviews", response_model=List[PerformanceReviewResponse])
 async def get_team_reviews(
     db: AsyncSession = Depends(get_session),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(require_auth)
 ):
     reviews = await performance_service.get_manager_reviews(db, current_user.id)
     return reviews

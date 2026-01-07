@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from decimal import Decimal
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -132,6 +132,11 @@ class PerformanceService:
         
         reviews = []
         for review, employee, cycle in rows:
+            ratings_result = await db.execute(
+                select(PerformanceRating).where(PerformanceRating.review_id == review.id)
+            )
+            ratings = ratings_result.scalars().all()
+            
             review_dict = {
                 "id": review.id,
                 "cycle_id": review.cycle_id,
@@ -159,7 +164,19 @@ class PerformanceService:
                 "employee_department": employee.department,
                 "employee_job_title": employee.job_title,
                 "cycle_name": cycle.name,
-                "ratings": []
+                "ratings": [
+                    {
+                        "id": r.id,
+                        "competency_name": r.competency_name,
+                        "competency_category": r.competency_category,
+                        "weight": r.weight,
+                        "self_rating": r.self_rating,
+                        "self_comments": r.self_comments,
+                        "manager_rating": r.manager_rating,
+                        "manager_comments": r.manager_comments
+                    }
+                    for r in ratings
+                ]
             }
             reviews.append(review_dict)
         

@@ -4,8 +4,9 @@ import { TemplateList } from './components/Templates/TemplateList'
 import { EmployeeProfile } from './components/EmployeeProfile'
 import { CandidatePass } from './components/CandidatePass'
 import { ManagerPass } from './components/ManagerPass'
+import { Performance } from './components/Performance'
 
-type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass' | 'performance'
 
 interface Employee {
   id: number
@@ -4292,6 +4293,24 @@ function App() {
     )
   }
 
+  // Performance Management Section
+  if (activeSection === 'performance' && user) {
+    return (
+      <div>
+        {loginModal}
+        <div className="fixed top-4 left-4 z-50">
+          <button
+            onClick={() => handleNavigate('home')}
+            className="px-4 py-2 bg-white/80 backdrop-blur-md text-slate-600 hover:bg-white rounded-xl transition-colors shadow-sm border border-white/60"
+          >
+            ← Back to Home
+          </button>
+        </div>
+        <Performance user={user} fetchWithAuth={fetchWithAuth} />
+      </div>
+    )
+  }
+
   // Recruitment Section
   if (activeSection === 'recruitment' || activeSection === 'recruitment-request' || activeSection === 'recruitment-benefits') {
     const recruitmentTab = activeSection === 'recruitment-benefits' ? 'benefits' : 'request'
@@ -5252,6 +5271,17 @@ function App() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           <span className="text-sm font-medium text-gray-700">Recruitment</span>
+        </button>
+
+        <button
+          onClick={() => handleNavigate('performance')}
+          className="bg-white rounded-xl px-6 py-4 flex items-center gap-3 transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+          style={{ boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)' }}
+        >
+          <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span className="text-sm font-medium text-gray-700">Performance</span>
         </button>
 
         <button
