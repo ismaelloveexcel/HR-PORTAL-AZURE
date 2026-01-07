@@ -297,7 +297,6 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 mb-1 font-bold">Candidate</p>
               <h2 className="text-lg font-black text-slate-900 leading-tight truncate tracking-tight">{passData.full_name}</h2>
               <p className="text-xs text-slate-600 truncate font-semibold mt-0.5">{passData.position_title}</p>
               <div className="inline-block mt-1.5 px-2 py-0.5 bg-emerald-50 rounded-md">
