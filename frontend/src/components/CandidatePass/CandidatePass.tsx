@@ -288,6 +288,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
           }`}>Active</span>
         </div>
       </div>
+      <span className="text-lg font-bold text-slate-500">Candidate Pass</span>
       
       {/* Candidate Info Card */}
       <div className="mt-3">
