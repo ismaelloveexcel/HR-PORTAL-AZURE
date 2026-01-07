@@ -211,7 +211,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
           <div className="px-6 pt-6 pb-4">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <img src="/assets/logo.png" alt="Baynunah" className="h-3 w-auto opacity-30 grayscale" />
+                <img src="/assets/logo.png" alt="Baynunah" className="h-5 w-auto" />
               </div>
               <div className="flex items-center gap-2">
                 <button className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors">
