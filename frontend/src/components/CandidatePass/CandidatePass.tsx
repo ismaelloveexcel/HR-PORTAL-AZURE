@@ -237,7 +237,6 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">baynunah</span>
               <span className="text-sm font-medium text-slate-700">Candidate Pass</span>
             </div>
           </div>
