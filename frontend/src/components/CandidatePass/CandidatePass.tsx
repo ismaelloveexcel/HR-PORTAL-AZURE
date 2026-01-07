@@ -222,31 +222,31 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-0.5">Candidate</p>
-                <h2 className="text-base font-semibold text-slate-800 leading-tight truncate">{passData.full_name}</h2>
-                <p className="text-xs text-slate-500 truncate">{passData.position_title}</p>
-                <p className="text-[10px] text-emerald-600 font-mono mt-0.5">{passData.candidate_number}</p>
+                <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-0.5 font-medium">Candidate</p>
+                <h2 className="text-base font-bold text-slate-800 leading-tight truncate">{passData.full_name}</h2>
+                <p className="text-xs text-slate-500 truncate font-medium">{passData.position_title}</p>
+                <p className="text-[10px] text-emerald-600 font-mono mt-0.5 font-bold tracking-tight">{passData.candidate_number}</p>
               </div>
-              <div className="w-12 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center flex-shrink-0 ml-2">
+              <div className="w-12 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center flex-shrink-0 ml-2 shadow-sm">
                 <svg className="w-8 h-8 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M3 3h6v6H3V3zm2 2v2h2V5H5zm8-2h6v6h-6V3zm2 2v2h2V5h-2zM3 13h6v6H3v-6zm2 2v2h2v-2H5z"/>
                 </svg>
               </div>
             </div>
-            <div className="flex gap-2 pt-2 border-t border-slate-200/60">
-              <div className="flex-1 flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></div>
+            <div className="flex gap-4 pt-3 border-t border-slate-200/60">
+              <div className="flex-1 flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
                 <div>
-                  <p className="text-[8px] uppercase text-slate-400 leading-none">Stage</p>
-                  <p className="text-[11px] font-medium text-slate-800 leading-tight">{stageLabels[passData.current_stage.toLowerCase()] || passData.current_stage}</p>
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none mb-1">Stage</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight">{stageLabels[passData.current_stage.toLowerCase()] || passData.current_stage}</p>
                 </div>
               </div>
-              <div className="w-px bg-slate-200"></div>
-              <div className="flex-1 flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+              <div className="w-px bg-slate-200 self-stretch my-1"></div>
+              <div className="flex-1 flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
                 <div>
-                  <p className="text-[8px] uppercase text-slate-400 leading-none">Status</p>
-                  <p className="text-[11px] font-medium text-slate-800 leading-tight capitalize">{passData.status}</p>
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none mb-1">Status</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight capitalize">{passData.status}</p>
                 </div>
               </div>
             </div>
@@ -358,23 +358,34 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
 
             {/* DOCUMENTS TAB */}
             {activeTab === 'documents' && (
-              <div className="space-y-2">
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-2">Required Documents</p>
-                {['Passport', 'Emirates ID', 'Visa', 'Educational Certificates'].map(doc => (
-                  <div key={doc} className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span className="text-xs text-slate-700">{doc}</span>
+              <div className="space-y-4">
+                <div className="bg-emerald-50/50 border border-emerald-100/50 p-4 rounded-xl">
+                  <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+                    In case documents are requested from candidates, they can be uploaded here. 
+                    This section is applicable for both sides (HR will upload Job Description, Offer Letter, etc.)
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Documents</p>
+                  {['Passport', 'Emirates ID', 'Visa', 'Educational Certificates'].map(doc => (
+                    <div key={doc} className="p-3.5 bg-slate-50 rounded-xl flex items-center justify-between border border-transparent hover:border-slate-200 transition-all shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400 shadow-sm">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <span className="text-xs text-slate-700 font-semibold">{doc}</span>
+                      </div>
+                      <button className="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-all active:scale-95 shadow-sm">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                      </button>
                     </div>
-                    <button className="p-1.5 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
