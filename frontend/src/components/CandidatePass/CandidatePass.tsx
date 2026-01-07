@@ -176,6 +176,58 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
     onboarding: 'Onboarding'
   }
 
+  const stagePurpose: Record<string, string> = {
+    application: 'Capture candidate entry and initial validation',
+    screening: 'CV + eligibility + basic fit check',
+    interview: 'Assess technical, behavioral, and cultural fit',
+    offer: 'Commercial and contractual alignment',
+    onboarding: 'Transition from candidate to employee'
+  }
+
+  const stageStatuses: Record<string, Record<string, string>> = {
+    application: {
+      submitted: 'Submitted',
+      incomplete: 'Incomplete (Missing Information)',
+      withdrawn: 'Withdrawn by Candidate',
+      received: 'Application Received (Validated)',
+      applied: 'Application Received'
+    },
+    screening: {
+      under_screening: 'Under Screening',
+      shortlisted: 'Shortlisted',
+      on_hold: 'On Hold',
+      rejected: 'Rejected at Screening'
+    },
+    interview: {
+      scheduled: 'Interview Scheduled',
+      completed: 'Interview Completed',
+      second_required: 'Second Interview Required',
+      pending_feedback: 'Pending Interview Feedback',
+      rejected: 'Rejected After Interview'
+    },
+    offer: {
+      in_preparation: 'Offer In Preparation',
+      sent: 'Offer Sent',
+      accepted: 'Offer Accepted',
+      declined: 'Offer Declined',
+      expired: 'Offer Expired',
+      withdrawn: 'Offer Withdrawn'
+    },
+    onboarding: {
+      initiated: 'Onboarding Initiated',
+      documents_pending: 'Documents Pending',
+      clearance_in_progress: 'Background / Clearance in Progress',
+      completed: 'Onboarding Completed',
+      no_show: 'No Show / Onboarding Failed'
+    }
+  }
+
+  const getStatusLabel = (stage: string, status: string): string => {
+    const stageKey = stage.toLowerCase()
+    const statusKey = status.toLowerCase().replace(/[\s-]/g, '_')
+    return stageStatuses[stageKey]?.[statusKey] || status
+  }
+
   const getStageIndex = (stageName: string) => {
     const stages = ['Application', 'Screening', 'Interview', 'Offer', 'Onboarding']
     return stages.findIndex(s => s.toLowerCase() === stageName.toLowerCase())
@@ -279,7 +331,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
               </div>
               
               <div className="flex pt-4 border-t border-slate-100">
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
                     <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Stage</p>
@@ -287,12 +339,12 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                   <p className="text-sm font-semibold text-slate-700">{stageLabels[passData.current_stage.toLowerCase()] || passData.current_stage}</p>
                 </div>
                 <div className="w-px bg-slate-200 self-stretch my-1"></div>
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
                     <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Status</p>
                   </div>
-                  <p className="text-sm font-semibold text-slate-700 capitalize">{passData.status}</p>
+                  <p className="text-[13px] font-semibold text-slate-700 leading-tight">{getStatusLabel(passData.current_stage, passData.status)}</p>
                 </div>
               </div>
             </div>
@@ -670,12 +722,12 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                 {/* Info Grid */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <div className="p-3 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Stage</p>
-                    <p className="text-sm font-bold text-slate-800">{stageLabels[passData.current_stage.toLowerCase()] || passData.current_stage}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Stage</p>
+                    <p className="text-sm font-semibold text-slate-800">{stageLabels[passData.current_stage.toLowerCase()] || passData.current_stage}</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Status</p>
-                    <p className="text-sm font-bold text-slate-800 capitalize">{passData.status}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Status</p>
+                    <p className="text-[13px] font-semibold text-slate-800 leading-tight">{getStatusLabel(passData.current_stage, passData.status)}</p>
                   </div>
                 </div>
                 
