@@ -1,0 +1,208 @@
+🎯 Objective
+
+Standardise the Pass architecture so that Candidate Pass behaves exactly like Manager Pass, using the same interaction model, layout rules, and content swapping logic.
+
+The Manager Pass is the reference implementation.
+
+🔒 CANONICAL RULE (NON-NEGOTIABLE)
+
+All Passes must follow the same structural contract:
+
+Fixed Pass shell
+
+Bottom menu = internal tab switch
+
+Content renders inside the pass
+
+No page routing
+
+No expand-down sections
+
+If it doesn’t behave like Manager Pass → it’s wrong.
+
+🧱 PASS STRUCTURE (REFERENCE: Manager Pass)
+PassContainer (fixed)
+ ├─ Header
+ │   ├─ Title / Role
+ │   ├─ Department
+ │   ├─ Status + SLA
+ │   └─ KPI cards
+ ├─ ContentArea   ← swaps based on activeTab
+ └─ BottomMenu    ← fixed, always visible
+
+
+👉 This exact structure must be reused for Candidate Pass
+
+🧠 ARCHITECTURE REQUIREMENT
+
+Implement state-driven rendering, identical to Manager Pass.
+
+Example:
+
+activeTab = 'pipeline' | 'docs' | 'setup' | 'calendar' | 'hr'
+
+
+For Candidate Pass:
+
+activeTab = 'home' | 'documents' | 'calendar' | 'engage'
+
+
+NO routes
+
+NO accordions
+
+NO scroll-based expansion
+
+🔁 APPLY THIS TO CANDIDATE PASS
+Candidate Pass must mirror Manager Pass behavior:
+Aspect	Manager Pass (Current)	Candidate Pass (Required)
+Shell	Fixed	Fixed
+Menu	Tab-based	Tab-based
+Content	Internal swap	Internal swap
+Scroll	Inside content only	Inside content only
+Calendar	Embedded	Embedded
+HR / Contact	Embedded	Embedded
+📑 MENU CONTENT (CANDIDATE PASS)
+1. Home
+
+Journey
+
+Stage & status
+
+Action Required (persistent CTA zone)
+
+Activity History (collapsed, read-only)
+
+2. Documents
+
+Document list
+
+Upload / download
+
+Same layout behavior as Manager “Docs”
+
+3. Calendar
+
+Use Manager Pass Calendar layout as UX reference, adapted for candidates.
+
+Split-view layout inside ContentArea:
+
+LEFT
+
+Monthly calendar
+
+Interview indicators
+
+RIGHT
+
+Interview details panel:
+
+No interview → empty state
+
+Scheduled → full interview info
+
+❌ No full-page calendar
+❌ No expanding sections
+
+4. Engage
+
+Equivalent to Manager “HR” tab:
+
+Contact HR
+
+Submit feedback
+
+View previous communications (candidate-visible only)
+
+🎯 ACTIONS REQUIRED (ALIGNMENT)
+Placement
+
+Add Action Required section:
+
+Below Journey (Candidate)
+
+Equivalent in importance to Manager SLA indicator
+
+Rules
+
+One primary action at a time
+
+Auto-derived from stage & status
+
+Clicking action logs ActivityLog entry
+
+🧾 ACTIVITY LOG (SYSTEM-WIDE, ALL PASSES)
+Backend (MANDATORY)
+
+Single shared ActivityLog table for:
+
+Candidate Pass
+
+Manager Pass
+
+HR actions
+
+System events
+
+Structure:
+
+ActivityLog
+- id
+- entity_type (candidate | requisition | interview)
+- entity_id
+- stage
+- action_type
+- action_description
+- performed_by (candidate | manager | HR | system)
+- performed_by_id
+- timestamp
+- visibility (internal | candidate)
+
+👁️ VISIBILITY RULES
+Manager Pass
+
+Full visibility
+
+All actions
+
+All metadata
+
+Candidate Pass
+
+Only visibility = candidate
+
+Displayed under:
+Home → Activity History (collapsed)
+
+🚫 STRICTLY DISALLOWED (ANY PASS)
+
+Downward-expanding menus
+
+Page-based navigation
+
+Mixed content visibility
+
+History shown as a primary screen
+
+Different interaction models per pass
+
+✅ ACCEPTANCE CRITERIA
+
+Candidate Pass behaves identically to Manager Pass
+
+Menu clicks swap content only
+
+Calendar stays inside pass
+
+Action Required is always visible when applicable
+
+Every meaningful action writes to ActivityLog
+
+Deliverable
+
+Refactor Candidate Pass to fully comply with the Manager Pass interaction model and shared Activity Log system. Reuse existing styling and components wherever possible.
+
+Strategic Note (important)
+
+You are not building screens.
+You are building a Pass Framework.
