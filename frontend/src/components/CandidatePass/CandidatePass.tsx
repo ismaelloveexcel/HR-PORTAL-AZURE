@@ -272,23 +272,10 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
 
   const renderHeader = () => (
     <div className="px-4 pt-3 pb-2 flex-shrink-0 bg-gradient-to-b from-white to-transparent">
-      <div className="flex items-center justify-between mb-0.5">
+      <div className="flex items-center justify-between">
+        <span className="text-base font-bold text-slate-500">Candidate Pass</span>
         <img src="/assets/logo.png" alt="Baynunah" className="h-4 w-auto" />
-        <div className="flex items-center gap-1.5">
-          <button className="relative p-1.5 rounded-full hover:bg-slate-100 transition-colors">
-            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-            {passData.unread_messages > 0 && (
-              <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
-            )}
-          </button>
-          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-            passData.status === 'revoked' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
-          }`}>Active</span>
-        </div>
       </div>
-      <span className="text-base font-bold text-slate-500">Candidate Pass</span>
       
       {/* Candidate Info Card */}
       <div className="mt-2">
@@ -298,7 +285,20 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
         >
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-black text-slate-900 leading-tight truncate tracking-tight">{passData.full_name}</h2>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-base font-black text-slate-900 leading-tight truncate tracking-tight">{passData.full_name}</h2>
+                <button className="relative p-1 rounded-full hover:bg-slate-100 transition-colors flex-shrink-0">
+                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                  </svg>
+                  {passData.unread_messages > 0 && (
+                    <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full border border-white animate-pulse"></span>
+                  )}
+                </button>
+                <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider flex-shrink-0 ${
+                  passData.status === 'revoked' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+                }`}>Active</span>
+              </div>
               <p className="text-[11px] text-slate-600 truncate font-semibold">{passData.position_title}</p>
               <div className="inline-block mt-1 px-1.5 py-0.5 bg-emerald-50 rounded">
                 <p className="text-[9px] text-emerald-700 font-mono font-bold tracking-wider">{passData.candidate_number}</p>
