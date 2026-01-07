@@ -261,7 +261,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* FIXED SHELL - Pass Card Container */}
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-3xl overflow-hidden flex flex-col" style={{ height: '85vh', maxHeight: '700px' }}>
+        <div className="bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-3xl overflow-hidden flex flex-col" style={{ height: '90vh', maxHeight: '780px' }}>
           
           {/* ===== HEADER (Fixed) ===== */}
           <div className="px-5 pt-5 pb-3 flex-shrink-0 bg-gradient-to-b from-white to-transparent">
@@ -351,11 +351,11 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
           </div>
 
           {/* ===== JOURNEY TIMELINE (Fixed) ===== */}
-          <div className="mx-4 mb-4 flex-shrink-0">
-            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-slate-200/50">
+          <div className="mx-4 mb-3 flex-shrink-0">
+            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-3 border border-slate-200/50">
               <div className="relative">
                 {/* Progress Line */}
-                <div className="absolute top-6 left-8 right-8 h-0.5 bg-slate-200 z-0">
+                <div className="absolute top-5 left-8 right-8 h-0.5 bg-slate-200 z-0">
                   <div 
                     className="h-full transition-all duration-500 ease-out"
                     style={{ 
@@ -376,14 +376,14 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                     const isCurrent = idx === currentStageIndex
                     const isActive = isCompleted || isCurrent
                     return (
-                      <div key={stage.full} className="flex flex-col items-center" style={{ width: '60px' }}>
-                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                      <div key={stage.full} className="flex flex-col items-center" style={{ width: '56px' }}>
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                           isActive 
-                            ? 'bg-slate-100 border-2 border-emerald-500 shadow-md shadow-emerald-100' 
+                            ? 'bg-slate-100 border-2 border-emerald-500 shadow-sm shadow-emerald-100' 
                             : 'bg-slate-100 border border-slate-300'
                         }`}>
                           <svg 
-                            className={`w-5 h-5 transition-colors ${
+                            className={`w-4 h-4 transition-colors ${
                               isActive ? 'text-emerald-500' : 'text-slate-400'
                             }`} 
                             fill="none" 
@@ -394,7 +394,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                             <path strokeLinecap="round" strokeLinejoin="round" d={stage.icon} />
                           </svg>
                         </div>
-                        <span className={`text-[9px] font-medium mt-2 text-center leading-tight ${
+                        <span className={`text-[8px] font-medium mt-1.5 text-center leading-tight ${
                           isActive ? 'text-emerald-600' : 'text-slate-500'
                         }`}>
                           {stage.label}
