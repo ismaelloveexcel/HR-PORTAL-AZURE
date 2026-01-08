@@ -88,6 +88,14 @@ Main tables with migrations managed by Alembic:
 4. Candidate confirms booking
 5. Both parties see confirmed interview in calendar
 
+**Manager Candidate Screening** (Manager-Only):
+- Screening table with ranked candidates sorted by AI ranking score
+- Columns: Rank, Name, Current Position, AI Ranking, Core Skills Match, Education, Experience, Profile Link, Source
+- Search and filter controls (Status filter, Source filter)
+- Evaluation scores (ai_ranking, skills_match_score) are STRICTLY manager-only and NOT visible to candidates
+- Database fields: ai_ranking (0-100%), skills_match_score (0-100%), education_level, screening_rank
+- Placeholder "-" shown when evaluation data not yet populated (no random fallbacks)
+
 **Technical Implementation Notes**:
 - **Slot Collision Prevention**: Uses SELECT FOR UPDATE with atomic validation to prevent race conditions when multiple candidates book the same slot simultaneously. Returns HTTP 409 CONFLICT with user-friendly message.
 - **Stage Key Unification**: Frontend uses 'offer' stage key consistently (legacy 'decision' mapped via normalization functions for backward compatibility)
