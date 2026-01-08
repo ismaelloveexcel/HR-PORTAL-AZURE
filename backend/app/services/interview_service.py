@@ -477,14 +477,19 @@ class InterviewService:
             position_title=position.position_title,
             position_id=position.id,
             entity=candidate.entity,
-            current_stage=all_stages[current_stage_idx], # Ensure exact casing
-            status=final_status, # Use the mapped label
+            current_stage=all_stages[current_stage_idx],
+            status=final_status,
             stages=stages,
             interview_slots=available_slots,
             booked_slot=booked_slot_response,
             unread_messages=unread,
             next_actions=next_actions,
-            activity_history=activity_history
+            activity_history=activity_history,
+            current_location=candidate.current_location,
+            visa_status=candidate.visa_status,
+            notice_period_days=candidate.notice_period_days,
+            expected_salary=float(candidate.expected_salary) if candidate.expected_salary else None,
+            details_confirmed=candidate.details_confirmed_by_candidate
         )
     
     async def get_manager_pass_data(

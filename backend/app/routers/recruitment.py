@@ -325,6 +325,43 @@ async def reject_candidate(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.put(
+    "/candidates/{candidate_id}/details",
+    response_model=CandidateResponse,
+    summary="Update candidate details (self-service)"
+)
+async def update_candidate_details(
+    candidate_id: int,
+    data: CandidateUpdate,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Update candidate details (self-service).
+    
+    This endpoint allows candidates to update their own profile information
+    including phone, email, location, visa status, notice period, and expected salary.
+    
+    No authentication required - candidates access via their pass token.
+    """
+    from datetime import datetime, timezone
+    
+    candidate = await recruitment_service.get_candidate(session, candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    
+    if update_data.get('details_confirmed_by_candidate'):
+        update_data['details_confirmed_at'] = datetime.now(timezone.utc)
+    
+    updated = await recruitment_service.update_candidate(
+        session, candidate_id, CandidateUpdate(**update_data)
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Failed to update candidate")
+    return updated
+
+
 @router.get(
     "/pipeline",
     summary="Get pipeline counts"

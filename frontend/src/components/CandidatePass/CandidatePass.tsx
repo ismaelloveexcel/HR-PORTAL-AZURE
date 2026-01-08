@@ -46,6 +46,21 @@ interface CandidatePassData {
   activity_history: ActivityLogEntry[]
   hr_whatsapp: string
   hr_email: string
+  current_location?: string
+  visa_status?: string
+  notice_period_days?: number
+  expected_salary?: number
+  details_confirmed?: boolean
+}
+
+interface CandidateDetailsForm {
+  phone: string
+  email: string
+  location: string
+  visa_status: string
+  notice_period: string
+  expected_salary: string
+  confirmed: boolean
 }
 
 interface InterviewSlot {
@@ -73,6 +88,41 @@ const CANDIDATE_TABS: PassTab[] = [
   { id: 'engage', label: 'Engage', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' }
 ]
 
+const UAE_LOCATIONS = [
+  'Abu Dhabi',
+  'Dubai',
+  'Sharjah',
+  'Ajman',
+  'Umm Al Quwain',
+  'Ras Al Khaimah',
+  'Fujairah',
+  'Al Ain',
+  'Other UAE',
+  'Outside UAE'
+]
+
+const VISA_STATUSES = [
+  'Residence Visa',
+  'Visit Visa',
+  'Employment Visa',
+  'Tourist Visa',
+  'Golden Visa',
+  'Student Visa',
+  'Freelance Visa',
+  'No Visa Required',
+  'Other'
+]
+
+const NOTICE_PERIODS = [
+  'Immediate',
+  '1 Week',
+  '2 Weeks',
+  '1 Month',
+  '2 Months',
+  '3 Months',
+  'Other'
+]
+
 export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps) {
   const [passData, setPassData] = useState<CandidatePassData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -81,6 +131,17 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null)
   const [bookingLoading, setBookingLoading] = useState(false)
   const [showQrModal, setShowQrModal] = useState(false)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [detailsForm, setDetailsForm] = useState<CandidateDetailsForm>({
+    phone: '',
+    email: '',
+    location: '',
+    visa_status: '',
+    notice_period: '',
+    expected_salary: '',
+    confirmed: false
+  })
+  const [savingDetails, setSavingDetails] = useState(false)
 
   const API_URL = '/api'
   
@@ -175,6 +236,68 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
     }
   }
 
+  const openDetailsModal = () => {
+    if (passData) {
+      const noticePeriodMap: Record<number, string> = {
+        0: 'Immediate',
+        7: '1 Week',
+        14: '2 Weeks',
+        30: '1 Month',
+        60: '2 Months',
+        90: '3 Months'
+      }
+      setDetailsForm({
+        phone: passData.phone || '',
+        email: passData.email || '',
+        location: passData.current_location || '',
+        visa_status: passData.visa_status || '',
+        notice_period: passData.notice_period_days !== undefined ? (noticePeriodMap[passData.notice_period_days] || 'Other') : '',
+        expected_salary: passData.expected_salary?.toString() || '',
+        confirmed: passData.details_confirmed || false
+      })
+    }
+    setShowDetailsModal(true)
+  }
+
+  const saveDetails = async () => {
+    if (!passData || !detailsForm.confirmed) return
+    setSavingDetails(true)
+    try {
+      const noticePeriodDays: Record<string, number> = {
+        'Immediate': 0,
+        '1 Week': 7,
+        '2 Weeks': 14,
+        '1 Month': 30,
+        '2 Months': 60,
+        '3 Months': 90,
+        'Other': 30
+      }
+      const response = await fetch(`${API_URL}/recruitment/candidates/${passData.candidate_id}/details`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          phone: detailsForm.phone,
+          email: detailsForm.email,
+          current_location: detailsForm.location,
+          visa_status: detailsForm.visa_status,
+          notice_period_days: noticePeriodDays[detailsForm.notice_period] ?? 30,
+          expected_salary: parseFloat(detailsForm.expected_salary) || null,
+          details_confirmed: true
+        })
+      })
+      if (!response.ok) throw new Error('Failed to save details')
+      await fetchPassData()
+      setShowDetailsModal(false)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to save details')
+    } finally {
+      setSavingDetails(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-100">
@@ -214,6 +337,8 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
     if (!primaryAction) return
     switch (primaryAction.action_id) {
       case 'complete_profile':
+        openDetailsModal()
+        break
       case 'upload_documents':
       case 'review_offer':
         setActiveTab('documents')
@@ -651,6 +776,186 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Candidate Details Modal */}
+      {showDetailsModal && (
+        <div 
+          className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowDetailsModal(false)}
+        >
+          <div 
+            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl w-full max-w-md max-h-[90vh] overflow-hidden shadow-2xl border border-slate-700/50"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
+              <div>
+                <h3 className="text-lg font-bold text-white">Candidate Details</h3>
+                <p className="text-xs text-slate-400">Please verify your information below</p>
+              </div>
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-180px)] space-y-4">
+              {/* Phone */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">Phone</label>
+                <input
+                  type="tel"
+                  value={detailsForm.phone}
+                  onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={detailsForm.email}
+                  onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
+                  placeholder="email@example.com"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">Location</label>
+                <div className="relative">
+                  <select
+                    value={detailsForm.location}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, location: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-800">Select location</option>
+                    {UAE_LOCATIONS.map(loc => (
+                      <option key={loc} value={loc} className="bg-slate-800">{loc}</option>
+                    ))}
+                  </select>
+                  <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Visa Status & Notice Period Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Visa Status</label>
+                  <select
+                    value={detailsForm.visa_status}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, visa_status: e.target.value })}
+                    className="w-full px-3 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-800">Select</option>
+                    {VISA_STATUSES.map(status => (
+                      <option key={status} value={status} className="bg-slate-800">{status}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Notice Period</label>
+                  <select
+                    value={detailsForm.notice_period}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, notice_period: e.target.value })}
+                    className="w-full px-3 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    <option value="" className="bg-slate-800">Select</option>
+                    {NOTICE_PERIODS.map(period => (
+                      <option key={period} value={period} className="bg-slate-800">{period}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Expected Salary */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">Expected Salary (AED)</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={detailsForm.expected_salary}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '')
+                      setDetailsForm({ ...detailsForm, expected_salary: value })
+                    }}
+                    placeholder="15,000"
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">AED</span>
+                </div>
+              </div>
+
+              {/* Confirmation Checkbox */}
+              <div className="pt-2">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative mt-0.5">
+                    <input
+                      type="checkbox"
+                      checked={detailsForm.confirmed}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, confirmed: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                      detailsForm.confirmed 
+                        ? 'bg-cyan-500 border-cyan-500' 
+                        : 'border-slate-500 group-hover:border-slate-400'
+                    }`}>
+                      {detailsForm.confirmed && (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-sm text-slate-300 leading-tight">
+                    I confirm that the details provided are correct
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-700/50 flex gap-3">
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="flex-1 px-4 py-3 bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 rounded-xl font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveDetails}
+                disabled={!detailsForm.confirmed || savingDetails}
+                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                  detailsForm.confirmed && !savingDetails
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                {savingDetails ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Saving...
+                  </>
+                ) : (
+                  'Confirm & Save'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

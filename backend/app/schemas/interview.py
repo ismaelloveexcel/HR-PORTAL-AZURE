@@ -197,6 +197,13 @@ class CandidatePassData(BaseModel):
     # Activity history (candidate-visible only)
     activity_history: List[ActivityLogResponse] = []
     
+    # Candidate self-service details
+    current_location: Optional[str] = None
+    visa_status: Optional[str] = None
+    notice_period_days: Optional[int] = None
+    expected_salary: Optional[float] = None
+    details_confirmed: Optional[bool] = None
+    
     # Contact
     hr_whatsapp: str = "+971564966546"
     hr_email: str = "HR@baynunah.ae"
