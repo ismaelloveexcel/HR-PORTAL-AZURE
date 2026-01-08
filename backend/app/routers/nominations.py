@@ -9,10 +9,62 @@ from app.database import get_session
 from app.models import Employee, EoyNomination, ELIGIBLE_JOB_LEVELS
 from app.schemas.nomination import (
     NominationCreate, NominationResponse, NominationUpdate,
-    EligibleEmployee, NominationListResponse, NominationStats
+    EligibleEmployee, NominationListResponse, NominationStats, EligibleManager
 )
 
 router = APIRouter(prefix="/nominations", tags=["nominations"])
+
+
+@router.get(
+    "/pass/managers",
+    response_model=List[EligibleManager],
+    summary="Get all managers with eligible direct reports for nomination pass",
+)
+async def get_eligible_managers(
+    year: int = Query(default=None, description="Nomination year (defaults to current year)"),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Returns all managers who have at least one eligible direct report.
+    Used for the shared nomination pass - managers select their name from this list.
+    """
+    if year is None:
+        year = datetime.now().year
+    
+    all_employees_stmt = select(Employee).where(
+        and_(
+            Employee.is_active == True,
+            Employee.employment_status == "Active"
+        )
+    )
+    result = await session.execute(all_employees_stmt)
+    all_employees = result.scalars().all()
+    
+    manager_reports: dict[int, list] = {}
+    for emp in all_employees:
+        if emp.line_manager_id:
+            if emp.line_manager_id not in manager_reports:
+                manager_reports[emp.line_manager_id] = []
+            if check_eligible_job_level(emp.job_title):
+                manager_reports[emp.line_manager_id].append(emp)
+    
+    eligible_managers = []
+    for manager_id, reports in manager_reports.items():
+        if len(reports) > 0:
+            manager = next((e for e in all_employees if e.id == manager_id), None)
+            if manager:
+                eligible_managers.append(EligibleManager(
+                    id=manager.id,
+                    employee_id=manager.employee_id,
+                    name=manager.name,
+                    job_title=manager.job_title,
+                    department=manager.department,
+                    email=manager.email,
+                    eligible_reports_count=len(reports)
+                ))
+    
+    eligible_managers.sort(key=lambda m: m.name)
+    return eligible_managers
 
 
 def check_eligible_job_level(job_title: str | None) -> bool:

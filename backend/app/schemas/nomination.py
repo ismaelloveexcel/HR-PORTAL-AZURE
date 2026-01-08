@@ -61,3 +61,16 @@ class NominationStats(BaseModel):
 class NominationListResponse(BaseModel):
     nominations: List[NominationResponse]
     stats: NominationStats
+
+
+class EligibleManager(BaseModel):
+    """Manager who has direct reports eligible for nomination"""
+    id: int
+    employee_id: str
+    name: str
+    job_title: Optional[str]
+    department: Optional[str]
+    email: Optional[str]
+    eligible_reports_count: int
+
+    model_config = {"from_attributes": True}

@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
 import { GlassLoader } from './components/GlassLoader'
 import { TemplateList } from './components/Templates/TemplateList'
 import { EmployeeProfile } from './components/EmployeeProfile'
 import { CandidatePass } from './components/CandidatePass'
 import { ManagerPass } from './components/ManagerPass'
+import { NominationPass } from './components/NominationPass'
 import { Performance } from './components/Performance'
 import { EoyNominations } from './components/EoyNominations'
 import { InsuranceCensus } from './components/InsuranceCensus'
 
-type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass' | 'performance' | 'insurance-census'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass' | 'performance' | 'insurance-census' | 'nomination-pass'
 
 interface Employee {
   id: number
@@ -381,7 +382,7 @@ function App() {
 
   const isAdminLogin = pendingSection === 'admin' || pendingSection === 'secret-chamber'
 
-  // Check for onboarding token in URL on mount
+  // Check for onboarding token or nomination pass in URL on mount
   useEffect(() => {
     const path = window.location.pathname
     if (path.startsWith('/onboarding/')) {
@@ -391,6 +392,9 @@ function App() {
         setActiveSection('public-onboarding')
         validateAndLoadOnboarding(token)
       }
+    }
+    if (path.startsWith('/nomination-pass')) {
+      setActiveSection('nomination-pass')
     }
   }, [])
 
@@ -441,7 +445,7 @@ function App() {
     setActiveSection(section)
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -546,7 +550,7 @@ function App() {
     setError(null)
   }
 
-  const updateEmployee = async (e: React.FormEvent) => {
+  const updateEmployee = async (e: FormEvent) => {
     e.preventDefault()
     if (!selectedEmployee) return
     
@@ -582,7 +586,7 @@ function App() {
     }
   }
 
-  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCSV = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     
@@ -761,7 +765,7 @@ function App() {
     }
   }
 
-  const createPass = async (e: React.FormEvent) => {
+  const createPass = async (e: FormEvent) => {
     e.preventDefault()
     setPassesLoading(true)
     setError(null)
@@ -867,7 +871,7 @@ function App() {
     }
   }
 
-  const submitProfile = async (e: React.FormEvent) => {
+  const submitProfile = async (e: FormEvent) => {
     e.preventDefault()
     if (!onboardingToken) return
     setLoading(true)
@@ -4559,6 +4563,11 @@ function App() {
         }}
       />
     )
+  }
+
+  // Nomination Pass (Public - no auth required)
+  if (activeSection === 'nomination-pass') {
+    return <NominationPass />
   }
 
   // Insurance Census Management
