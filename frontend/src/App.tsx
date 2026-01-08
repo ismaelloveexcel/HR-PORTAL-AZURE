@@ -2844,21 +2844,21 @@ function App() {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="bg-gray-50/80">
-                          <th className="py-4 px-3 text-left w-12">
-                            <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                        <tr className="bg-[#0a1628]">
+                          <th className="py-4 px-3 text-left w-12 border-b border-slate-700">
+                            <input type="checkbox" className="rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500" />
                           </th>
-                          <th className="py-4 px-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Rank</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[180px]">Name</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[200px]">Current Position</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">CV Scoring</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">Skills Match</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">Education</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Experience</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">Stage</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">LinkedIn</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">CV</th>
-                          <th className="py-4 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Source</th>
+                          <th className="py-4 px-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-16 border-b border-slate-700">Rank</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider min-w-[180px] border-b border-slate-700">Name</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider min-w-[200px] border-b border-slate-700">Current Position</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-28 border-b border-slate-700">CV Scoring</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-36 border-b border-slate-700">Skills Match</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-28 border-b border-slate-700">Education</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-24 border-b border-slate-700">Experience</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-28 border-b border-slate-700">Stage</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-24 border-b border-slate-700">LinkedIn</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-24 border-b border-slate-700">CV</th>
+                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-32 border-b border-slate-700">Source</th>
                         </tr>
                       </thead>
                       <tbody>
