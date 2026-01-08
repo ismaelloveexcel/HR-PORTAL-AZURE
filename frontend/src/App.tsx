@@ -8,8 +8,9 @@ import { NominationPass } from './components/NominationPass'
 import { Performance } from './components/Performance'
 import { EoyNominations } from './components/EoyNominations'
 import { InsuranceCensus } from './components/InsuranceCensus'
+import { CensusVerificationPass } from './components/CensusVerification'
 
-type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass' | 'performance' | 'insurance-census' | 'nomination-pass'
+type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass' | 'performance' | 'insurance-census' | 'nomination-pass' | 'census-verification'
 
 interface Employee {
   id: number
@@ -379,6 +380,9 @@ function App() {
   const [viewingCandidatePassId, setViewingCandidatePassId] = useState<number | null>(null)
   const [viewingManagerPassPositionId, setViewingManagerPassPositionId] = useState<number | null>(null)
   const [viewingManagerId, setViewingManagerId] = useState<string>('')
+  
+  // Census verification state
+  const [censusVerificationToken, setCensusVerificationToken] = useState<string | null>(null)
 
   const isAdminLogin = pendingSection === 'admin' || pendingSection === 'secret-chamber'
 
@@ -395,6 +399,14 @@ function App() {
     }
     if (path.startsWith('/nomination-pass')) {
       setActiveSection('nomination-pass')
+    }
+    // Census verification route
+    if (path.startsWith('/verify-census/')) {
+      const token = path.replace('/verify-census/', '')
+      if (token) {
+        setCensusVerificationToken(token)
+        setActiveSection('census-verification')
+      }
     }
   }, [])
 
@@ -4568,6 +4580,11 @@ function App() {
   // Nomination Pass (Public - no auth required)
   if (activeSection === 'nomination-pass') {
     return <NominationPass />
+  }
+
+  // Census Verification (Public - token-based, no auth required)
+  if (activeSection === 'census-verification' && censusVerificationToken) {
+    return <CensusVerificationPass token={censusVerificationToken} />
   }
 
   // Insurance Census Management
