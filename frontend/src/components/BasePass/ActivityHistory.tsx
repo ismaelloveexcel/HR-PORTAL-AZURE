@@ -86,11 +86,6 @@ export function ActivityHistory({ activities, loading, collapsed = true }: Activ
               key={activity.id} 
               className="flex items-start gap-3 p-2.5 bg-slate-50 rounded-lg"
             >
-              <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d={getActionIcon(activity.action_type)} />
-                </svg>
-              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] text-slate-700 font-medium leading-tight">
                   {activity.action_description}
