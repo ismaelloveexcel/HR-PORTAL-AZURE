@@ -143,9 +143,15 @@ class Candidate(Base):
     # References for reference checks
     references_list: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # [{name, relationship, company, email, phone}]
     
-    # Evaluations (HR/Hiring Manager only)
+    # Evaluations (HR/Hiring Manager only - NOT visible to candidates)
     soft_skills: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # {communication: 4, teamwork: 5, ...}
     technical_skills: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # {domain_knowledge: 4, ...}
+    
+    # Screening scores (Manager-only, for candidate ranking)
+    ai_ranking: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # AI-calculated match % (0-100)
+    skills_match_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Core skills match % (0-100)
+    education_level: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # PhD, Masters, Bachelors, Diploma, High School
+    screening_rank: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Position rank within position
 
     # Status & stage
     status: Mapped[str] = mapped_column(String(50), default="applied", nullable=False)
