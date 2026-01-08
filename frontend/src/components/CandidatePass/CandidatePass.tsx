@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, CSSProperties } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { 
   BasePassContainer, 
@@ -825,7 +825,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                   onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
                   placeholder="+971 50 000 0000"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition-all"
-                  style={{ '--tw-ring-color': '#2EB67D40' } as React.CSSProperties}
+                  style={{ '--tw-ring-color': '#2EB67D40' } as CSSProperties}
                 />
               </div>
 
@@ -838,7 +838,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                   onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
                   placeholder="email@example.com"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition-all"
-                  style={{ '--tw-ring-color': '#2EB67D40' } as React.CSSProperties}
+                  style={{ '--tw-ring-color': '#2EB67D40' } as CSSProperties}
                 />
               </div>
 
@@ -850,7 +850,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                     value={detailsForm.location}
                     onChange={(e) => setDetailsForm({ ...detailsForm, location: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:bg-white transition-all cursor-pointer"
-                    style={{ '--tw-ring-color': '#2EB67D40' } as React.CSSProperties}
+                    style={{ '--tw-ring-color': '#2EB67D40' } as CSSProperties}
                   >
                     <option value="">Select location</option>
                     {UAE_LOCATIONS.map(loc => (
@@ -871,7 +871,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                     value={detailsForm.visa_status}
                     onChange={(e) => setDetailsForm({ ...detailsForm, visa_status: e.target.value })}
                     className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm appearance-none focus:outline-none focus:ring-2 focus:bg-white transition-all cursor-pointer"
-                    style={{ '--tw-ring-color': '#2EB67D40' } as React.CSSProperties}
+                    style={{ '--tw-ring-color': '#2EB67D40' } as CSSProperties}
                   >
                     <option value="">Select</option>
                     {VISA_STATUSES.map(status => (
@@ -885,7 +885,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                     value={detailsForm.notice_period}
                     onChange={(e) => setDetailsForm({ ...detailsForm, notice_period: e.target.value })}
                     className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm appearance-none focus:outline-none focus:ring-2 focus:bg-white transition-all cursor-pointer"
-                    style={{ '--tw-ring-color': '#2EB67D40' } as React.CSSProperties}
+                    style={{ '--tw-ring-color': '#2EB67D40' } as CSSProperties}
                   >
                     <option value="">Select</option>
                     {NOTICE_PERIODS.map(period => (
@@ -908,7 +908,7 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
                     }}
                     placeholder="15,000"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:bg-white transition-all"
-                    style={{ '--tw-ring-color': '#2EB67D40' } as React.CSSProperties}
+                    style={{ '--tw-ring-color': '#2EB67D40' } as CSSProperties}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">AED</span>
                 </div>
