@@ -1,3 +1,5 @@
 export { ManagerPass } from './ManagerPass'
+export { ManagerPassDashboard } from './ManagerPassDashboard'
 export { PassMetricsBack } from './PassMetricsBack'
+export { AssessmentConfig } from './AssessmentConfig'
 export type { RecruitmentMetrics } from './PassMetricsBack'

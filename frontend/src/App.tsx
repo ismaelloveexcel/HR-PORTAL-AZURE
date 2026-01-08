@@ -3056,7 +3056,7 @@ function App() {
                       Backend API is fully implemented with 25+ endpoints. Features include:
                     </p>
                     <ul className="text-sm text-purple-100 space-y-1">
-                      <li>• AI-powered CV parsing (pyresparser)</li>
+                      <li>• Automated CV parsing (pyresparser)</li>
                       <li>• Kanban pipeline with drag-and-drop</li>
                       <li>• Manager & Candidate pass integration</li>
                       <li>• Interview scheduling with availability matching</li>

@@ -538,3 +538,268 @@ UPDATE recruitment_requests
 SET required_skills = '["Python", "SQL", "FastAPI"]'
 WHERE position_title LIKE '%Developer%';
 ```
+
+---
+
+## Assessments - LOCKED DESIGN DECISION
+
+### Positioning (Non-Negotiable)
+
+- Assessments live inside **STAGE 2 (SCREENING)** and **STAGE 3 (INTERVIEW)**
+- They are **action-triggered events**, not standalone stages
+- They are optional, role-driven, and selectable
+- They create temporary blocking actions
+
+This preserves:
+- One stage at a time
+- Clean enums
+- No stage explosion
+
+### Who Can Select What (LOCKED)
+
+| Assessment Type | Triggered By | Rationale |
+|-----------------|--------------|-----------|
+| Technical Assessment | Manager | Owns role competence |
+| Soft Skill Assessment | HR | Owns culture & behavior |
+| Combined Assessment | HR + Manager | Senior / critical roles |
+
+**No candidate self-selection. Ever.**
+
+### Assessment Statuses (Sub-status flags, not stage drivers)
+
+```typescript
+type AssessmentStatus = 
+  | 'required'    // Assessment Required
+  | 'sent'        // Assessment Sent
+  | 'completed'   // Assessment Completed
+  | 'failed'      // Assessment Failed
+  | 'waived'      // Assessment Waived
+```
+
+### Assessment Flow
+
+1. **Triggering**: Manager selects "Technical Assessment Required" OR HR selects "Soft Skill Assessment Required"
+2. **System Action**: Freeze stage progression, set assessment_required = true
+3. **HR assigns**: Technical test or Soft skill assessment
+4. **System sends**: Assessment to candidate
+5. **Candidate completes**: Assessment in Progress (visible on pass)
+6. **Review**: Manager (Technical) / HR (Soft) reviews results
+7. **Decision**: Pass → Proceed to interview; Fail → Reject candidate
+
+### Backend Model
+
+```python
+class Assessment(Base):
+    __tablename__ = "assessments"
+    
+    id: int
+    candidate_id: int
+    recruitment_request_id: int
+    
+    # LOCKED: technical, soft_skill, combined
+    assessment_type: str
+    # LOCKED: manager, hr
+    triggered_by: str
+    # Stage when triggered: screening or interview
+    linked_stage: str
+    
+    # LOCKED: required, sent, completed, failed, waived
+    status: str
+    
+    # Results
+    score: Optional[int]
+    result: Optional[str]  # pass, fail
+```
+
+---
+
+## Applicant List (Pipeline View) - LOCKED DESIGN
+
+### Purpose
+
+- Fast scanning
+- Decision prioritization
+- Bottleneck visibility
+- Zero scrolling into profiles unless necessary
+
+### Fields That SHOULD Appear
+
+| Category | Field | Source |
+|----------|-------|--------|
+| Identity | Candidate Name | CV (auto) |
+| | Current Job Title | CV (auto) |
+| | Current Company | CV (auto) |
+| Role Fit | Applied Position | Application form |
+| | Years of Experience (rounded) | CV (auto) |
+| | Location / Country | CV (auto) |
+| Progress | Current Stage | System |
+| | Current Status | System |
+| | Assessment Status | System |
+| | Interview Status | System |
+| Signals | Assessment Score (if any) | Assessment |
+| | Interview Outcome (icon) | Manager |
+| Risk | Days in Stage (counter) | System |
+| | On Hold Flag | System |
+
+### Fields That MUST NOT Appear in List View
+
+- CV text
+- Salary expectations
+- Soft skill comments
+- Internal notes
+- Detailed assessment breakdown
+
+**Why**: List view is for velocity, not judgment.
+
+---
+
+## Applicant Profile - LOCKED DATA OWNERSHIP
+
+### A. Auto-Extracted from CV (System-controlled)
+
+Editable only via HR override, never directly by candidate.
+
+| Section | Field |
+|---------|-------|
+| Identity | Full Name, Email, Phone |
+| Professional | Current Job Title, Current Company |
+| | Employment History (company + role + dates) |
+| | Total Years of Experience |
+| | Education (degree, institution) |
+| | Core Skills (parsed keywords) |
+| | Certifications (if listed) |
+
+### B. Candidate-Filled (Form-driven, Mandatory)
+
+| Section | Field | Why |
+|---------|-------|-----|
+| Profile | Preferred Name | UX |
+| | Nationality | Visa logic |
+| | Current Location | Hiring logistics |
+| | Right to Work Status | Compliance |
+| | Notice Period | Hiring timeline |
+| Role Alignment | Availability to Join | Planning |
+| | Willingness to Relocate | Decision |
+| | Work Mode Preference | Policy |
+| Compensation | Salary Expectation (range) | Offer gating |
+| | Current Salary (optional) | Benchmarking |
+
+### C. Internal Only (HR/Manager)
+
+Hidden from candidate:
+- Source (Agency/Referral/Direct)
+- Recruiter Assigned
+- Internal Fit Indicator
+- Risk Flags (Visa, Gap, Job Hopping)
+- Assessment logic, Scores, Decision rationale
+- Offer readiness
+
+---
+
+## Manager Pass Dashboard (Multiple Recruitment Requests)
+
+When a manager has multiple recruitment requests, they see a dashboard showing all their passes:
+
+### Features
+
+- View all recruitment passes at a glance
+- Filter by status (Active, Screening, Interviewing, Filled, On Hold)
+- Summary stats (Total Positions, Total Candidates, Interviewed)
+- Click to open specific pass
+
+### Each Pass Card Shows
+
+- Position Title & Department
+- Priority indicator (Urgent, High, Normal, Low)
+- Status badge
+- Days since request
+- Candidate counts (Applied, Shortlisted, Interviewed)
+
+### Usage
+
+```tsx
+import { ManagerPassDashboard } from '../ManagerPass'
+
+<ManagerPassDashboard
+  managerId="MGR-001"
+  token={authToken}
+  onSelectPass={(requestId) => openPass(requestId)}
+/>
+```
+
+---
+
+## HR Applicant List Component
+
+Unified view for HR to manage candidates across ALL positions. Designed for solo HR managing multiple recruitment requests.
+
+### Features
+
+- Filter by position/recruitment request
+- Filter by stage and status
+- Filter by on-hold status
+- Filter by assessment status
+- Bulk actions (stage transitions, rejections)
+- Sort by newest, oldest, longest in stage, best score, name
+
+### Bulk Actions
+
+- Move to Screening
+- Move to Interview
+- Reject (with reason)
+
+### Usage
+
+```tsx
+import { HRApplicantList } from '../HRDashboard'
+
+<HRApplicantList
+  token={authToken}
+  onSelectCandidate={(id) => openProfile(id)}
+  onBulkAction={(action, ids) => handleBulkAction(action, ids)}
+/>
+```
+
+---
+
+## New API Endpoints
+
+### Get Manager Passes
+
+```
+GET /api/recruitment/manager/{manager_id}/passes
+```
+
+Returns all recruitment requests/passes for a specific manager.
+
+**Response**:
+```json
+[
+  {
+    "id": 1,
+    "pass_id": "MGR-RR-2026-001",
+    "position_title": "Senior Developer",
+    "department": "Engineering",
+    "status": "active",
+    "total_candidates": 45,
+    "candidates_shortlisted": 12,
+    "candidates_interviewed": 5,
+    "days_since_request": 15,
+    "priority": "high",
+    "created_at": "2026-01-01T10:00:00Z"
+  }
+]
+```
+
+### Enhanced Candidates for Request (Pipeline View)
+
+```
+GET /api/recruitment/requests/{request_id}/candidates
+```
+
+Now returns PIPELINE VIEW fields only:
+- Identity: Name, Current Job Title, Current Company
+- Role Fit: Position, Years of Experience, Location
+- Progress: Stage, Status, Assessment Status, Interview Status
+- Signals: Assessment Score, Interview Outcome
+- Risk: Days in Stage, On Hold Flag

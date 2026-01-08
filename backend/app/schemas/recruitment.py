@@ -424,21 +424,35 @@ class RecruitmentMetrics(BaseModel):
     requests_by_priority: Dict[str, int]
 
 
-# Assessment Schemas (from JSON analysis)
+# Assessment Schemas - LOCKED DESIGN DECISION
+# Assessments are NOT stages - they are action-triggered events inside Screening/Interview
+# Technical: Triggered by Manager | Soft Skill: Triggered by HR | Combined: HR + Manager
+
 class AssessmentBase(BaseModel):
     """Base schema for candidate assessments."""
     candidate_id: int
     recruitment_request_id: int
-    assessment_type: str = Field(..., description="soft-skills, technical, cognitive, personality")
-    label: str = Field(..., min_length=1, max_length=200)
+    assessment_type: str = Field(..., description="LOCKED: technical, soft_skill, combined")
+    triggered_by: str = Field(..., description="LOCKED: manager, hr")
+    linked_stage: str = Field(default="screening", description="Stage when triggered: screening or interview")
+    label: str = Field(default="Assessment", max_length=200)
     description: Optional[str] = None
     assessment_link: Optional[str] = Field(None, max_length=500)
     platform: Optional[str] = Field(None, max_length=100)
-    is_required: bool = True
 
 
-# Valid assessment statuses
-ASSESSMENT_STATUSES = ["pending", "in_progress", "completed", "expired"]
+# Valid assessment statuses - LOCKED: sub-status flags, not stage drivers
+ASSESSMENT_STATUSES = ["required", "sent", "completed", "failed", "waived"]
+
+# Valid assessment types - LOCKED
+ASSESSMENT_TYPES = ["technical", "soft_skill", "combined"]
+
+# Who can trigger what - LOCKED
+ASSESSMENT_TRIGGERS = {
+    "technical": "manager",
+    "soft_skill": "hr",
+    "combined": "hr_manager"
+}
 
 
 class AssessmentCreate(AssessmentBase):
@@ -448,10 +462,11 @@ class AssessmentCreate(AssessmentBase):
 
 class AssessmentUpdate(BaseModel):
     """Schema for updating an assessment."""
-    status: Optional[str] = Field(None, description="Status: pending, in_progress, completed, expired")
+    status: Optional[str] = Field(None, description="Status: required, sent, completed, failed, waived")
     score: Optional[int] = Field(None, ge=0, le=100)
-    passed: Optional[bool] = None
+    result: Optional[str] = Field(None, description="Result: pass, fail")
     result_details: Optional[Dict[str, Any]] = None
+    reviewed_by: Optional[str] = None
 
 
 class AssessmentResponse(AssessmentBase):
@@ -459,14 +474,29 @@ class AssessmentResponse(AssessmentBase):
     id: int
     status: str
     score: Optional[int] = None
-    passed: Optional[bool] = None
+    result: Optional[str] = None
     result_details: Optional[Dict[str, Any]] = None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
     sent_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     expires_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Candidate-facing assessment view (no type labels exposed to avoid bias/legal exposure)
+class CandidateAssessmentView(BaseModel):
+    """Assessment view for candidates - generic, no type labels exposed."""
+    id: int
+    status: str  # Only shows: required, sent, completed
+    label: str = "Assessment"
+    description: Optional[str] = "You have been requested to complete an assessment as part of the selection process."
+    assessment_link: Optional[str] = None
+    expires_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -590,8 +620,8 @@ class NoticePeriodInfo(BaseModel):
     days: int
 
 
-class AIScoringCriteria(BaseModel):
-    """Schema for AI scoring criteria."""
+class CVScoringCriteria(BaseModel):
+    """Schema for CV scoring criteria weights."""
     skills_match: int = Field(30, description="Weight for skills match")
     experience_match: int = Field(25, description="Weight for experience match")
     education_match: int = Field(15, description="Weight for education match")

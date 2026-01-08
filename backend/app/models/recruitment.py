@@ -167,8 +167,8 @@ class Candidate(Base):
     resume_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # Link to uploaded CV
     cv_scored_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)  # When CV was last scored
     
-    # Enhanced AI scoring (from JSON analysis)
-    ai_score_breakdown: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # {skills_match: 30, experience_match: 25, education_match: 15, salary_fit: 15, culture_fit: 15}
+    # Enhanced scoring breakdown (from JSON analysis)
+    score_breakdown: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # {skills_match: 30, experience_match: 25, education_match: 15, salary_fit: 15, culture_fit: 15}
     hr_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # HR rating 1-5
     manager_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Hiring manager rating 1-5
     last_activity_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Last activity timestamp
@@ -388,8 +388,8 @@ NOTICE_PERIODS = [
     {"key": "3_months", "name": "3 Months", "days": 90},
 ]
 
-# AI scoring criteria weights
-AI_SCORING_CRITERIA = {
+# CV scoring criteria weights
+CV_SCORING_CRITERIA = {
     "skills_match": {"weight": 30, "label": "Skills Match"},
     "experience_match": {"weight": 25, "label": "Experience Match"},
     "education_match": {"weight": 15, "label": "Education Match"},
@@ -399,7 +399,22 @@ AI_SCORING_CRITERIA = {
 
 
 class Assessment(Base):
-    """Candidate assessments (technical, soft-skills, etc.)."""
+    """
+    Candidate assessments (technical, soft-skills, combined).
+    
+    LOCKED DESIGN DECISION:
+    - Assessments are NOT stages - they are action-triggered events
+    - They live inside STAGE 2 (Screening) and STAGE 3 (Interview)
+    - They are optional, role-driven, and selectable
+    - They create temporary blocking actions
+    
+    WHO CAN SELECT WHAT:
+    - Technical Assessment: Triggered by Manager (owns role competence)
+    - Soft Skill Assessment: Triggered by HR (owns culture & behavior)
+    - Combined Assessment: HR + Manager (senior/critical roles)
+    
+    No candidate self-selection. Ever.
+    """
     
     __tablename__ = "assessments"
     
@@ -407,23 +422,33 @@ class Assessment(Base):
     candidate_id: Mapped[int] = mapped_column(ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
     recruitment_request_id: Mapped[int] = mapped_column(ForeignKey("recruitment_requests.id", ondelete="CASCADE"), nullable=False)
     
-    # Assessment details
-    assessment_type: Mapped[str] = mapped_column(String(50), nullable=False)  # soft-skills, technical, cognitive, personality
-    label: Mapped[str] = mapped_column(String(200), nullable=False)  # "Soft Skills Assessment"
+    # Assessment type - LOCKED: technical, soft_skill, combined
+    assessment_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    # Who triggered this assessment - LOCKED: manager, hr
+    triggered_by: Mapped[str] = mapped_column(String(20), nullable=False)
+    
+    # Current stage when assessment was triggered (screening or interview)
+    linked_stage: Mapped[str] = mapped_column(String(50), nullable=False, default="screening")
+    
+    # Assessment details (generic label shown to candidate - no type labels exposed)
+    label: Mapped[str] = mapped_column(String(200), default="Assessment")
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Assessment link/platform
     assessment_link: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     platform: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # Internal, HackerRank, Codility, etc.
     
-    # Status
-    is_required: Mapped[bool] = mapped_column(Boolean, default=True)
-    status: Mapped[str] = mapped_column(String(50), default="pending")  # pending, in_progress, completed, expired
+    # Status - LOCKED: required, sent, completed, failed, waived
+    status: Mapped[str] = mapped_column(String(50), default="required")
     
     # Results
     score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # 0-100
-    passed: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    result: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # pass, fail
     result_details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # Detailed breakdown
+    
+    # Reviewed by (Manager reviews Technical, HR reviews Soft Skill)
+    reviewed_by: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
     # Timing
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -434,6 +459,29 @@ class Assessment(Base):
     # Audit
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+# Assessment Types - LOCKED DESIGN DECISION
+ASSESSMENT_TYPES = [
+    {"key": "technical", "name": "Technical Assessment", "triggered_by": "manager"},
+    {"key": "soft_skill", "name": "Soft Skill Assessment", "triggered_by": "hr"},
+    {"key": "combined", "name": "Combined Assessment", "triggered_by": "hr_manager"},
+]
+
+# Assessment Statuses - LOCKED DESIGN DECISION (sub-status flags, not stage drivers)
+ASSESSMENT_STATUSES = [
+    {"key": "required", "name": "Assessment Required"},
+    {"key": "sent", "name": "Assessment Sent"},
+    {"key": "completed", "name": "Assessment Completed"},
+    {"key": "failed", "name": "Assessment Failed"},
+    {"key": "waived", "name": "Assessment Waived"},
+]
+
+# Assessment Results
+ASSESSMENT_RESULTS = [
+    {"key": "pass", "name": "Pass"},
+    {"key": "fail", "name": "Fail"},
+]
 
 
 class Offer(Base):

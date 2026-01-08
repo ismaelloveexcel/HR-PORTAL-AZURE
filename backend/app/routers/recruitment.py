@@ -189,6 +189,90 @@ async def approve_recruitment_request(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get(
+    "/manager/{manager_id}/passes",
+    response_model=List[dict],
+    summary="Get all recruitment passes for a manager"
+)
+async def get_manager_passes(
+    manager_id: str,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Get all recruitment requests/passes for a specific manager.
+    
+    Used by ManagerPassDashboard when a manager has multiple recruitment requests.
+    Each recruitment request = 1 position = 1 pass.
+    """
+    from app.models.recruitment import RecruitmentRequest, Candidate, ManagerPass
+    from sqlalchemy import select, func
+    from datetime import datetime, timezone
+    
+    # Get all recruitment requests for this manager
+    result = await session.execute(
+        select(RecruitmentRequest).where(
+            RecruitmentRequest.hiring_manager_id == manager_id
+        ).order_by(RecruitmentRequest.created_at.desc())
+    )
+    requests = result.scalars().all()
+    
+    passes = []
+    for req in requests:
+        # Get candidate counts
+        candidate_result = await session.execute(
+            select(func.count(Candidate.id)).where(
+                Candidate.recruitment_request_id == req.id
+            )
+        )
+        total_candidates = candidate_result.scalar() or 0
+        
+        # Get shortlisted count (screening + interview + offer)
+        shortlisted_result = await session.execute(
+            select(func.count(Candidate.id)).where(
+                Candidate.recruitment_request_id == req.id,
+                Candidate.stage.in_(['screening', 'interview', 'offer', 'hired'])
+            )
+        )
+        shortlisted = shortlisted_result.scalar() or 0
+        
+        # Get interviewed count
+        interviewed_result = await session.execute(
+            select(func.count(Candidate.id)).where(
+                Candidate.recruitment_request_id == req.id,
+                Candidate.stage.in_(['interview', 'offer', 'hired'])
+            )
+        )
+        interviewed = interviewed_result.scalar() or 0
+        
+        # Calculate days since request
+        days_since = (datetime.now(timezone.utc) - req.created_at).days if req.created_at else 0
+        
+        # Get manager pass info
+        pass_result = await session.execute(
+            select(ManagerPass).where(
+                ManagerPass.recruitment_request_id == req.id
+            )
+        )
+        manager_pass = pass_result.scalar_one_or_none()
+        
+        passes.append({
+            "id": req.id,
+            "pass_id": manager_pass.pass_id if manager_pass else f"MGR-{req.id}",
+            "position_title": req.position_title,
+            "department": req.department,
+            "status": req.status,
+            "total_candidates": total_candidates,
+            "candidates_shortlisted": shortlisted,
+            "candidates_interviewed": interviewed,
+            "days_since_request": days_since,
+            "priority": getattr(req, 'priority', 'normal') or 'normal',
+            "created_at": req.created_at.isoformat() if req.created_at else None,
+            "entity": getattr(req, 'entity', None)
+        })
+    
+    return passes
+
+
 # ============================================================================
 # CANDIDATES
 # ============================================================================
@@ -205,9 +289,23 @@ async def get_candidates_for_request(
     """
     Get list of candidates for a specific recruitment request.
     Used by manager pass to view applicants. Accessible via pass token.
+    
+    Returns PIPELINE VIEW fields only (LOCKED DESIGN):
+    - Identity: Name, Current Job Title, Current Company
+    - Role Fit: Position, Years of Experience, Location
+    - Progress: Stage, Status, Assessment Status, Interview Status
+    - Signals: Assessment Score, Interview Outcome
+    - Risk: Days in Stage, On Hold Flag
     """
-    from app.models.recruitment import Candidate
+    from app.models.recruitment import Candidate, RecruitmentRequest, Assessment
     from sqlalchemy import select
+    from datetime import datetime, timezone
+    
+    # Get recruitment request for position info
+    req_result = await session.execute(
+        select(RecruitmentRequest).where(RecruitmentRequest.id == request_id)
+    )
+    req = req_result.scalar_one_or_none()
     
     result = await session.execute(
         select(Candidate).where(
@@ -215,17 +313,65 @@ async def get_candidates_for_request(
         ).order_by(Candidate.created_at.desc())
     )
     candidates = result.scalars().all()
-    return [
-        {
+    
+    pipeline_candidates = []
+    for c in candidates:
+        # Calculate days in stage
+        stage_date = getattr(c, 'stage_changed_at', None) or c.created_at
+        days_in_stage = (datetime.now(timezone.utc) - stage_date).days if stage_date else 0
+        
+        # Get assessment status
+        assessment_result = await session.execute(
+            select(Assessment).where(
+                Assessment.candidate_id == c.id
+            ).order_by(Assessment.created_at.desc())
+        )
+        assessment = assessment_result.scalar_one_or_none()
+        assessment_status = assessment.status if assessment else 'none'
+        assessment_score = assessment.score if assessment else None
+        
+        # Determine interview status from candidate status
+        interview_status = 'none'
+        if c.stage == 'interview':
+            if 'scheduled' in (c.status or '').lower():
+                interview_status = 'scheduled'
+            elif 'completed' in (c.status or '').lower():
+                interview_status = 'completed'
+            elif 'no_show' in (c.status or '').lower():
+                interview_status = 'no_show'
+            else:
+                interview_status = 'pending'
+        
+        pipeline_candidates.append({
             "id": c.id,
             "candidate_number": c.candidate_number,
+            # Identity (from CV - auto)
             "full_name": c.full_name,
+            "current_job_title": getattr(c, 'current_position', None),
+            "current_company": getattr(c, 'current_company', None),
+            # Role Fit
+            "recruitment_request_id": c.recruitment_request_id,
+            "position_title": req.position_title if req else "",
+            "years_experience": getattr(c, 'years_experience', None),
+            "current_location": getattr(c, 'current_location', None),
+            # Progress (System)
             "stage": c.stage,
             "status": c.status,
-            "email": c.email or ""
-        }
-        for c in candidates
-    ]
+            "assessment_status": assessment_status,
+            "interview_status": interview_status,
+            # Signals
+            "assessment_score": assessment_score,
+            "interview_outcome": None,  # To be derived from evaluation
+            # Risk
+            "days_in_stage": days_in_stage,
+            "on_hold": c.status == 'on_hold' if c.status else False,
+            # Internal (for filtering, not display)
+            "department": req.department if req else "",
+            "entity": getattr(req, 'entity', None) if req else None,
+            "applied_at": c.created_at.isoformat() if c.created_at else None
+        })
+    
+    return pipeline_candidates
 
 
 @router.post(
@@ -528,12 +674,12 @@ async def upload_candidate_cv(
 
 
 # ============================================================================
-# AI RESUME PARSING
+# AUTOMATED RESUME PARSING
 # ============================================================================
 
 @router.get("/parse-resume/status", summary="Check resume parsing availability")
 async def check_resume_parsing_status():
-    """Check if AI resume parsing is available."""
+    """Check if automated resume parsing is available."""
     return {
         "available": resume_parser_service.is_available(),
         "supported_formats": resume_parser_service.get_supported_formats()
@@ -546,7 +692,7 @@ async def parse_resume(
     role: str = Depends(require_role(["admin", "hr"]))
 ):
     """
-    Parse uploaded resume using AI to extract candidate data.
+    Parse uploaded resume to extract candidate data.
 
     Supports: PDF, DOCX, DOC, TXT
 
@@ -562,7 +708,7 @@ async def parse_resume(
         tmp_file_path = tmp_file.name
 
     try:
-        # Parse resume using AI
+        # Parse resume
         parsed_data = await resume_parser_service.parse_resume(tmp_file_path)
 
         return {
@@ -592,7 +738,7 @@ async def create_candidate_from_resume(
     session: AsyncSession = Depends(get_session)
 ):
     """
-    Create candidate directly from resume using AI parsing.
+    Create candidate directly from resume using automated parsing.
 
     Automatically extracts and populates candidate data from resume.
 
@@ -606,7 +752,7 @@ async def create_candidate_from_resume(
         tmp_file_path = tmp_file.name
 
     try:
-        # Parse using AI
+        # Parse resume
         parsed_data = await resume_parser_service.parse_resume(tmp_file_path)
 
         if not parsed_data.get('parsed'):

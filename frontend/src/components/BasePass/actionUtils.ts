@@ -102,16 +102,24 @@ export const CANDIDATE_STATUSES: Record<string, StatusConfig[]> = {
   /**
    * STAGE 2 — SHORTLIST / SCREENING
    * Candidate: Shortlist
+   * ASSESSMENT OVERLAY STATUSES (sub-status flags, not stage drivers)
    */
   screening: [
     { key: 'under_review', label: 'Under Review', nextAction: 'Complete screening', actionOwner: 'HR' },
     { key: 'shortlisted', label: 'Shortlisted', nextAction: 'Prepare interview', actionOwner: 'HR' },
     { key: 'not_shortlisted', label: 'Not Shortlisted', nextAction: 'Close candidate record', actionOwner: 'System' },
-    { key: 'on_hold', label: 'On Hold', nextAction: 'Await decision', actionOwner: 'HR' }
+    { key: 'on_hold', label: 'On Hold', nextAction: 'Await decision', actionOwner: 'HR' },
+    // Assessment overlay statuses (LOCKED - sub-status flags)
+    { key: 'assessment_required', label: 'Assessment Required', nextAction: 'Complete assessment', actionOwner: 'Candidate' },
+    { key: 'assessment_sent', label: 'Assessment Sent', nextAction: 'Complete assessment', actionOwner: 'Candidate' },
+    { key: 'assessment_completed', label: 'Assessment Completed', nextAction: 'Review results', actionOwner: 'HR' },
+    { key: 'assessment_failed', label: 'Assessment Failed', nextAction: 'Review for rejection', actionOwner: 'HR' },
+    { key: 'assessment_waived', label: 'Assessment Waived', nextAction: 'Proceed to interview', actionOwner: 'HR' }
   ],
   /**
    * STAGE 3 — INTERVIEW
    * Candidate: Interview
+   * ASSESSMENT OVERLAY STATUSES (for late-stage assessments)
    */
   interview: [
     { key: 'pending', label: 'Interview Pending', nextAction: 'Schedule interview', actionOwner: 'HR' },
@@ -120,7 +128,11 @@ export const CANDIDATE_STATUSES: Record<string, StatusConfig[]> = {
     { key: 'confirmed', label: 'Interview Confirmed', nextAction: 'Attend interview', actionOwner: 'Candidate' },
     { key: 'completed', label: 'Interview Completed', nextAction: 'Await feedback', actionOwner: 'HR' },
     { key: 'cancelled', label: 'Interview Cancelled', nextAction: 'Reschedule interview', actionOwner: 'HR' },
-    { key: 'no_show', label: 'Interview No-Show', nextAction: 'Close or reschedule', actionOwner: 'HR' }
+    { key: 'no_show', label: 'Interview No-Show', nextAction: 'Close or reschedule', actionOwner: 'HR' },
+    // Assessment overlay statuses (for late-stage technical assessments)
+    { key: 'assessment_required', label: 'Assessment Required', nextAction: 'Complete assessment', actionOwner: 'Candidate' },
+    { key: 'assessment_sent', label: 'Assessment Sent', nextAction: 'Complete assessment', actionOwner: 'Candidate' },
+    { key: 'assessment_completed', label: 'Assessment Completed', nextAction: 'Review results', actionOwner: 'Manager' }
   ],
   /**
    * STAGE 4 — OFFER
