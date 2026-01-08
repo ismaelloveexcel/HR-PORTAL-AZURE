@@ -272,13 +272,13 @@ export function CandidatePass({ candidateId, token, onBack }: CandidatePassProps
         '3 Months': 90,
         'Other': 30
       }
-      const response = await fetch(`${API_URL}/recruitment/candidates/${passData.candidate_id}/details`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/recruitment/candidates/${passData.candidate_id}/self-service-update`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          pass_token: passData.pass_token,
           phone: detailsForm.phone,
           email: detailsForm.email,
           current_location: detailsForm.location,

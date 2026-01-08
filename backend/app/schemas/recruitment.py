@@ -169,6 +169,18 @@ class CandidateResponse(CandidateBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CandidateSelfServiceUpdate(BaseModel):
+    """Schema for candidate self-service profile updates."""
+    pass_token: str = Field(..., min_length=64, max_length=64, description="Secure pass token for verification")
+    phone: Optional[str] = Field(None, max_length=50)
+    email: Optional[EmailStr] = None
+    current_location: Optional[str] = Field(None, max_length=100)
+    visa_status: Optional[str] = Field(None, max_length=100)
+    notice_period_days: Optional[int] = Field(None, ge=0)
+    expected_salary: Optional[float] = Field(None, ge=0)
+    details_confirmed: Optional[bool] = None
+
+
 # Interview Schemas
 class InterviewSlot(BaseModel):
     """Schema for interview time slot."""

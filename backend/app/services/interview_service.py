@@ -466,9 +466,17 @@ class InterviewService:
         # Get candidate-visible activity history
         activity_history = await self.get_candidate_activity_history(session, candidate_id)
         
+        # Use stored pass_token for security, generate one if missing
+        pass_token = candidate.pass_token
+        if not pass_token:
+            import secrets
+            pass_token = secrets.token_hex(32)
+            candidate.pass_token = pass_token
+            await session.commit()
+        
         return CandidatePassData(
             pass_id=f"CPASS-{candidate.candidate_number}",
-            pass_token=self.generate_pass_token(),
+            pass_token=pass_token,
             candidate_id=candidate.id,
             candidate_number=candidate.candidate_number,
             full_name=candidate.full_name,

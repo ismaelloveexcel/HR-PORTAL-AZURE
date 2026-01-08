@@ -186,6 +186,9 @@ class Candidate(Base):
     details_confirmed_by_candidate: Mapped[Optional[bool]] = mapped_column(Boolean, default=False, nullable=True)
     details_confirmed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     last_updated_by: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # "Candidate" or employee_id
+    
+    # Secure pass token for self-service verification (cryptographically random)
+    pass_token: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
 
     # Audit
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -170,8 +170,13 @@ class RecruitmentService:
         created_by: str
     ) -> Candidate:
         """Add a new candidate to the pipeline."""
+        import secrets
+        
         # Generate candidate number
         candidate_number = await self._generate_candidate_number(session)
+        
+        # Generate secure pass token for self-service verification
+        pass_token = secrets.token_hex(32)
 
         # Create candidate
         candidate = Candidate(
@@ -179,6 +184,7 @@ class RecruitmentService:
             stage='applied',
             status='applied',
             stage_changed_at=datetime.now(),
+            pass_token=pass_token,
             **data.model_dump()
         )
 

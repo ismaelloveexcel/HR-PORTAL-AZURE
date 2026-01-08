@@ -2,7 +2,7 @@
 from typing import List, Optional
 from fastapi import (
     APIRouter, Depends, HTTPException, File, UploadFile,
-    Query, status
+    Query, status, Request
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 import tempfile
@@ -12,9 +12,10 @@ from pathlib import Path
 from app.auth.dependencies import require_role
 from app.database import get_session
 from app.routers.auth import get_current_employee_id
+from app.main import limiter
 from app.schemas.recruitment import (
     RecruitmentRequestCreate, RecruitmentRequestUpdate, RecruitmentRequestResponse,
-    CandidateCreate, CandidateUpdate, CandidateResponse,
+    CandidateCreate, CandidateUpdate, CandidateResponse, CandidateSelfServiceUpdate,
     InterviewCreate, InterviewUpdate, InterviewResponse,
     InterviewSlotsProvide, InterviewSlotConfirm,
     EvaluationCreate, EvaluationResponse,
@@ -325,14 +326,16 @@ async def reject_candidate(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.put(
-    "/candidates/{candidate_id}/details",
+@router.post(
+    "/candidates/{candidate_id}/self-service-update",
     response_model=CandidateResponse,
     summary="Update candidate details (self-service)"
 )
-async def update_candidate_details(
+@limiter.limit("5/minute")
+async def update_candidate_details_self_service(
+    request: Request,
     candidate_id: int,
-    data: CandidateUpdate,
+    data: CandidateSelfServiceUpdate,
     session: AsyncSession = Depends(get_session)
 ):
     """
@@ -341,18 +344,42 @@ async def update_candidate_details(
     This endpoint allows candidates to update their own profile information
     including phone, email, location, visa status, notice period, and expected salary.
     
-    No authentication required - candidates access via their pass token.
+    Security:
+    - Requires cryptographically secure pass_token (64 hex chars) in request body
+    - Rate limited to 5 requests per minute per IP
+    - Constant-time token comparison to prevent timing attacks
     """
     from datetime import datetime, timezone
+    import hmac
     
     candidate = await recruitment_service.get_candidate(session, candidate_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
     
-    update_data = data.model_dump(exclude_unset=True)
+    # Verify pass_token matches using constant-time comparison
+    if not candidate.pass_token or not hmac.compare_digest(candidate.pass_token, data.pass_token):
+        raise HTTPException(status_code=403, detail="Invalid pass token")
     
-    if update_data.get('details_confirmed_by_candidate'):
-        update_data['details_confirmed_at'] = datetime.now(timezone.utc)
+    # Build update data from self-service fields only
+    update_data = {}
+    if data.phone is not None:
+        update_data['phone'] = data.phone
+    if data.email is not None:
+        update_data['email'] = data.email
+    if data.current_location is not None:
+        update_data['current_location'] = data.current_location
+    if data.visa_status is not None:
+        update_data['visa_status'] = data.visa_status
+    if data.notice_period_days is not None:
+        update_data['notice_period_days'] = data.notice_period_days
+    if data.expected_salary is not None:
+        update_data['expected_salary'] = data.expected_salary
+    if data.details_confirmed is not None:
+        update_data['details_confirmed_by_candidate'] = data.details_confirmed
+        if data.details_confirmed:
+            update_data['details_confirmed_at'] = datetime.now(timezone.utc)
+    
+    update_data['last_updated_by'] = 'Candidate'
     
     updated = await recruitment_service.update_candidate(
         session, candidate_id, CandidateUpdate(**update_data)
