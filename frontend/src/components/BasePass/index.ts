@@ -25,8 +25,12 @@ export {
   MANAGER_STATUSES,
   getCandidateActionRequired,
   getManagerActionRequired,
+  getNextActionInfo,
+  getActionOwnerStyle,
   getStageIndex,
   getStageLabel,
-  getStatusLabel
+  getStatusLabel,
+  normalizeStageKey,
+  normalizeStatusKey
 } from './actionUtils'
-export type { ActionConfig, Stage } from './actionUtils'
+export type { ActionConfig, Stage, StatusConfig, ActionOwner } from './actionUtils'

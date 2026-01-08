@@ -21,6 +21,9 @@ from app.schemas.recruitment import (
 
 logger = logging.getLogger(__name__)
 
+# Constants for slot booking status
+SLOT_BOOKED_BY_OTHER = "__SLOT_UNAVAILABLE__"  # Marks slot as taken by another candidate
+
 class RecruitmentService:
     """Service for recruitment operations."""
 
@@ -418,19 +421,37 @@ class RecruitmentService:
         interview_id: int,
         slots: InterviewSlotsProvide
     ) -> Interview:
-        """Provide available interview slots (by hiring manager)."""
+        """
+        Provide available interview slots (by hiring manager).
+        
+        Once slots are provided, the interview status changes to 'slots_provided'
+        and the candidate can select from these slots via their pass.
+        """
         interview = await self.get_interview(session, interview_id)
         if not interview:
             raise ValueError("Interview not found")
 
-        # Convert slots to JSON-serializable format
+        # Convert slots to JSON-serializable format with booking status
         slots_data = [
-            {"start": slot.start.isoformat(), "end": slot.end.isoformat()}
-            for slot in slots.available_slots
+            {
+                "id": f"slot-{i}",
+                "start": slot.start.isoformat(),
+                "end": slot.end.isoformat(),
+                "is_booked": False,
+                "booked_by": None
+            }
+            for i, slot in enumerate(slots.available_slots)
         ]
 
         interview.available_slots = {"slots": slots_data}
         interview.status = 'slots_provided'
+
+        # Update candidate status to indicate slots are available
+        if interview.candidate_id:
+            candidate = await self.get_candidate(session, interview.candidate_id)
+            if candidate:
+                candidate.status = 'slots_available'
+                candidate.last_activity_at = datetime.now()
 
         await session.commit()
         await session.refresh(interview)
@@ -441,22 +462,106 @@ class RecruitmentService:
         self,
         session: AsyncSession,
         interview_id: int,
-        confirmation: InterviewSlotConfirm
+        confirmation: InterviewSlotConfirm,
+        candidate_id: Optional[int] = None
     ) -> Interview:
-        """Confirm an interview slot (by candidate)."""
+        """
+        Confirm an interview slot (by candidate).
+        
+        Once a slot is confirmed:
+        1. The slot is marked as booked by this candidate
+        2. The interview status changes to 'scheduled'
+        3. The candidate status is updated
+        4. The slot becomes unavailable to other candidates for the same recruitment request
+        """
         interview = await self.get_interview(session, interview_id)
         if not interview:
             raise ValueError("Interview not found")
+        
+        # Validate the interview has available slots
+        if not interview.available_slots or 'slots' not in interview.available_slots:
+            raise ValueError("No available slots for this interview")
+        
+        # Find and validate the selected slot
+        selected_start = confirmation.selected_slot.start.isoformat()
+        selected_end = confirmation.selected_slot.end.isoformat()
+        candidate_id_str = str(interview.candidate_id)
+        
+        slot_found = False
+        for slot in interview.available_slots['slots']:
+            if slot['start'] == selected_start and slot['end'] == selected_end:
+                # Check if booked by another candidate (compare as strings)
+                if slot.get('is_booked') and slot.get('booked_by') != candidate_id_str:
+                    raise ValueError("This slot has already been booked by another candidate")
+                slot_found = True
+                # Mark this slot as booked
+                slot['is_booked'] = True
+                slot['booked_by'] = candidate_id_str
+                break
+        
+        if not slot_found:
+            raise ValueError("Selected slot is not available")
 
         interview.scheduled_date = confirmation.selected_slot.start
         interview.status = 'scheduled'
         interview.confirmed_by_candidate = True
         interview.confirmed_at = datetime.now()
 
+        # Update candidate status
+        if interview.candidate_id:
+            candidate = await self.get_candidate(session, interview.candidate_id)
+            if candidate:
+                candidate.status = 'scheduled'
+                candidate.last_activity_at = datetime.now()
+        
+        # Mark this slot as unavailable in other interviews for the same recruitment request
+        # This prevents double-booking of manager's time
+        await self._mark_slot_unavailable_for_request(
+            session,
+            interview.recruitment_request_id,
+            selected_start,
+            selected_end,
+            interview.id
+        )
+
         await session.commit()
         await session.refresh(interview)
 
         return interview
+    
+    async def _mark_slot_unavailable_for_request(
+        self,
+        session: AsyncSession,
+        recruitment_request_id: int,
+        slot_start: str,
+        slot_end: str,
+        exclude_interview_id: int
+    ) -> None:
+        """
+        Mark a time slot as unavailable in all other interviews for the same recruitment request.
+        
+        This ensures that once a candidate books a slot, no other candidate can book
+        the same time slot for the same position.
+        """
+        # Get all interviews for this recruitment request
+        result = await session.execute(
+            select(Interview).where(
+                and_(
+                    Interview.recruitment_request_id == recruitment_request_id,
+                    Interview.id != exclude_interview_id,
+                    Interview.status.in_(['pending', 'slots_provided'])
+                )
+            )
+        )
+        interviews = result.scalars().all()
+        
+        for interview in interviews:
+            if interview.available_slots and 'slots' in interview.available_slots:
+                for slot in interview.available_slots['slots']:
+                    if slot['start'] == slot_start and slot['end'] == slot_end:
+                        slot['is_booked'] = True
+                        slot['booked_by'] = SLOT_BOOKED_BY_OTHER
+                        break
 
     async def complete_interview(
         self,

@@ -1,4 +1,5 @@
 """API endpoints for recruitment module."""
+import hmac
 from typing import List, Optional
 from fastapi import (
     APIRouter, Depends, HTTPException, File, UploadFile,
@@ -386,7 +387,6 @@ async def update_candidate_details_self_service(
     - Constant-time token comparison to prevent timing attacks
     """
     from datetime import datetime, timezone
-    import hmac
     
     candidate = await recruitment_service.get_candidate(session, candidate_id)
     if not candidate:
@@ -804,6 +804,63 @@ async def confirm_interview_slot(
     try:
         return await recruitment_service.confirm_interview_slot(
             session, interview_id, confirmation
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+class CandidateSlotSelection(InterviewSlotConfirm):
+    """Schema for candidate slot selection with pass token validation."""
+    pass_token: str
+
+
+@router.post(
+    "/interviews/{interview_id}/select-slot",
+    response_model=InterviewResponse,
+    summary="Select interview slot (candidate self-service)"
+)
+@limiter.limit("10/minute")
+async def select_interview_slot(
+    request: Request,
+    interview_id: int,
+    selection: CandidateSlotSelection,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Select an interview slot (by candidate via their pass).
+    
+    This endpoint is accessed by candidates through their pass.
+    Once a slot is selected:
+    1. The slot is marked as booked
+    2. The slot becomes unavailable to other candidates for the same position
+    3. The interview status changes to 'scheduled'
+    
+    Security:
+    - Requires cryptographically secure pass_token (64 hex chars)
+    - Rate limited to 10 requests per minute per IP
+    - Validates candidate owns the interview
+    """
+    # Get interview
+    interview = await recruitment_service.get_interview(session, interview_id)
+    if not interview:
+        raise HTTPException(status_code=404, detail="Interview not found")
+    
+    # Get candidate
+    candidate = await recruitment_service.get_candidate(session, interview.candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    # Verify pass_token using constant-time comparison
+    if not candidate.pass_token or not hmac.compare_digest(candidate.pass_token, selection.pass_token):
+        raise HTTPException(status_code=403, detail="Invalid pass token")
+    
+    # Validate interview belongs to this candidate
+    if interview.candidate_id != candidate.id:
+        raise HTTPException(status_code=403, detail="Interview does not belong to this candidate")
+    
+    try:
+        return await recruitment_service.confirm_interview_slot(
+            session, interview_id, selection, candidate_id=candidate.id
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -355,6 +355,178 @@ Both passes now use `getEntityColor()` from `entityTheme.ts` for consistent colo
 
 ---
 
+## Workflow Configuration: Governing Logic
+
+### Non-Negotiable Rules
+1. **Statuses do not do work — Actions do**
+2. **Each status maps to ONE primary Next Action**
+3. **Action Owner is singular (no shared accountability)**
+4. **Candidate Pass = visibility only**
+5. **HR / System triggers stage movement**
+6. **Manager actions are decision-gated**
+7. **HR is the superuser and only HR can manually revise passes**
+
+### Interview Slot Selection Workflow
+
+The interview scheduling follows this workflow:
+
+1. **Manager Provides Availability**
+   - Manager adds available time slots via the Manager Pass
+   - Interview status changes to `slots_provided`
+   - Candidate status changes to `slots_available`
+
+2. **Candidate Selects Slot**
+   - Available slots are displayed on Candidate Pass
+   - Candidate selects their preferred time
+   - Selected slot is booked and marked unavailable to other candidates
+
+3. **Slot Exclusivity**
+   - Once a slot is booked, it becomes unavailable across all interviews for that position
+   - This prevents double-booking of manager's time
+
+4. **HR Oversight**
+   - Only HR can manually modify bookings or reschedule interviews
+   - Managers can only provide availability, not edit bookings
+
+### Stage-Status-Action Matrix
+
+#### Stage 1: Application / Request
+
+| Role | Status | Next Action | Action Owner |
+|------|--------|-------------|--------------|
+| Candidate | Submitted | Validate application completeness | HR |
+| Candidate | Incomplete | Submit missing information | Candidate |
+| Candidate | Validated | Initiate screening | HR |
+| Candidate | Withdrawn | Close application | System |
+| Manager | Raised | Review & approve request | Manager |
+| Manager | Approved | Open application intake | HR |
+| Manager | On Hold | Monitor / await decision | Manager |
+| Manager | Cancelled | Close request | System |
+
+#### Stage 2: Shortlist / Screening
+
+| Role | Status | Next Action | Action Owner |
+|------|--------|-------------|--------------|
+| Candidate | Under Review | Complete screening | HR |
+| Candidate | Shortlisted | Prepare interview | HR |
+| Candidate | Not Shortlisted | Close candidate record | System |
+| Candidate | On Hold | Await decision | HR |
+| Manager | In Progress | Review candidate profile | Manager |
+| Manager | Shortlisted | Confirm interview intent | Manager |
+| Manager | Rejected | Close candidate | HR |
+| Manager | On Hold | Reassess later | Manager |
+
+#### Stage 3: Interview
+
+| Role | Status | Next Action | Action Owner |
+|------|--------|-------------|--------------|
+| Candidate | Pending | Schedule interview | HR |
+| Candidate | Slots Available | Select interview slot | Candidate |
+| Candidate | Scheduled | Confirm attendance | Candidate |
+| Candidate | Confirmed | Attend interview | Candidate |
+| Candidate | Completed | Await feedback | HR |
+| Candidate | Cancelled | Reschedule interview | HR |
+| Candidate | No Show | Close or reschedule | HR |
+| Manager | Pending | Provide availability | Manager |
+| Manager | Slots Provided | Await candidate selection | System |
+| Manager | Scheduled | Conduct interview | Manager |
+| Manager | Completed | Submit feedback | Manager |
+| Manager | Feedback Pending | Submit evaluation | Manager |
+| Manager | Additional Required | Schedule next round | HR |
+
+#### Stage 4: Offer / Decision
+
+| Role | Status | Next Action | Action Owner |
+|------|--------|-------------|--------------|
+| Candidate | In Preparation | Await offer | HR |
+| Candidate | Released | Review and respond | Candidate |
+| Candidate | Accepted | Initiate onboarding | HR |
+| Candidate | Declined | Close candidate | System |
+| Candidate | Negotiating | Review revised terms | Candidate |
+| Candidate | Expired | Close or re-offer | HR |
+| Manager | Pending | Make hire/no-hire decision | Manager |
+| Manager | Approved | Prepare offer letter | HR |
+| Manager | Not Approved | Close candidate | HR |
+| Manager | Released | Await candidate response | System |
+| Manager | Accepted | Initiate onboarding | HR |
+| Manager | Declined | Review pipeline | Manager |
+
+#### Stage 5: Onboarding
+
+| Role | Status | Next Action | Action Owner |
+|------|--------|-------------|--------------|
+| Candidate | Initiated | Submit onboarding documents | Candidate |
+| Candidate | Documents Pending | Upload required documents | Candidate |
+| Candidate | Documents Submitted | Verify documents | HR |
+| Candidate | Pre-Joining | Complete pre-joining tasks | Candidate |
+| Candidate | Joining Confirmed | Prepare for Day 1 | HR |
+| Candidate | Completed | Convert to employee | HR |
+| Candidate | No Show | Close candidate | System |
+| Manager | Initiated | Monitor progress | Manager |
+| Manager | Documentation | Await completion | System |
+| Manager | Joining Confirmed | Prepare workspace | Manager |
+| Manager | Completed | Close recruitment pass | HR |
+
+---
+
+## New Components: Interview Slot Management
+
+### InterviewSlotSelector (Candidate Pass)
+Located at: `frontend/src/components/CandidatePass/InterviewSlotSelector.tsx`
+
+Features:
+- Displays available time slots grouped by date
+- Shows slot duration and time in local format
+- Highlights already-booked slots
+- Prevents selection of slots booked by other candidates
+- Confirmation button with loading state
+- Error handling for failed bookings
+
+### InterviewSlotProvider (Manager Pass)
+Located at: `frontend/src/components/ManagerPass/InterviewSlotProvider.tsx`
+
+Features:
+- Add new time slots with date/time pickers
+- View existing slots with booked status
+- See which candidates have booked slots
+- Remove unbooked slots
+- HR-only notice for modifying bookings
+
+---
+
+## API Endpoints: Interview Slot Selection
+
+### Provide Interview Slots (Manager/HR)
+```
+POST /api/recruitment/interviews/{interview_id}/slots
+```
+Provides available time slots for an interview.
+
+### Select Interview Slot (Candidate Self-Service)
+```
+POST /api/recruitment/interviews/{interview_id}/select-slot
+```
+Allows candidates to select a slot using their pass token.
+
+**Request Body**:
+```json
+{
+  "selected_slot": {
+    "start": "2026-01-15T10:00:00Z",
+    "end": "2026-01-15T11:00:00Z"
+  },
+  "pass_token": "abc123...64chars"
+}
+```
+
+**Security**:
+- Requires valid pass_token
+- Rate limited to 10 requests/minute
+- Validates candidate owns the interview
+- Constant-time token comparison
+
+---
+
 ## Migration Notes
 
 No database migrations required for the new fields as they are nullable. The system will work with existing data - new features will simply not be available until the fields are populated.
