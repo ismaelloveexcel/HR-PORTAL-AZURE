@@ -74,3 +74,26 @@ class EligibleManager(BaseModel):
     eligible_reports_count: int
 
     model_config = {"from_attributes": True}
+
+
+class VerifyManagerRequest(BaseModel):
+    """Request to verify manager identity"""
+    manager_id: int = Field(..., description="Database ID of the manager")
+    verification_input: str = Field(..., description="Email or Employee ID for verification")
+
+
+class VerifyManagerResponse(BaseModel):
+    """Response containing verification token"""
+    success: bool
+    token: str = Field(..., description="Short-lived verification token for submission")
+    manager_name: str
+    expires_in_minutes: int = 15
+
+
+class NominationSubmitRequest(BaseModel):
+    """Request to submit nomination with verification token"""
+    nominee_id: int = Field(..., description="Employee ID of the nominee")
+    justification: str = Field(..., min_length=50, max_length=2000, description="Why this employee deserves the award")
+    achievements: Optional[str] = Field(None, max_length=1500, description="Key achievements")
+    impact_description: Optional[str] = Field(None, max_length=1500, description="Impact on team/organization")
+    verification_token: str = Field(..., description="Token from identity verification step")

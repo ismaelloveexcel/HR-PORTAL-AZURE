@@ -39,6 +39,7 @@ export function NominationPass() {
   const [managers, setManagers] = useState<Manager[]>([])
   const [selectedManager, setSelectedManager] = useState<Manager | null>(null)
   const [verificationEmail, setVerificationEmail] = useState('')
+  const [verificationToken, setVerificationToken] = useState<string | null>(null)
   const [eligibleEmployees, setEligibleEmployees] = useState<EligibleEmployee[]>([])
   const [selectedNominee, setSelectedNominee] = useState<EligibleEmployee | null>(null)
   const [form, setForm] = useState<NominationForm>({
@@ -75,15 +76,33 @@ export function NominationPass() {
     setStep('verify')
   }
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (!selectedManager) return
-    const managerEmail = selectedManager.email?.toLowerCase() || ''
-    const inputEmail = verificationEmail.toLowerCase().trim()
+    setLoading(true)
+    setError(null)
     
-    if (inputEmail === managerEmail || inputEmail === selectedManager.employee_id.toLowerCase()) {
-      fetchEligibleEmployees()
-    } else {
-      setError('Email or Employee ID does not match. Please try again.')
+    try {
+      const res = await fetch(`${API_BASE}/nominations/pass/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manager_id: selectedManager.id,
+          verification_input: verificationEmail.trim()
+        })
+      })
+      
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.detail || 'Verification failed')
+      }
+      
+      const data = await res.json()
+      setVerificationToken(data.token)
+      await fetchEligibleEmployees()
+    } catch (err: any) {
+      setError(err.message || 'Email or Employee ID does not match. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -112,7 +131,7 @@ export function NominationPass() {
   }
 
   const handleSubmit = async () => {
-    if (!selectedManager || !selectedNominee) return
+    if (!selectedManager || !selectedNominee || !verificationToken) return
     if (form.justification.length < 50) {
       setError('Please provide at least 50 characters explaining why this employee deserves the award.')
       return
@@ -121,24 +140,31 @@ export function NominationPass() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${API_BASE}/nominations/submit?nominator_id=${selectedManager.id}`, {
+      const res = await fetch(`${API_BASE}/nominations/pass/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nominee_id: selectedNominee.id,
           justification: form.justification,
           achievements: form.achievements || null,
-          impact_description: form.impact_description || null
+          impact_description: form.impact_description || null,
+          verification_token: verificationToken
         })
       })
       
       if (!res.ok) {
         const errData = await res.json()
+        if (res.status === 401) {
+          setVerificationToken(null)
+          setStep('verify')
+          throw new Error('Session expired. Please verify your identity again.')
+        }
         throw new Error(errData.detail || 'Failed to submit nomination')
       }
       
       const data = await res.json()
       setSubmittedNomination(data)
+      setVerificationToken(null)
       setStep('success')
     } catch (err: any) {
       setError(err.message || 'Could not submit nomination. Please try again.')
@@ -152,6 +178,7 @@ export function NominationPass() {
     setSelectedManager(null)
     setSelectedNominee(null)
     setVerificationEmail('')
+    setVerificationToken(null)
     setEligibleEmployees([])
     setForm({ nominee_id: null, justification: '', achievements: '', impact_description: '' })
     setSubmittedNomination(null)

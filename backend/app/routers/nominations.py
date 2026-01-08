@@ -1,5 +1,9 @@
-from datetime import datetime
-from typing import List
+import hashlib
+import hmac
+import os
+import secrets
+from datetime import datetime, timedelta
+from typing import List, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, func, and_
@@ -9,10 +13,94 @@ from app.database import get_session
 from app.models import Employee, EoyNomination, ELIGIBLE_JOB_LEVELS
 from app.schemas.nomination import (
     NominationCreate, NominationResponse, NominationUpdate,
-    EligibleEmployee, NominationListResponse, NominationStats, EligibleManager
+    EligibleEmployee, NominationListResponse, NominationStats, EligibleManager,
+    VerifyManagerRequest, VerifyManagerResponse, NominationSubmitRequest
 )
 
+VERIFICATION_SECRET = os.environ.get("AUTH_SECRET_KEY", "nomination-verify-secret-key")
+TOKEN_EXPIRY_MINUTES = 15
+
+_active_tokens: Dict[str, dict] = {}
+
 router = APIRouter(prefix="/nominations", tags=["nominations"])
+
+
+def generate_verification_token(manager_id: int) -> str:
+    """Generate a secure verification token for a manager"""
+    token = secrets.token_urlsafe(32)
+    expiry = datetime.now() + timedelta(minutes=TOKEN_EXPIRY_MINUTES)
+    _active_tokens[token] = {
+        "manager_id": manager_id,
+        "expires_at": expiry
+    }
+    _cleanup_expired_tokens()
+    return token
+
+
+def validate_verification_token(token: str) -> int | None:
+    """Validate token and return manager_id if valid, None if invalid/expired"""
+    _cleanup_expired_tokens()
+    token_data = _active_tokens.get(token)
+    if not token_data:
+        return None
+    if datetime.now() > token_data["expires_at"]:
+        del _active_tokens[token]
+        return None
+    return token_data["manager_id"]
+
+
+def invalidate_token(token: str):
+    """Invalidate a token after use"""
+    if token in _active_tokens:
+        del _active_tokens[token]
+
+
+def _cleanup_expired_tokens():
+    """Remove expired tokens from memory"""
+    now = datetime.now()
+    expired = [t for t, data in _active_tokens.items() if data["expires_at"] < now]
+    for t in expired:
+        del _active_tokens[t]
+
+
+@router.post(
+    "/pass/verify",
+    response_model=VerifyManagerResponse,
+    summary="Verify manager identity and get submission token",
+)
+async def verify_manager_identity(
+    request: VerifyManagerRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Verify a manager's identity using their email or employee ID.
+    Returns a short-lived token required for submitting nominations.
+    """
+    manager_stmt = select(Employee).where(Employee.id == request.manager_id)
+    result = await session.execute(manager_stmt)
+    manager = result.scalar_one_or_none()
+    
+    if not manager:
+        raise HTTPException(status_code=404, detail="Manager not found")
+    
+    verification_input = request.verification_input.strip().lower()
+    manager_email = (manager.email or "").strip().lower()
+    manager_emp_id = (manager.employee_id or "").strip().lower()
+    
+    if verification_input != manager_email and verification_input != manager_emp_id:
+        raise HTTPException(
+            status_code=401, 
+            detail="Verification failed. Please enter your correct email or Employee ID."
+        )
+    
+    token = generate_verification_token(manager.id)
+    
+    return VerifyManagerResponse(
+        success=True,
+        token=token,
+        manager_name=manager.name,
+        expires_in_minutes=TOKEN_EXPIRY_MINUTES
+    )
 
 
 @router.get(
@@ -129,10 +217,116 @@ async def get_eligible_employees(
 
 
 @router.post(
+    "/pass/submit",
+    response_model=NominationResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit EOY nomination with verification token (secure)",
+)
+async def submit_nomination_secure(
+    request: NominationSubmitRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Submit an Employee of the Year nomination.
+    Requires a valid verification token obtained from /pass/verify.
+    
+    Validates:
+    - Valid verification token
+    - Nominee is in nominator's team
+    - Nominee is at Officer level or below
+    - No duplicate nomination for same year
+    """
+    nominator_id = validate_verification_token(request.verification_token)
+    if nominator_id is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired verification token. Please verify your identity again."
+        )
+    
+    year = datetime.now().year
+    
+    nominee_stmt = select(Employee).where(Employee.id == request.nominee_id)
+    nominee_result = await session.execute(nominee_stmt)
+    nominee = nominee_result.scalar_one_or_none()
+    
+    if not nominee:
+        raise HTTPException(status_code=404, detail="Nominee not found")
+    
+    if nominee.line_manager_id != nominator_id:
+        raise HTTPException(
+            status_code=403, 
+            detail="You can only nominate employees in your direct team"
+        )
+    
+    if not check_eligible_job_level(nominee.job_title):
+        raise HTTPException(
+            status_code=400,
+            detail="Only employees at Officer level or below can be nominated"
+        )
+    
+    existing_stmt = select(EoyNomination).where(
+        and_(
+            EoyNomination.nominee_id == request.nominee_id,
+            EoyNomination.nomination_year == year
+        )
+    )
+    existing_result = await session.execute(existing_stmt)
+    if existing_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=409,
+            detail="This employee has already been nominated for this year"
+        )
+    
+    nominator_stmt = select(Employee).where(Employee.id == nominator_id)
+    nominator_result = await session.execute(nominator_stmt)
+    nominator = nominator_result.scalar_one_or_none()
+    
+    new_nomination = EoyNomination(
+        nominee_id=request.nominee_id,
+        nominator_id=nominator_id,
+        nomination_year=year,
+        justification=request.justification,
+        achievements=request.achievements,
+        impact_description=request.impact_description,
+        status="pending"
+    )
+    
+    session.add(new_nomination)
+    await session.commit()
+    await session.refresh(new_nomination)
+    
+    invalidate_token(request.verification_token)
+    
+    if nominator and nominator.line_manager_email:
+        pass
+    
+    return NominationResponse(
+        id=new_nomination.id,
+        nominee_id=nominee.id,
+        nominee_name=nominee.name,
+        nominee_job_title=nominee.job_title,
+        nominee_department=nominee.department,
+        nominator_id=nominator_id,
+        nominator_name=nominator.name if nominator else "Unknown",
+        nomination_year=year,
+        justification=new_nomination.justification,
+        achievements=new_nomination.achievements,
+        impact_description=new_nomination.impact_description,
+        status=new_nomination.status,
+        reviewed_by=None,
+        reviewer_name=None,
+        reviewed_at=None,
+        review_notes=None,
+        created_at=new_nomination.created_at
+    )
+
+
+@router.post(
     "/submit",
     response_model=NominationResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Submit a new EOY nomination",
+    summary="Submit a new EOY nomination (internal use)",
+    include_in_schema=False,
 )
 async def submit_nomination(
     nomination: NominationCreate,
@@ -140,12 +334,8 @@ async def submit_nomination(
     session: AsyncSession = Depends(get_session),
 ):
     """
-    Submit an Employee of the Year nomination.
-    
-    Validates:
-    - Nominee is in nominator's team
-    - Nominee is at Officer level or below
-    - No duplicate nomination for same year
+    Internal endpoint for authenticated submissions.
+    The public nomination pass should use /pass/submit instead.
     """
     year = datetime.now().year
     
