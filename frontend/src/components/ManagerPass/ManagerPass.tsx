@@ -9,7 +9,8 @@ import {
   UNIFIED_STAGES,
   getStageIndex,
   getStageLabel,
-  getStatusLabel
+  getStatusLabel,
+  getEntityColor as getEntityColorFromTheme
 } from '../BasePass'
 import type { ActivityItem } from '../BasePass'
 import { PassMetricsBack } from './PassMetricsBack'
@@ -133,7 +134,8 @@ export function ManagerPass({ recruitmentRequestId, managerId, token, onBack }: 
   ]
 
   const getEntityColor = () => {
-    return passData?.entity?.includes('Agriculture') ? '#00bf63' : '#00B0F0'
+    // Use centralized entity theme color
+    return getEntityColorFromTheme(passData?.entity || '')
   }
 
   const getEntityName = () => {

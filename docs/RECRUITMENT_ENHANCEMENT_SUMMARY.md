@@ -326,6 +326,35 @@ import { PassMetricsBack } from '../ManagerPass'
 
 ---
 
+## Visual Alignment: Candidate Pass & Manager Pass
+
+Both passes are now visually aligned with consistent structure and linked fields:
+
+### Unified Header Structure
+- **Colored header bar** - Entity-themed color for Candidate Pass, deep blue for Manager Pass
+- **Glassmorphism info card** - Overlapping card with subtle transparency
+- **QR Code** - Positioned right with hover effects
+- **Stage/Status row** - Consistent color indicators and typography
+
+### Linked Fields (Displayed on Both Passes)
+| Field | Candidate Pass | Manager Pass |
+|-------|----------------|--------------|
+| Primary Title | Position Title | Position Title |
+| Secondary | Department | Department |
+| Identifier | Candidate Number | Pass ID |
+| Name | Full Name | Manager Name |
+| Reference | Recruitment Request # | Recruitment Request # |
+| Stage | Current Stage | Current Stage |
+| Status | Active/Pending | Active/In Progress |
+
+### Centralized Theming
+Both passes now use `getEntityColor()` from `entityTheme.ts` for consistent colors:
+- Agriculture Division: `#00bf63` (green)
+- Watergeneration/Default: `#00B0F0` (blue)
+- Manager Pass Header: `#1800ad` (deep blue)
+
+---
+
 ## Migration Notes
 
 No database migrations required for the new fields as they are nullable. The system will work with existing data - new features will simply not be available until the fields are populated.
