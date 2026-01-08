@@ -66,6 +66,9 @@ def create_app() -> FastAPI:
     # Insurance Census management
     from app.routers import insurance_census
     app.include_router(insurance_census.router, prefix=settings.api_prefix)
+    # Census Verification (employee self-service)
+    from app.routers import census_verification
+    app.include_router(census_verification.router, prefix=settings.api_prefix)
 
     @app.on_event("startup")
     async def on_startup():

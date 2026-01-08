@@ -16,6 +16,7 @@ from app.models.insurance_census import (
     MANDATORY_FIELDS, MANDATORY_FIELDS_FOR_RENEWAL,
     DHA_DOH_VALIDATION_FIELDS, AMENDMENT_TRACKED_FIELDS, RenewalStatus
 )
+from app.models.census_verification import CensusVerificationToken
 
 from app.models.renewal import Base, Renewal, RenewalAuditLog
 
@@ -33,5 +34,6 @@ __all__ = [
     "EoyNomination", "NOMINATION_STATUSES", "ELIGIBLE_JOB_LEVELS",
     "InsuranceCensusRecord", "InsuranceCensusImportBatch", 
     "MANDATORY_FIELDS", "MANDATORY_FIELDS_FOR_RENEWAL",
-    "DHA_DOH_VALIDATION_FIELDS", "AMENDMENT_TRACKED_FIELDS", "RenewalStatus"
+    "DHA_DOH_VALIDATION_FIELDS", "AMENDMENT_TRACKED_FIELDS", "RenewalStatus",
+    "CensusVerificationToken"
 ]

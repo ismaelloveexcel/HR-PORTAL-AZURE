@@ -119,6 +119,22 @@ export function InsuranceCensus({ token, onBack }: InsuranceCensusProps) {
   const [pendingChanges, setPendingChanges] = useState<Record<number, Record<string, string>>>({})
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  
+  // Verification email state
+  const [showVerificationModal, setShowVerificationModal] = useState(false)
+  const [sendingEmails, setSendingEmails] = useState(false)
+  const [verificationStats, setVerificationStats] = useState<{
+    total_tokens: number
+    emails_sent: number
+    verified: number
+    pending: number
+    expired: number
+  } | null>(null)
+  const [verificationResult, setVerificationResult] = useState<{
+    tokens_created?: number
+    emails_prepared?: number
+    emails?: Array<{ to: string; subject: string; verification_url: string }>
+  } | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -241,6 +257,79 @@ export function InsuranceCensus({ token, onBack }: InsuranceCensusProps) {
     setPendingChanges({})
   }
 
+  // Verification email functions
+  const fetchVerificationStats = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/census-verification/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        setVerificationStats(await res.json())
+      }
+    } catch (err) {
+      console.error('Failed to fetch verification stats:', err)
+    }
+  }
+
+  const handleGenerateTokens = async () => {
+    setSendingEmails(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_BASE}/census-verification/generate-tokens`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          entity: entityFilter !== 'all' ? entityFilter : null,
+          insurance_type: insuranceTypeFilter !== 'all' ? insuranceTypeFilter : null,
+          missing_fields_only: true,
+          expires_in_days: 14
+        })
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to generate tokens')
+      }
+      const result = await res.json()
+      setVerificationResult(result)
+      await fetchVerificationStats()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate tokens')
+    } finally {
+      setSendingEmails(false)
+    }
+  }
+
+  const handleSendEmails = async () => {
+    setSendingEmails(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_BASE}/census-verification/send-emails`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.detail || 'Failed to send emails')
+      }
+      const result = await res.json()
+      setVerificationResult(result)
+      await fetchVerificationStats()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send emails')
+    } finally {
+      setSendingEmails(false)
+    }
+  }
+
+  const openVerificationModal = () => {
+    setShowVerificationModal(true)
+    setVerificationResult(null)
+    fetchVerificationStats()
+  }
+
   const getCellValue = (record: CensusRecord, field: string): string => {
     const pending = pendingChanges[record.id]?.[field]
     if (pending !== undefined) return pending
@@ -327,6 +416,15 @@ export function InsuranceCensus({ token, onBack }: InsuranceCensusProps) {
             <h1 className="text-2xl font-bold">Medical Insurance Census</h1>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={openVerificationModal}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Send Verification Emails
+            </button>
             {hasPendingChanges && (
               <>
                 <span className="text-amber-400 text-sm">
@@ -600,6 +698,150 @@ export function InsuranceCensus({ token, onBack }: InsuranceCensusProps) {
           </p>
         </div>
       </div>
+
+      {/* Verification Email Modal */}
+      {showVerificationModal && (
+        <div 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowVerificationModal(false)}
+        >
+          <div 
+            className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Send Verification Emails</h2>
+                <p className="text-sm text-slate-400">Request employees to verify their insurance details</p>
+              </div>
+              <button
+                onClick={() => setShowVerificationModal(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Stats */}
+            {verificationStats && (
+              <div className="px-6 py-4 border-b border-slate-700">
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">{verificationStats.total_tokens}</div>
+                    <div className="text-xs text-slate-400">Total</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-400">{verificationStats.emails_sent}</div>
+                    <div className="text-xs text-slate-400">Sent</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-400">{verificationStats.verified}</div>
+                    <div className="text-xs text-slate-400">Verified</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-amber-400">{verificationStats.pending}</div>
+                    <div className="text-xs text-slate-400">Pending</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="px-6 py-4 max-h-[50vh] overflow-y-auto">
+              {!verificationResult ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-900/30 border border-blue-700 rounded-lg">
+                    <h4 className="font-medium text-blue-400 mb-2">How it works:</h4>
+                    <ol className="text-sm text-slate-300 space-y-2 list-decimal list-inside">
+                      <li>Generate unique verification links for each employee</li>
+                      <li>Each employee receives an email with their personal link</li>
+                      <li>They click the link to review and update their details</li>
+                      <li>Changes are automatically tracked (purple highlighting)</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 bg-slate-800 rounded-lg">
+                    <h4 className="font-medium text-white mb-2">Current Filter:</h4>
+                    <div className="text-sm text-slate-300">
+                      <p>Entity: <span className="text-cyan-400">{entityFilter === 'all' ? 'All' : entityFilter}</span></p>
+                      <p>Type: <span className="text-cyan-400">{insuranceTypeFilter === 'all' ? 'All' : insuranceTypeFilter}</span></p>
+                      <p className="text-xs text-slate-400 mt-2">Only employees with missing DHA/DOH fields will receive emails</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 bg-emerald-900/30 border border-emerald-700 rounded-lg">
+                    <h4 className="font-medium text-emerald-400 mb-2">✓ Success</h4>
+                    {verificationResult.tokens_created !== undefined && (
+                      <p className="text-sm text-slate-300">{verificationResult.tokens_created} verification tokens generated</p>
+                    )}
+                    {verificationResult.emails_prepared !== undefined && (
+                      <p className="text-sm text-slate-300">{verificationResult.emails_prepared} emails prepared</p>
+                    )}
+                  </div>
+
+                  {verificationResult.emails && verificationResult.emails.length > 0 && (
+                    <div className="p-4 bg-slate-800 rounded-lg">
+                      <h4 className="font-medium text-white mb-2">Email Preview ({verificationResult.emails.length})</h4>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {verificationResult.emails.slice(0, 5).map((email, idx) => (
+                          <div key={idx} className="text-xs p-2 bg-slate-700 rounded">
+                            <p className="text-slate-300">To: {email.to}</p>
+                            <p className="text-slate-400 truncate">Link: {email.verification_url}</p>
+                          </div>
+                        ))}
+                        {verificationResult.emails.length > 5 && (
+                          <p className="text-xs text-slate-400">... and {verificationResult.emails.length - 5} more</p>
+                        )}
+                      </div>
+                      <p className="text-xs text-amber-400 mt-2">Note: SMTP integration pending - emails shown for preview</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 py-4 border-t border-slate-700 flex justify-end gap-3">
+              <button
+                onClick={() => setShowVerificationModal(false)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                Close
+              </button>
+              {!verificationResult ? (
+                <>
+                  <button
+                    onClick={handleGenerateTokens}
+                    disabled={sendingEmails}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  >
+                    {sendingEmails ? 'Generating...' : '1. Generate Tokens'}
+                  </button>
+                  <button
+                    onClick={handleSendEmails}
+                    disabled={sendingEmails}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  >
+                    {sendingEmails ? 'Sending...' : '2. Send Emails'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setVerificationResult(null)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Done
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
