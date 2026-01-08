@@ -2856,9 +2856,6 @@ function App() {
                           <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-28 border-b border-slate-700">Education</th>
                           <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-24 border-b border-slate-700">Experience</th>
                           <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-28 border-b border-slate-700">Stage</th>
-                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-24 border-b border-slate-700">LinkedIn</th>
-                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-24 border-b border-slate-700">CV</th>
-                          <th className="py-4 px-4 text-left text-xs font-bold text-slate-200 uppercase tracking-wider w-32 border-b border-slate-700">Source</th>
                         </tr>
                       </thead>
                       <tbody>
