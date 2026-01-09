@@ -135,7 +135,7 @@ export function NominationPass() {
       
       await fetchEligibleEmployees()
     } catch (err: any) {
-      setError(err.message || 'Email or Employee ID does not match. Please try again.')
+      setError(err.message || 'Email address does not match. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -325,19 +325,23 @@ export function NominationPass() {
           <div className={`${neumorphicCard} p-6`}>
             <h2 className="text-lg font-semibold text-slate-800 mb-1">Verify Your Identity</h2>
             <p className="text-sm text-slate-500 mb-4">
-              Hi <span className="font-medium">{selectedManager.name}</span>, please enter your email or Employee ID to continue.
+              Hi <span className="font-medium">{selectedManager.name}</span>, please enter your email address to continue.
             </p>
             
             <div className={`${neumorphicInset} p-1 mb-4`}>
               <input
-                type="text"
+                type="email"
                 value={verificationEmail}
                 onChange={(e) => setVerificationEmail(e.target.value)}
-                placeholder="Email or Employee ID"
+                placeholder="Enter your email address"
                 className="w-full px-4 py-3 bg-transparent border-0 focus:outline-none text-slate-800 placeholder-slate-400"
                 onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
               />
             </div>
+            
+            <p className="text-xs text-slate-400 mb-4">
+              After verification, you'll have 30 minutes to complete your nomination.
+            </p>
             
             <div className="flex gap-3">
               <button

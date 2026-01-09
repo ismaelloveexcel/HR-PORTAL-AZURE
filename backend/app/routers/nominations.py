@@ -23,7 +23,7 @@ from app.schemas.nomination import (
 from app.services.email_service import send_nomination_confirmation_email
 
 VERIFICATION_SECRET = os.environ.get("AUTH_SECRET_KEY", "nomination-verify-secret-key")
-TOKEN_EXPIRY_MINUTES = 15
+TOKEN_EXPIRY_MINUTES = 30
 
 _active_tokens: Dict[str, dict] = {}
 
@@ -90,12 +90,11 @@ async def verify_manager_identity(
     
     verification_input = request.verification_input.strip().lower()
     manager_email = (manager.email or "").strip().lower()
-    manager_emp_id = (manager.employee_id or "").strip().lower()
     
-    if verification_input != manager_email and verification_input != manager_emp_id:
+    if verification_input != manager_email:
         raise HTTPException(
             status_code=401, 
-            detail="Verification failed. Please enter your correct email or Employee ID."
+            detail="Verification failed. Please enter your correct email address."
         )
     
     token = generate_verification_token(manager.id)
