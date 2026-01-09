@@ -238,7 +238,7 @@ export function EOYAdminPanel({ token, userId }: EOYAdminPanelProps) {
     (n.nominee_department?.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const nominationLink = `${window.location.origin}/nomination-pass`
+  const nominationLink = `https://hr.baynunah.ae/nomination-pass`
   const submittedCount = managers.filter(m => m.has_nominated).length
   const pendingCount = managers.length - submittedCount
 

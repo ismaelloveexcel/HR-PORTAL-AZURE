@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 
 interface Manager {
   id: number
@@ -46,7 +47,7 @@ type Step = 'select-manager' | 'verify' | 'already-nominated' | 'select-nominee'
 
 const API_BASE = '/api'
 const CURRENT_YEAR = new Date().getFullYear()
-const THEME_COLOR = '#1800ad'
+const THEME_COLOR = '#3d1a78'
 
 export function NominationPass() {
   const [step, setStep] = useState<Step>('select-manager')
@@ -222,492 +223,489 @@ export function NominationPass() {
     setActiveTab('home')
   }
 
+  const stepLabels = ['Manager', 'Verify', 'Nominee', 'Form', 'Done']
   const stepIndex = ['select-manager', 'verify', 'select-nominee', 'form', 'success'].indexOf(step)
 
+  const getStepLabel = () => {
+    switch (step) {
+      case 'select-manager': return 'Select Your Name'
+      case 'verify': return 'Verify Identity'
+      case 'already-nominated': return 'Already Submitted'
+      case 'select-nominee': return 'Select Nominee'
+      case 'form': return 'Submit Justification'
+      case 'success': return 'Nomination Complete'
+      default: return 'Nomination'
+    }
+  }
+
+  const getStepDescription = () => {
+    switch (step) {
+      case 'select-manager': return 'Choose your name from the manager list'
+      case 'verify': return 'Enter your email to verify identity'
+      case 'already-nominated': return 'You have already nominated for this year'
+      case 'select-nominee': return 'Choose a team member to nominate'
+      case 'form': return 'Explain why they deserve the award'
+      case 'success': return 'Thank you for your nomination'
+      default: return ''
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Header */}
-      <div 
-        className="px-4 py-5 text-white"
-        style={{ backgroundColor: THEME_COLOR }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
-            <span className="text-sm font-semibold uppercase tracking-wide">NOMINATION PASS</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm opacity-90">baynunah</span>
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zm0 11h7v7h-7v-7zM3 14h7v7H3v-7z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* Pass Card */}
-        <div className="bg-white rounded-xl p-4 text-gray-800 shadow-lg">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Manager</p>
-              <p className="text-[10px] text-gray-400 mb-2">EOY-{CURRENT_YEAR}</p>
-              <h2 className="text-lg font-bold text-gray-900">Employee of the Year</h2>
-              <p className="text-sm text-gray-600">{CURRENT_YEAR} Nomination</p>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <span 
-                className="px-2 py-1 text-xs font-semibold rounded text-white"
-                style={{ backgroundColor: step === 'success' ? '#22c55e' : THEME_COLOR }}
-              >
-                {step === 'success' ? 'SUBMITTED' : 'ACTIVE'}
-              </span>
-              <div 
-                className="w-16 h-16 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: `${THEME_COLOR}10` }}
-              >
-                <svg className="w-8 h-8" style={{ color: THEME_COLOR }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Pass Card Container */}
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          {/* Header */}
+          <div 
+            className="px-5 py-4 text-white"
+            style={{ backgroundColor: THEME_COLOR }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold tracking-wide uppercase">Nomination Pass</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 opacity-80" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                 </svg>
+                <span className="text-sm font-medium">baynunah</span>
               </div>
             </div>
           </div>
 
-          {/* Progress Steps */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-            {['MANAGER', 'VERIFY', 'NOMINEE', 'FORM', 'DONE'].map((label, i) => (
-              <div key={label} className="flex flex-col items-center">
-                <div 
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold mb-1 ${
-                    stepIndex >= i ? 'text-white' : 'bg-gray-200 text-gray-500'
-                  }`}
-                  style={stepIndex >= i ? { backgroundColor: THEME_COLOR } : {}}
+          {/* Main Card Content */}
+          <div className="p-5">
+            {/* Info Section with QR */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{selectedManager ? 'Manager' : 'Nominating Manager'}</p>
+                <p className="text-[10px] text-gray-400 mb-1">EOY-{CURRENT_YEAR}</p>
+                <h2 className="text-lg font-bold text-gray-900 leading-tight">Employee of the Year</h2>
+                <p className="text-sm text-gray-600">{selectedManager?.department || 'Select your name'}</p>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <span 
+                  className="px-2 py-0.5 text-[10px] font-semibold rounded text-white"
+                  style={{ backgroundColor: step === 'success' ? '#22c55e' : THEME_COLOR }}
                 >
-                  {stepIndex > i ? '✓' : i + 1}
+                  {step === 'success' ? 'SUBMITTED' : 'ACTIVE'}
+                </span>
+                <div className="bg-white p-1.5 rounded-lg border border-gray-100 shadow-sm">
+                  <QRCodeSVG 
+                    value={`https://hr.baynunah.ae/nomination-pass`}
+                    size={56}
+                    level="M"
+                    fgColor={THEME_COLOR}
+                  />
                 </div>
-                <span className="text-[9px] text-gray-500 uppercase">{label}</span>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-4 overflow-y-auto pb-24">
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center justify-between">
-            <span>{error}</span>
-            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 ml-2">×</button>
-          </div>
-        )}
-
-        {/* Step: Select Manager */}
-        {step === 'select-manager' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">Select Your Name</h2>
-              <p className="text-sm text-gray-500">Choose your name from the list below</p>
             </div>
-            
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: THEME_COLOR, borderTopColor: 'transparent' }} />
+
+            {/* Stage & Status Row */}
+            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Stage</p>
+                <p className="text-xs font-semibold" style={{ color: THEME_COLOR }}>{getStepLabel()}</p>
               </div>
-            ) : (
-              <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-                {managers.map(manager => (
-                  <button
-                    key={manager.id}
-                    onClick={() => handleManagerSelect(manager)}
-                    className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide">Status</p>
+                <p className="text-xs font-semibold text-gray-700">{step === 'success' ? 'Complete' : 'In Progress'}</p>
+              </div>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="flex items-center justify-between mb-5">
+              {stepLabels.map((label, i) => (
+                <div key={label} className="flex flex-col items-center flex-1">
+                  <div className="flex items-center w-full">
+                    {i > 0 && (
                       <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                        style={{ backgroundColor: THEME_COLOR }}
-                      >
-                        {manager.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{manager.name}</p>
-                        <p className="text-xs text-gray-500">{manager.job_title} • {manager.department}</p>
-                      </div>
+                        className={`h-0.5 flex-1 ${stepIndex >= i ? '' : 'bg-gray-200'}`}
+                        style={stepIndex >= i ? { backgroundColor: THEME_COLOR } : {}}
+                      />
+                    )}
+                    <div 
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
+                        stepIndex >= i ? 'text-white' : 'bg-gray-200 text-gray-500'
+                      }`}
+                      style={stepIndex >= i ? { backgroundColor: THEME_COLOR } : {}}
+                    >
+                      {stepIndex > i ? (
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="text-[10px]">{i + 1}</span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span 
-                        className="text-xs px-2 py-1 rounded-full font-medium"
-                        style={{ backgroundColor: `${THEME_COLOR}15`, color: THEME_COLOR }}
-                      >
-                        {manager.eligible_reports_count} eligible
-                      </span>
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </button>
-                ))}
-                {managers.length === 0 && !loading && (
-                  <p className="text-center text-gray-500 py-8">No managers with eligible team members found.</p>
-                )}
+                    {i < stepLabels.length - 1 && (
+                      <div 
+                        className={`h-0.5 flex-1 ${stepIndex > i ? '' : 'bg-gray-200'}`}
+                        style={stepIndex > i ? { backgroundColor: THEME_COLOR } : {}}
+                      />
+                    )}
+                  </div>
+                  <span className="text-[9px] text-gray-500 mt-1.5 text-center">{label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Next Action Card */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Next Action</p>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-white"
+                  style={{ backgroundColor: THEME_COLOR }}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{getStepLabel()}</p>
+                  <p className="text-xs text-gray-500">{getStepDescription()}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center justify-between">
+                <span>{error}</span>
+                <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 ml-2">×</button>
               </div>
             )}
-          </div>
-        )}
 
-        {/* Step: Verify Identity */}
-        {step === 'verify' && selectedManager && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <h2 className="font-semibold text-gray-900 mb-1">Verify Your Identity</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Hi <span className="font-medium text-gray-700">{selectedManager.name}</span>, please enter your email address.
-            </p>
-            
-            <input
-              type="email"
-              value={verificationEmail}
-              onChange={(e) => setVerificationEmail(e.target.value)}
-              placeholder="Enter your email address"
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 mb-3"
-              style={{ '--tw-ring-color': THEME_COLOR } as any}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-            />
-            
-            <p className="text-xs text-gray-400 mb-4">
-              After verification, you'll have 30 minutes to complete your nomination.
-            </p>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep('select-manager')}
-                className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleVerify}
-                disabled={!verificationEmail.trim() || loading}
-                className="flex-1 py-3 text-sm font-semibold text-white rounded-lg transition-all duration-200 disabled:opacity-50"
-                style={{ backgroundColor: THEME_COLOR }}
-              >
-                {loading ? 'Verifying...' : 'Continue'}
-              </button>
-            </div>
-          </div>
-        )}
+            {/* Step Content */}
+            <div className="min-h-[200px]">
+              {/* Step: Select Manager */}
+              {step === 'select-manager' && (
+                <div>
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: THEME_COLOR, borderTopColor: 'transparent' }} />
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {managers.map(manager => (
+                        <button
+                          key={manager.id}
+                          onClick={() => handleManagerSelect(manager)}
+                          className="w-full p-3 text-left flex items-center justify-between bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                              style={{ backgroundColor: THEME_COLOR }}
+                            >
+                              {manager.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900 text-sm">{manager.name}</p>
+                              <p className="text-xs text-gray-500">{manager.job_title}</p>
+                            </div>
+                          </div>
+                          <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      ))}
+                      {managers.length === 0 && !loading && (
+                        <p className="text-center text-gray-500 py-8 text-sm">No managers with eligible team members found.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
-        {/* Step: Already Nominated */}
-        {step === 'already-nominated' && existingNomination && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
-            <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center bg-amber-100">
-              <svg className="w-7 h-7 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Already Submitted</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              You have already submitted your nomination for {CURRENT_YEAR}. Only 1 nomination per manager is allowed.
-            </p>
-            
-            <div className="bg-gray-50 rounded-lg p-4 mb-4 text-left">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Your Nomination</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Nominee:</span>
-                  <span className="font-medium text-gray-900">{existingNomination.nominee_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Position:</span>
-                  <span className="font-medium text-gray-900">{existingNomination.nominee_job_title || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Status:</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    existingNomination.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                    existingNomination.status === 'shortlisted' ? 'bg-blue-100 text-blue-700' :
-                    existingNomination.status === 'winner' ? 'bg-green-100 text-green-700' :
-                    'bg-gray-100 text-gray-600'
-                  }`}>
-                    {existingNomination.status === 'pending' ? 'Pending Review' : 
-                     existingNomination.status.replace('_', ' ').charAt(0).toUpperCase() + existingNomination.status.replace('_', ' ').slice(1)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Submitted:</span>
-                  <span className="font-medium text-gray-900">{new Date(existingNomination.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </div>
-            
-            <button
-              onClick={resetForm}
-              className="w-full py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              ← Back to Start
-            </button>
-          </div>
-        )}
-
-        {/* Step: Select Nominee - Org Chart Style */}
-        {step === 'select-nominee' && selectedManager && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">Your Team</h2>
-              <p className="text-sm text-gray-500">Select a team member to nominate for Employee of the Year</p>
-            </div>
-            
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: THEME_COLOR, borderTopColor: 'transparent' }} />
-              </div>
-            ) : (
-              <div className="p-4">
-                {/* Manager at Top - Org Chart Head */}
-                <div className="flex flex-col items-center mb-4">
-                  <div 
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg border-4 border-white shadow-lg"
-                    style={{ backgroundColor: THEME_COLOR }}
-                  >
-                    {selectedManager.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="text-center mt-2">
-                    <p className="font-semibold text-gray-900">{selectedManager.name}</p>
-                    <p className="text-xs text-gray-500">{selectedManager.job_title}</p>
-                    <span 
-                      className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-medium text-white"
+              {/* Step: Verify Identity */}
+              {step === 'verify' && selectedManager && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Hi <span className="font-semibold text-gray-800">{selectedManager.name}</span>, please enter your email address to continue.
+                  </p>
+                  
+                  <input
+                    type="email"
+                    value={verificationEmail}
+                    onChange={(e) => setVerificationEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 mb-3 text-sm"
+                    style={{ '--tw-ring-color': THEME_COLOR } as any}
+                    onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
+                  />
+                  
+                  <p className="text-xs text-gray-400 mb-4">
+                    After verification, you'll have 30 minutes to complete your nomination.
+                  </p>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setStep('select-manager')}
+                      className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleVerify}
+                      disabled={!verificationEmail.trim() || loading}
+                      className="flex-1 py-3 text-sm font-semibold text-white rounded-xl transition-all duration-200 disabled:opacity-50"
                       style={{ backgroundColor: THEME_COLOR }}
                     >
-                      LINE MANAGER
-                    </span>
-                  </div>
-                  
-                  {/* Connecting Line */}
-                  <div className="w-0.5 h-6 bg-gray-300 mt-3"></div>
-                  
-                  {/* Horizontal Branch Line */}
-                  <div className="relative w-full max-w-xs">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-gray-300"></div>
-                  </div>
-                </div>
-                
-                {/* Team Members Grid */}
-                <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pt-2">
-                  {eligibleEmployees.map((emp, index) => (
-                    <button
-                      key={emp.id}
-                      onClick={() => handleNomineeSelect(emp)}
-                      disabled={emp.already_nominated}
-                      className={`relative flex flex-col items-center p-3 rounded-xl border-2 transition-all ${
-                        emp.already_nominated 
-                          ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' 
-                          : 'hover:border-opacity-50 hover:shadow-md bg-white border-gray-200 hover:bg-gray-50'
-                      }`}
-                      style={!emp.already_nominated ? { '--hover-border': THEME_COLOR } as any : {}}
-                    >
-                      {/* Vertical Line from Branch */}
-                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0.5 h-2 bg-gray-300"></div>
-                      
-                      <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm"
-                        style={{ backgroundColor: emp.already_nominated ? '#9ca3af' : THEME_COLOR }}
-                      >
-                        {emp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <div className="text-center mt-2 w-full">
-                        <p className="font-medium text-gray-900 text-sm truncate">{emp.name}</p>
-                        <p className="text-[10px] text-gray-500 truncate">{emp.job_title}</p>
-                      </div>
-                      {emp.already_nominated && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium mt-1">
-                          Nominated
-                        </span>
-                      )}
+                      {loading ? 'Verifying...' : 'Continue'}
                     </button>
-                  ))}
+                  </div>
                 </div>
-                
-                {eligibleEmployees.length === 0 && !loading && (
-                  <p className="text-center text-gray-500 py-8">No eligible team members found.</p>
-                )}
-                
-                {/* Team Count */}
-                {eligibleEmployees.length > 0 && (
-                  <p className="text-center text-xs text-gray-400 mt-4">
-                    {eligibleEmployees.length} team member{eligibleEmployees.length !== 1 ? 's' : ''} eligible for nomination
+              )}
+
+              {/* Step: Already Nominated */}
+              {step === 'already-nominated' && existingNomination && (
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-amber-100">
+                    <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  
+                  <h3 className="text-base font-bold text-gray-900 mb-2">Already Submitted</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    You have already submitted your nomination for {CURRENT_YEAR}.
                   </p>
-                )}
-              </div>
-            )}
-            
-            <div className="p-4 border-t border-gray-100">
-              <button
-                onClick={() => setStep('verify')}
-                className="w-full py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                ← Back
-              </button>
+                  
+                  <div className="bg-gray-50 rounded-xl p-4 mb-4 text-left">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Your Nomination</p>
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Nominee:</span>
+                        <span className="font-medium text-gray-900">{existingNomination.nominee_name}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500">Status:</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          existingNomination.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          existingNomination.status === 'shortlisted' ? 'bg-purple-100 text-purple-700' :
+                          existingNomination.status === 'winner' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {existingNomination.status === 'pending' ? 'Pending Review' : 
+                           existingNomination.status.replace('_', ' ').charAt(0).toUpperCase() + existingNomination.status.replace('_', ' ').slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={resetForm}
+                    className="w-full py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                  >
+                    ← Back to Start
+                  </button>
+                </div>
+              )}
+
+              {/* Step: Select Nominee */}
+              {step === 'select-nominee' && selectedManager && (
+                <div>
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: THEME_COLOR, borderTopColor: 'transparent' }} />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2 max-h-56 overflow-y-auto mb-4">
+                        {eligibleEmployees.map((emp) => (
+                          <button
+                            key={emp.id}
+                            onClick={() => handleNomineeSelect(emp)}
+                            disabled={emp.already_nominated}
+                            className={`w-full p-3 text-left flex items-center justify-between border rounded-xl transition-all ${
+                              emp.already_nominated 
+                                ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' 
+                                : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                                style={{ backgroundColor: emp.already_nominated ? '#9ca3af' : THEME_COLOR }}
+                              >
+                                {emp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900 text-sm">{emp.name}</p>
+                                <p className="text-xs text-gray-500">{emp.job_title}</p>
+                              </div>
+                            </div>
+                            {emp.already_nominated ? (
+                              <span className="text-[10px] px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">
+                                Nominated
+                              </span>
+                            ) : (
+                              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                        {eligibleEmployees.length === 0 && !loading && (
+                          <p className="text-center text-gray-500 py-6 text-sm">No eligible team members found.</p>
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => setStep('verify')}
+                        className="w-full py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                      >
+                        ← Back
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Step: Nomination Form */}
+              {step === 'form' && selectedNominee && (
+                <div>
+                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                      style={{ backgroundColor: THEME_COLOR }}
+                    >
+                      {selectedNominee.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">{selectedNominee.name}</p>
+                      <p className="text-xs text-gray-500">{selectedNominee.job_title}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                        Why does this employee deserve the award? *
+                      </label>
+                      <textarea
+                        value={form.justification}
+                        onChange={(e) => setForm({ ...form, justification: e.target.value })}
+                        rows={3}
+                        placeholder="Describe their contributions... (min 50 characters)"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none text-sm"
+                        style={{ '--tw-ring-color': THEME_COLOR } as any}
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">{form.justification.length}/50 minimum</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                        Key Achievements (Optional)
+                      </label>
+                      <textarea
+                        value={form.achievements}
+                        onChange={(e) => setForm({ ...form, achievements: e.target.value })}
+                        rows={2}
+                        placeholder="List notable accomplishments..."
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none text-sm"
+                        style={{ '--tw-ring-color': THEME_COLOR } as any}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => setStep('select-nominee')}
+                      className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleSubmit}
+                      disabled={form.justification.length < 50 || loading}
+                      className="flex-1 py-3 text-sm font-semibold text-white rounded-xl transition-all duration-200 disabled:opacity-50"
+                      style={{ backgroundColor: THEME_COLOR }}
+                    >
+                      {loading ? 'Submitting...' : 'Submit'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step: Success */}
+              {step === 'success' && submittedNomination && (
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-green-100">
+                    <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  
+                  <h3 className="text-base font-bold text-gray-900 mb-2">Nomination Submitted!</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Thank you for nominating <span className="font-semibold text-gray-700">{submittedNomination.nominee_name}</span>.
+                  </p>
+                  
+                  <div className="bg-gray-50 rounded-xl p-4 mb-4 text-left">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Summary</p>
+                    <div className="space-y-1.5 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Nominee:</span>
+                        <span className="font-medium text-gray-900">{submittedNomination.nominee_name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Position:</span>
+                        <span className="font-medium text-gray-900">{submittedNomination.nominee_job_title}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500">Status:</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">
+                          Pending Review
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={resetForm}
+                    className="w-full py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                  >
+                    Back to Start
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        )}
 
-        {/* Step: Nomination Form */}
-        {step === 'form' && selectedNominee && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-              <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
-                style={{ backgroundColor: THEME_COLOR }}
-              >
-                {selectedNominee.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900">{selectedNominee.name}</p>
-                <p className="text-xs text-gray-500">{selectedNominee.job_title}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Why does this employee deserve to be Employee of the Year? *
-                </label>
-                <textarea
-                  value={form.justification}
-                  onChange={(e) => setForm({ ...form, justification: e.target.value })}
-                  rows={4}
-                  placeholder="Describe their exceptional contributions, leadership, and impact... (min 50 characters)"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none"
-                  style={{ '--tw-ring-color': THEME_COLOR } as any}
-                />
-                <p className="text-xs text-gray-400 mt-1">{form.justification.length}/50 minimum</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Key Achievements (Optional)
-                </label>
-                <textarea
-                  value={form.achievements}
-                  onChange={(e) => setForm({ ...form, achievements: e.target.value })}
-                  rows={3}
-                  placeholder="List notable accomplishments..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none"
-                  style={{ '--tw-ring-color': THEME_COLOR } as any}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Impact on Team/Organization (Optional)
-                </label>
-                <textarea
-                  value={form.impact_description}
-                  onChange={(e) => setForm({ ...form, impact_description: e.target.value })}
-                  rows={3}
-                  placeholder="Describe their positive influence..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none"
-                  style={{ '--tw-ring-color': THEME_COLOR } as any}
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setStep('select-nominee')}
-                className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={form.justification.length < 50 || loading}
-                className="flex-1 py-3 text-sm font-semibold text-white rounded-lg transition-all duration-200 disabled:opacity-50"
-                style={{ backgroundColor: THEME_COLOR }}
-              >
-                {loading ? 'Submitting...' : 'Submit Nomination'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step: Success */}
-        {step === 'success' && submittedNomination && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
-            <div 
-              className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ backgroundColor: '#dcfce7' }}
+          {/* Bottom Navigation */}
+          <div className="border-t border-gray-100 px-6 py-3 flex justify-around bg-white">
+            <button 
+              onClick={() => setActiveTab('home')}
+              className={`flex flex-col items-center gap-0.5 ${activeTab === 'home' ? '' : 'opacity-50'}`}
+              style={activeTab === 'home' ? { color: THEME_COLOR } : { color: '#6b7280' }}
             >
-              <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-            </div>
-            
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Nomination Submitted!</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Thank you for nominating <span className="font-semibold text-gray-700">{submittedNomination.nominee_name}</span> for Employee of the Year {CURRENT_YEAR}.
-            </p>
-            
-            <div className="bg-gray-50 rounded-lg p-4 mb-4 text-left">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Nomination Summary</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Nominee:</span>
-                  <span className="font-medium text-gray-900">{submittedNomination.nominee_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Position:</span>
-                  <span className="font-medium text-gray-900">{submittedNomination.nominee_job_title}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Status:</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                    Pending Review
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <button
-              onClick={resetForm}
-              className="w-full py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              <span className="text-[10px] font-medium">Home</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('status')}
+              className={`flex flex-col items-center gap-0.5 ${activeTab === 'status' ? '' : 'opacity-50'}`}
+              style={activeTab === 'status' ? { color: THEME_COLOR } : { color: '#6b7280' }}
             >
-              Back to Start
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <span className="text-[10px] font-medium">Status</span>
             </button>
           </div>
-        )}
-      </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 flex justify-around">
-        <button 
-          onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? '' : 'opacity-50'}`}
-          style={activeTab === 'home' ? { color: THEME_COLOR } : { color: '#6b7280' }}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          <span className="text-xs font-medium">Home</span>
-        </button>
-        <button 
-          onClick={() => setActiveTab('status')}
-          className={`flex flex-col items-center gap-1 ${activeTab === 'status' ? '' : 'opacity-50'}`}
-          style={activeTab === 'status' ? { color: THEME_COLOR } : { color: '#6b7280' }}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-          </svg>
-          <span className="text-xs font-medium">Status</span>
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div className="text-center pb-20 pt-2">
-        <p className="text-xs text-gray-400">
-          Nomination: <span style={{ color: THEME_COLOR }} className="font-medium">Baynunah Group</span>
-        </p>
+          {/* Footer */}
+          <div className="text-center py-2 bg-gray-50 border-t border-gray-100">
+            <p className="text-[10px] text-gray-400">
+              Nomination: <span style={{ color: THEME_COLOR }} className="font-medium">Baynunah Group</span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
