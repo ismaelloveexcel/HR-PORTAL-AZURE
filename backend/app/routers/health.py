@@ -333,9 +333,22 @@ ALLOWED_COLUMNS = {
 }
 
 
+async def _get_table_columns(session: AsyncSession, table_name: str) -> set:
+    """Query information_schema to get actual columns in the target database table."""
+    result = await session.execute(
+        text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = :table_name AND table_schema = 'public'
+        """),
+        {"table_name": table_name}
+    )
+    return {row[0] for row in result.fetchall()}
+
+
 async def _import_table(session: AsyncSession, table_name: str, rows: List[Dict[str, Any]], 
                         conflict_column: str = "id") -> Dict[str, Any]:
-    """Import rows into a table with upsert logic. Uses allowlist for SQL injection protection."""
+    """Import rows into a table with upsert logic. Uses allowlist AND schema introspection for safety."""
     imported = 0
     errors = []
     
@@ -343,10 +356,18 @@ async def _import_table(session: AsyncSession, table_name: str, rows: List[Dict[
     if not allowed:
         return {"imported": 0, "errors": [f"Unknown table: {table_name}"]}
     
+    # Get actual columns from target database schema
+    actual_columns = await _get_table_columns(session, table_name)
+    if not actual_columns:
+        return {"imported": 0, "errors": [f"Table {table_name} not found or has no columns"]}
+    
+    # Only use columns that are both allowed AND exist in target schema
+    valid_columns = allowed & actual_columns
+    
     for row in rows:
         try:
-            # Filter to only allowed columns
-            safe_row = {k: v for k, v in row.items() if k in allowed}
+            # Filter to only valid columns (allowed + exists in target)
+            safe_row = {k: v for k, v in row.items() if k in valid_columns}
             if not safe_row:
                 continue
             
