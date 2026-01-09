@@ -1,4 +1,4 @@
-"""AI-powered resume parsing service using pyresparser."""
+"""Automated resume parsing service using pyresparser."""
 from typing import Dict, Optional
 from pathlib import Path
 import re
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class ResumeParserService:
-    """Service for parsing resumes using AI/NLP."""
+    """Service for parsing resumes using NLP."""
 
     SUPPORTED_FORMATS = ['.pdf', '.docx', '.doc', '.txt']
 
@@ -32,7 +32,7 @@ class ResumeParserService:
 
     async def parse_resume(self, file_path: str) -> Dict:
         """
-        Parse resume and extract structured data using AI.
+        Parse resume and extract structured data.
 
         Args:
             file_path: Path to resume file
@@ -52,7 +52,7 @@ class ResumeParserService:
             if file_ext not in self.SUPPORTED_FORMATS:
                 raise ValueError(f"Unsupported format: {file_ext}. Supported: {', '.join(self.SUPPORTED_FORMATS)}")
 
-            # Parse using pyresparser (AI-powered)
+            # Parse using pyresparser (NLP-powered)
             parser = ResumeParser(file_path)
             data = parser.get_extracted_data()
 
