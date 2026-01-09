@@ -214,7 +214,66 @@ async def fix_production_data(
     
     await session.commit()
     
-    # 4. Verify managers now show (safely handle missing columns)
+    # 4. Backfill line_manager_id from line_manager_name (for nominations)
+    results["line_manager"] = {}
+    try:
+        # Check how many need backfilling
+        missing_check = await session.execute(
+            text("""
+                SELECT COUNT(*) FROM employees 
+                WHERE line_manager_name IS NOT NULL 
+                AND line_manager_name != ''
+                AND line_manager_id IS NULL
+            """)
+        )
+        results["line_manager"]["missing_before"] = missing_check.scalar() or 0
+        
+        # Backfill by matching names
+        backfill_result = await session.execute(
+            text("""
+                UPDATE employees e
+                SET line_manager_id = m.id
+                FROM employees m
+                WHERE e.line_manager_name IS NOT NULL 
+                AND e.line_manager_name != ''
+                AND e.line_manager_id IS NULL
+                AND LOWER(TRIM(e.line_manager_name)) = LOWER(TRIM(m.name))
+            """)
+        )
+        results["line_manager"]["backfilled"] = backfill_result.rowcount if hasattr(backfill_result, 'rowcount') else 0
+        
+        # Also try with normalized whitespace
+        backfill_fuzzy = await session.execute(
+            text("""
+                UPDATE employees e
+                SET line_manager_id = m.id
+                FROM employees m
+                WHERE e.line_manager_name IS NOT NULL 
+                AND e.line_manager_name != ''
+                AND e.line_manager_id IS NULL
+                AND LOWER(regexp_replace(e.line_manager_name, '\\s+', ' ', 'g')) = 
+                    LOWER(regexp_replace(m.name, '\\s+', ' ', 'g'))
+            """)
+        )
+        results["line_manager"]["backfilled_fuzzy"] = backfill_fuzzy.rowcount if hasattr(backfill_fuzzy, 'rowcount') else 0
+        
+        await session.commit()
+        
+        # Check remaining
+        still_missing = await session.execute(
+            text("""
+                SELECT COUNT(*) FROM employees 
+                WHERE line_manager_name IS NOT NULL 
+                AND line_manager_name != ''
+                AND line_manager_id IS NULL
+            """)
+        )
+        results["line_manager"]["still_missing"] = still_missing.scalar() or 0
+        
+    except Exception as e:
+        results["line_manager"]["error"] = str(e)
+    
+    # 5. Verify managers now show (safely handle missing columns)
     try:
         # Check if the newer columns exist before querying them
         column_check = await session.execute(
