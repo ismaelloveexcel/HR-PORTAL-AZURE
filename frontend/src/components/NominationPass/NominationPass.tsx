@@ -511,7 +511,7 @@ export function NominationPass() {
                           existingNomination.status === 'winner' ? 'bg-green-100 text-green-700' :
                           'bg-gray-100 text-gray-600'
                         }`}>
-                          {existingNomination.status === 'pending' ? 'Pending Review' : 
+                          {existingNomination.status === 'pending' ? 'Submitted' : 
                            existingNomination.status.replace('_', ' ').charAt(0).toUpperCase() + existingNomination.status.replace('_', ' ').slice(1)}
                         </span>
                       </div>
@@ -680,8 +680,8 @@ export function NominationPass() {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Status:</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">
-                          Pending Review
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
+                          Submitted
                         </span>
                       </div>
                     </div>
