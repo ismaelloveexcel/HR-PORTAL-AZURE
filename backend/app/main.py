@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -19,8 +20,35 @@ logger = get_logger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler for startup/shutdown events."""
+    # Startup
+    logger.info("Application startup", extra={"env": settings.app_env})
+    
+    # Start attendance scheduler for background jobs
+    try:
+        from app.services.attendance_scheduler import start_attendance_scheduler
+        start_attendance_scheduler()
+        logger.info("Attendance scheduler started")
+    except Exception as e:
+        logger.warning(f"Could not start attendance scheduler: {e}")
+    
+    yield
+    
+    # Shutdown
+    try:
+        from app.services.attendance_scheduler import stop_attendance_scheduler
+        stop_attendance_scheduler()
+        logger.info("Attendance scheduler stopped")
+    except Exception as e:
+        logger.warning(f"Could not stop attendance scheduler: {e}")
+    
+    logger.info("Application shutdown")
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.app_name, version="1.0.0")
+    app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)
     
     app.state.limiter = limiter
 
@@ -66,14 +94,23 @@ def create_app() -> FastAPI:
     # Insurance Census management
     from app.routers import insurance_census
     app.include_router(insurance_census.router, prefix=settings.api_prefix)
+    
+    # Enhanced Attendance Module routers
+    from app.routers import leave, public_holidays, timesheets, geofences
+    app.include_router(leave.router, prefix=settings.api_prefix)
+    app.include_router(public_holidays.router, prefix=settings.api_prefix)
+    app.include_router(timesheets.router, prefix=settings.api_prefix)
+    app.include_router(geofences.router, prefix=settings.api_prefix)
 
     @app.on_event("startup")
     async def on_startup():
-        logger.info("Application startup", extra={"env": settings.app_env})
+        # Legacy startup hook (kept for compatibility, main logic in lifespan)
+        pass
 
     @app.on_event("shutdown")
     async def on_shutdown():
-        logger.info("Application shutdown")
+        # Legacy shutdown hook (kept for compatibility, main logic in lifespan)
+        pass
 
     # Serve static files in production (frontend build)
     static_dir = Path(__file__).parent.parent / "static"

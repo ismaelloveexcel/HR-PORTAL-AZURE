@@ -264,15 +264,121 @@ HR dashboard shows:
 - Employees exceeding overtime limits today
 - Pending corrections requiring approval
 
-## Future Enhancements
+## Additional Enhancements (v2.1)
 
-1. **Ramadan Mode Toggle**: System setting to activate Ramadan hours globally
-2. **Offset Balance Dashboard**: Track cumulative offset hours per employee
-3. **Weekly Compliance Report**: Automated weekly UAE compliance report
-4. **Holiday Integration**: Automatic holiday detection for overtime rates
-5. **Night Work Detection**: Track night work (9 PM - 4 AM) for 150% rate
+### 1. Background Job Scheduler
+Automated background tasks at scheduled times:
+- **9:30 AM (UAE)**: Missing clock-in reminders sent to employees
+- **10:00 AM (UAE)**: Manager daily summary emails sent automatically
+- **5:30 PM (UAE)**: Missing clock-out reminders sent to employees
+
+**Setup:**
+```bash
+pip install apscheduler
+```
+
+The scheduler starts automatically when the application starts.
+
+### 2. Leave Integration
+New Leave Management module integrated with attendance:
+
+**Endpoints:**
+- `GET /api/v1/leave/types` - Get available leave types
+- `GET /api/v1/leave/balance/{employee_id}` - Get leave balance
+- `POST /api/v1/leave/request` - Submit leave request
+- `GET /api/v1/leave/requests` - List leave requests
+- `POST /api/v1/leave/{id}/approve` - Approve/reject leave
+- `GET /api/v1/leave/calendar` - Get leave calendar
+
+**Leave Types (UAE compliant):**
+- Annual, Sick, Maternity, Paternity, Compassionate, Hajj, Unpaid, Study, Marriage, Emergency
+
+### 3. Timesheet Approval Workflow
+Monthly timesheet generation and approval:
+
+**Workflow:**
+1. **Draft**: Auto-generated from attendance at month end
+2. **Submitted**: Employee submits for approval
+3. **Manager Approved**: Line manager approves
+4. **HR Approved**: Final HR approval
+5. **Exported**: Sent to payroll
+
+**Endpoints:**
+- `POST /api/v1/timesheets/generate/{employee_id}` - Generate timesheet
+- `GET /api/v1/timesheets/{id}` - Get timesheet
+- `POST /api/v1/timesheets/{id}/submit` - Submit for approval
+- `POST /api/v1/timesheets/{id}/manager-approve` - Manager approval
+- `POST /api/v1/timesheets/{id}/hr-approve` - HR final approval
+- `GET /api/v1/timesheets/list/{year}/{month}` - List timesheets
+- `GET /api/v1/timesheets/analytics/{year}/{month}` - Monthly analytics
+
+### 4. Attendance Analytics
+Monthly attendance analytics with:
+- Present rate percentage
+- Late arrival rate
+- Average overtime hours
+- Location distribution
+- Overtime cost breakdown
+- Compliance rate
+
+### 5. Push Notifications
+In-app notifications for:
+- Missing clock-in reminders
+- Missing clock-out reminders
+- Leave approval updates
+- Timesheet approval updates
+
+### 6. Geofence Validation
+Location-based attendance validation:
+
+**Endpoints:**
+- `GET /api/v1/geofences/` - List geofences
+- `POST /api/v1/geofences/` - Create geofence (HR)
+- `PUT /api/v1/geofences/{id}` - Update geofence (HR)
+- `POST /api/v1/geofences/validate` - Validate coordinates
+- `GET /api/v1/geofences/nearby` - Get nearby geofences
+- `POST /api/v1/geofences/init` - Initialize defaults
+
+**Default Locations:**
+- Head Office: 24.4539, 54.3773 (200m radius)
+- KEZAD: 24.6400, 54.6350 (500m radius)
+- Safario: 24.3500, 54.5000 (300m radius)
+
+### 7. Public Holidays Integration
+UAE public holiday management:
+
+**Endpoints:**
+- `GET /api/v1/holidays/year/{year}` - Get holidays for year
+- `GET /api/v1/holidays/check/{date}` - Check if date is holiday
+- `POST /api/v1/holidays/` - Create holiday (HR)
+- `PUT /api/v1/holidays/{id}` - Update holiday (HR)
+- `POST /api/v1/holidays/init/{year}` - Initialize UAE defaults
+
+**Default UAE Holidays:**
+- New Year's Day (January 1)
+- Commemoration Day (November 30)
+- UAE National Day (December 2-3)
+- Islamic holidays (dates set by HR when announced)
+
+## Database Tables Added
+
+### Migration 0022: Leave, Timesheet, Holiday, Geofence
+
+| Table | Description |
+|-------|-------------|
+| `leave_balances` | Employee leave entitlements and usage per year |
+| `leave_requests` | Leave request workflow |
+| `public_holidays` | UAE and company holidays |
+| `timesheets` | Monthly timesheet summary |
+| `geofences` | Location-based attendance validation |
+
+```bash
+# Run all migrations
+cd backend
+alembic upgrade head
+```
 
 ---
 
 *Last Updated: January 9, 2026*
-*Version: 2.0 - UAE Labor Law Compliant*
+*Version: 2.1 - Full Feature Release with Leave, Timesheet, Geofence, Holidays*
