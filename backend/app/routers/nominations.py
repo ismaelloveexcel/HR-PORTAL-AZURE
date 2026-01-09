@@ -15,14 +15,16 @@ from app.models import Employee, EoyNomination, ELIGIBLE_JOB_LEVELS
 from app.models.audit_log import AuditLog
 from app.models.notification import Notification
 from app.schemas.nomination import (
-    NominationCreate, NominationResponse, NominationUpdate,
+    NominationCreate, NominationResponse, NominationUpdate, NominationContentUpdate,
     EligibleEmployee, NominationListResponse, NominationStats, EligibleManager,
     VerifyManagerRequest, VerifyManagerResponse, NominationSubmitRequest,
     ManagerNominationStatus, NominationSettingsResponse, NominationSettingsUpdate,
-    ManagerProgress, ManagerProgressResponse, SendInvitationsRequest, SendInvitationsResponse
+    ManagerProgress, ManagerProgressResponse, SendInvitationsRequest, SendInvitationsResponse,
+    NominationReportEntry, ManagementReportResponse
 )
 from app.models.nomination_settings import NominationSettings
 from app.services.email_service import send_nomination_confirmation_email
+from app.auth.dependencies import require_role
 
 VERIFICATION_SECRET = os.environ.get("AUTH_SECRET_KEY", "nomination-verify-secret-key")
 TOKEN_EXPIRY_MINUTES = 30
@@ -641,9 +643,165 @@ async def review_nomination(
     )
 
 
+@router.patch(
+    "/{nomination_id}/content",
+    response_model=NominationResponse,
+    summary="Edit nomination content (HR/Admin only)",
+)
+async def edit_nomination_content(
+    nomination_id: int,
+    update: NominationContentUpdate,
+    role: str = Depends(require_role(["admin", "hr"])),
+    editor_id: int = Query(..., gt=0, description="ID of the editor (must be positive)"),
+    session: AsyncSession = Depends(get_session),
+):
+    """Allow HR/Admin to edit nomination justification, achievements, and impact description.
+    Only users with admin or hr role can access this endpoint."""
+    
+    editor = await session.get(Employee, editor_id)
+    if not editor:
+        raise HTTPException(status_code=400, detail="Invalid editor ID: employee not found")
+    
+    if editor.role not in ["admin", "hr"]:
+        raise HTTPException(status_code=403, detail="Only HR or Admin users can edit nominations")
+    
+    stmt = select(EoyNomination).where(EoyNomination.id == nomination_id)
+    result = await session.execute(stmt)
+    nomination = result.scalar_one_or_none()
+    
+    if not nomination:
+        raise HTTPException(status_code=404, detail="Nomination not found")
+    
+    old_values = {
+        "justification": nomination.justification,
+        "achievements": nomination.achievements,
+        "impact_description": nomination.impact_description
+    }
+    
+    if update.justification is not None:
+        nomination.justification = update.justification
+    if update.achievements is not None:
+        nomination.achievements = update.achievements
+    if update.impact_description is not None:
+        nomination.impact_description = update.impact_description
+    
+    audit_details = json.dumps({
+        "nomination_id": nomination_id,
+        "old_values": old_values,
+        "new_values": {
+            "justification": nomination.justification,
+            "achievements": nomination.achievements,
+            "impact_description": nomination.impact_description
+        }
+    })
+    audit_log = AuditLog(
+        action="EOY_NOMINATION_CONTENT_EDITED",
+        entity="eoy_nominations",
+        entity_id=nomination_id,
+        user_id=str(editor_id),
+        details=audit_details
+    )
+    session.add(audit_log)
+    
+    await session.commit()
+    await session.refresh(nomination)
+    
+    nominee = await session.get(Employee, nomination.nominee_id)
+    nominator = await session.get(Employee, nomination.nominator_id)
+    reviewer = await session.get(Employee, nomination.reviewed_by) if nomination.reviewed_by else None
+    
+    return NominationResponse(
+        id=nomination.id,
+        nominee_id=nomination.nominee_id,
+        nominee_name=nominee.name if nominee else "Unknown",
+        nominee_job_title=nominee.job_title if nominee else None,
+        nominee_department=nominee.department if nominee else None,
+        nominator_id=nomination.nominator_id,
+        nominator_name=nominator.name if nominator else "Unknown",
+        nomination_year=nomination.nomination_year,
+        justification=nomination.justification,
+        achievements=nomination.achievements,
+        impact_description=nomination.impact_description,
+        status=nomination.status,
+        reviewed_by=nomination.reviewed_by,
+        reviewer_name=reviewer.name if reviewer else None,
+        reviewed_at=nomination.reviewed_at,
+        review_notes=nomination.review_notes,
+        created_at=nomination.created_at
+    )
+
+
 # ============================================
 # ADMIN ENDPOINTS
 # ============================================
+
+@router.get(
+    "/admin/report",
+    response_model=ManagementReportResponse,
+    summary="Generate management report for final selection",
+)
+async def get_management_report(
+    year: int = Query(default=None, description="Nomination year (defaults to current year)"),
+    session: AsyncSession = Depends(get_session),
+):
+    """Generate a comprehensive report of nominations for management final selection.
+    Includes shortlisted candidates ranked by status, with all details needed for decision-making."""
+    if year is None:
+        year = datetime.now().year
+    
+    stmt = select(EoyNomination).where(
+        EoyNomination.nomination_year == year
+    ).order_by(
+        EoyNomination.status.desc(),
+        EoyNomination.created_at
+    )
+    result = await session.execute(stmt)
+    nominations = result.scalars().all()
+    
+    entries = []
+    shortlisted_first = sorted(nominations, key=lambda n: (
+        0 if n.status == 'winner' else (1 if n.status == 'shortlisted' else 2),
+        n.created_at
+    ))
+    
+    for rank, nom in enumerate(shortlisted_first, 1):
+        nominee = await session.get(Employee, nom.nominee_id)
+        nominator = await session.get(Employee, nom.nominator_id)
+        reviewer = await session.get(Employee, nom.reviewed_by) if nom.reviewed_by else None
+        
+        years_of_service = None
+        if nominee and nominee.joining_date:
+            years_of_service = (datetime.now().date() - nominee.joining_date).days // 365
+        
+        entries.append(NominationReportEntry(
+            id=nom.id,
+            rank=rank,
+            nominee_name=nominee.name if nominee else "Unknown",
+            nominee_job_title=nominee.job_title if nominee else None,
+            nominee_department=nominee.department if nominee else None,
+            nominee_entity=nominee.function if nominee else None,
+            years_of_service=years_of_service,
+            nominator_name=nominator.name if nominator else "Unknown",
+            nominator_job_title=nominator.job_title if nominator else None,
+            justification=nom.justification,
+            achievements=nom.achievements,
+            impact_description=nom.impact_description,
+            status=nom.status,
+            review_notes=nom.review_notes,
+            reviewer_name=reviewer.name if reviewer else None,
+            created_at=nom.created_at
+        ))
+    
+    shortlisted_count = sum(1 for e in entries if e.status in ('shortlisted', 'winner'))
+    
+    return ManagementReportResponse(
+        year=year,
+        generated_at=datetime.now(),
+        total_nominations=len(entries),
+        shortlisted_count=shortlisted_count,
+        entries=entries
+    )
+
 
 @router.get(
     "/admin/settings",

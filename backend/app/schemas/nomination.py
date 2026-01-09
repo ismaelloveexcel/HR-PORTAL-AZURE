@@ -37,6 +37,42 @@ class NominationUpdate(BaseModel):
     review_notes: Optional[str] = Field(None, max_length=1000)
 
 
+class NominationContentUpdate(BaseModel):
+    """Schema for HR/Admin to edit nomination content"""
+    justification: Optional[str] = Field(None, min_length=50, max_length=2000, description="Why this employee deserves the award")
+    achievements: Optional[str] = Field(None, max_length=1500, description="Key achievements")
+    impact_description: Optional[str] = Field(None, max_length=1500, description="Impact on team/organization")
+
+
+class NominationReportEntry(BaseModel):
+    """Entry for management selection report"""
+    id: int
+    rank: int
+    nominee_name: str
+    nominee_job_title: Optional[str]
+    nominee_department: Optional[str]
+    nominee_entity: Optional[str]
+    years_of_service: Optional[int]
+    nominator_name: str
+    nominator_job_title: Optional[str]
+    justification: str
+    achievements: Optional[str]
+    impact_description: Optional[str]
+    status: str
+    review_notes: Optional[str]
+    reviewer_name: Optional[str]
+    created_at: datetime
+
+
+class ManagementReportResponse(BaseModel):
+    """Management report for final selection"""
+    year: int
+    generated_at: datetime
+    total_nominations: int
+    shortlisted_count: int
+    entries: List[NominationReportEntry]
+
+
 class EligibleEmployee(BaseModel):
     id: int
     employee_id: str
