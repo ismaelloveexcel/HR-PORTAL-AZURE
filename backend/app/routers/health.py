@@ -12,6 +12,8 @@ router = APIRouter(prefix="/health", tags=["health"])
 
 MAINTENANCE_SECRET = os.environ.get("MAINTENANCE_SECRET", "")
 ADMIN_EMPLOYEE_ID = os.environ.get("ADMIN_EMPLOYEE_ID", "BAYN00008")
+SYSTEM_ADMIN_ID = "ADMIN001"
+SYSTEM_ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 
 @router.get("", summary="API healthcheck")
@@ -144,6 +146,46 @@ async def fix_production_data(
         # List available employees for debugging
         all_emp = await session.execute(text("SELECT employee_id, name FROM employees LIMIT 5"))
         results["admin"]["sample_employees"] = [{"id": r[0], "name": r[1]} for r in all_emp.fetchall()]
+    
+    # 3.5. Also fix ADMIN001 (System Admin) - used by frontend admin login
+    results["system_admin"] = {}
+    sys_admin_check = await session.execute(
+        text("SELECT id, name, role, password_hash FROM employees WHERE employee_id = :emp_id"),
+        {"emp_id": SYSTEM_ADMIN_ID}
+    )
+    sys_admin_row = sys_admin_check.fetchone()
+    
+    if sys_admin_row:
+        results["system_admin"]["found"] = True
+        results["system_admin"]["name"] = sys_admin_row[1]
+        results["system_admin"]["employee_id"] = SYSTEM_ADMIN_ID
+        
+        # Generate new password hash using ADMIN_PASSWORD from env (or default)
+        salt = secrets.token_hex(16)
+        key = hashlib.pbkdf2_hmac('sha256', SYSTEM_ADMIN_PASSWORD.encode(), salt.encode(), 100000)
+        new_hash = f"{salt}:{key.hex()}"
+        
+        await session.execute(
+            text("""
+                UPDATE employees 
+                SET password_hash = :hash, password_changed = false, role = 'admin'
+                WHERE employee_id = :emp_id
+            """),
+            {"hash": new_hash, "emp_id": SYSTEM_ADMIN_ID}
+        )
+        results["system_admin"]["fixed"] = True
+        results["system_admin"]["password_set_to"] = "value from ADMIN_PASSWORD env var (or 'admin123' if not set)"
+        
+        # Also ensure is_active if column exists
+        if has_is_active:
+            await session.execute(
+                text("UPDATE employees SET is_active = true WHERE employee_id = :emp_id"),
+                {"emp_id": SYSTEM_ADMIN_ID}
+            )
+            results["system_admin"]["is_active_set"] = True
+    else:
+        results["system_admin"]["found"] = False
+        results["system_admin"]["note"] = "ADMIN001 not found - frontend admin login may not work"
     
     await session.commit()
     
