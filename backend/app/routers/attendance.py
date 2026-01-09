@@ -199,7 +199,14 @@ def calculate_hours_with_employee_settings(
 
 
 def calculate_hours(clock_in: datetime, clock_out: datetime, break_minutes: int = 0) -> tuple:
-    """Calculate total, regular, and overtime hours (legacy function for backward compatibility)."""
+    """Calculate total, regular, and overtime hours.
+    
+    DEPRECATED: This legacy function does not consider employee-specific work settings.
+    Use calculate_hours_with_employee_settings() instead for proper UAE Labor Law compliance
+    and employee work schedule integration.
+    
+    Kept for backward compatibility only.
+    """
     if not clock_in or not clock_out:
         return None, None, None
     
@@ -852,6 +859,9 @@ async def approve_correction(
     await session.refresh(record)
     
     return build_response(record, emp_name)
+
+
+@router.get("/my-records", response_model=List[AttendanceResponse])
 async def get_my_records(
     start_date: Optional[date] = Query(None),
     end_date: Optional[date] = Query(None),
