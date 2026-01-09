@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, and_
 from typing import Optional, List
@@ -73,6 +74,10 @@ COLUMN_MAPPING = {
 }
 
 
+# =============================================================================
+# PYDANTIC SCHEMAS - Define all request/response models first
+# =============================================================================
+
 class CensusRecordUpdate(BaseModel):
     first_name: Optional[str] = None
     second_name: Optional[str] = None
@@ -119,6 +124,35 @@ class CensusRecordUpdate(BaseModel):
     height: Optional[str] = None
     weight: Optional[str] = None
 
+
+class BatchUpdateItem(BaseModel):
+    id: int
+    first_name: Optional[str] = None
+    second_name: Optional[str] = None
+    family_name: Optional[str] = None
+    full_name: Optional[str] = None
+    dob: Optional[str] = None
+    gender: Optional[str] = None
+    relation: Optional[str] = None
+    staff_id: Optional[str] = None
+    category: Optional[str] = None
+    nationality: Optional[str] = None
+    effective_date: Optional[str] = None
+    emirates_id_number: Optional[str] = None
+    uid_number: Optional[str] = None
+    gdrfa_file_number: Optional[str] = None
+    passport_number: Optional[str] = None
+    mobile_no: Optional[str] = None
+    sr_no: Optional[str] = None
+
+
+class BatchUpdateRequest(BaseModel):
+    updates: List[BatchUpdateItem]
+
+
+# =============================================================================
+# STATIC ROUTES - Must come BEFORE parameterized routes to avoid conflicts
+# =============================================================================
 
 @router.get("")
 async def list_census_records(
@@ -218,114 +252,96 @@ async def get_census_stats(db: AsyncSession = Depends(get_session)):
     }
 
 
-@router.get("/{record_id}")
-async def get_census_record(record_id: int, db: AsyncSession = Depends(get_session)):
-    result = await db.execute(
-        select(InsuranceCensusRecord).where(InsuranceCensusRecord.id == record_id)
-    )
-    record = result.scalar_one_or_none()
-    if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
-    return record.to_dict()
-
-
-@router.put("/{record_id}")
-async def update_census_record(
-    record_id: int,
-    data: CensusRecordUpdate,
+@router.get("/export/excel")
+async def export_census_to_excel(
     db: AsyncSession = Depends(get_session),
-    updated_by: str = Query("system"),
+    entity: Optional[str] = Query(None),
+    insurance_type: Optional[str] = Query(None),
 ):
-    result = await db.execute(
-        select(InsuranceCensusRecord).where(InsuranceCensusRecord.id == record_id)
+    query = select(InsuranceCensusRecord)
+    if entity:
+        query = query.where(InsuranceCensusRecord.entity == entity)
+    if insurance_type:
+        query = query.where(InsuranceCensusRecord.insurance_type == insurance_type)
+    
+    result = await db.execute(query)
+    records = result.scalars().all()
+    
+    data = []
+    for r in records:
+        data.append({
+            'SR NO.': r.sr_no,
+            'FIRST NAME': r.first_name,
+            'SECOND NAME': r.second_name,
+            'FAMILY NAME': r.family_name,
+            'FULL NAME': r.full_name,
+            'DOB': r.dob,
+            'GENDER': r.gender,
+            'MARITAL STATUS': r.marital_status,
+            'MATERNITY COVERAGE': r.maternity_coverage,
+            'RELATION': r.relation,
+            'STAFF ID': r.staff_id,
+            'EMPLOYEE CARD NUMBER': r.employee_card_number,
+            'CATEGORY': r.category,
+            'SUB-GROUP NAME': r.sub_group_name,
+            'BILLING ENTITY': r.billing_entity,
+            'DEPARTMENT': r.department,
+            'NATIONALITY': r.nationality,
+            'EFFECTIVE DATE': r.effective_date,
+            'EMIRATES ID NUMBER': r.emirates_id_number,
+            'EMIRATES ID APP NO': r.emirates_id_application_number,
+            'BIRTH NOTIFICATION NO': r.birth_notification_no,
+            'UID NUMBER': r.uid_number,
+            'GDRFA FILE NUMBER': r.gdrfa_file_number,
+            'COUNTRY OF RESIDENCY': r.country_of_residency,
+            'MEMBER TYPE': r.member_type,
+            'OCCUPATION': r.occupation,
+            'EMIRATE OF RESIDENCY': r.emirate_of_residency,
+            'RESIDENCY LOCATION': r.residency_location,
+            'EMIRATE OF WORK': r.emirate_of_work,
+            'WORK LOCATION': r.work_location,
+            'EMIRATE OF VISA': r.emirate_of_visa,
+            'PASSPORT NUMBER': r.passport_number,
+            'SALARY': r.salary,
+            'MOBILE NO': r.mobile_no,
+            'PERSONAL EMAIL': r.personal_email,
+            'COMPLETENESS %': r.completeness_pct,
+            'MISSING FIELDS': ', '.join(r.missing_fields or []),
+        })
+    
+    df = pd.DataFrame(data)
+    output = io.BytesIO()
+    df.to_excel(output, index=False, engine='openpyxl')
+    output.seek(0)
+    
+    filename = f"census_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
-    record = result.scalar_one_or_none()
-    if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
-    
-    update_data = data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(record, field, value)
-    
-    record.updated_by = updated_by
-    record.updated_at = datetime.utcnow()
-    record.calculate_completeness()
-    
-    if record.staff_id:
-        emp_result = await db.execute(
-            select(Employee).where(Employee.employee_id == record.staff_id)
-        )
-        emp = emp_result.scalar_one_or_none()
-        if emp:
-            record.employee_id = emp.id
-    
-    await db.commit()
-    await db.refresh(record)
-    return record.to_dict()
 
 
-class BatchUpdateItem(BaseModel):
-    id: int
-    first_name: Optional[str] = None
-    second_name: Optional[str] = None
-    family_name: Optional[str] = None
-    full_name: Optional[str] = None
-    dob: Optional[str] = None
-    gender: Optional[str] = None
-    relation: Optional[str] = None
-    staff_id: Optional[str] = None
-    category: Optional[str] = None
-    nationality: Optional[str] = None
-    effective_date: Optional[str] = None
-    emirates_id_number: Optional[str] = None
-    uid_number: Optional[str] = None
-    gdrfa_file_number: Optional[str] = None
-    passport_number: Optional[str] = None
-    mobile_no: Optional[str] = None
-    sr_no: Optional[str] = None
-
-
-class BatchUpdateRequest(BaseModel):
-    updates: List[BatchUpdateItem]
-
-
-@router.put("/batch-update")
-async def batch_update_census_records(
-    data: BatchUpdateRequest,
-    db: AsyncSession = Depends(get_session),
-    updated_by: str = Query("system"),
-):
-    updated_count = 0
-    
-    for item in data.updates:
-        result = await db.execute(
-            select(InsuranceCensusRecord).where(InsuranceCensusRecord.id == item.id)
-        )
-        record = result.scalar_one_or_none()
-        if not record:
-            continue
-        
-        update_data = item.model_dump(exclude_unset=True, exclude={"id"})
-        for field, value in update_data.items():
-            if value is not None:
-                setattr(record, field, value)
-        
-        record.updated_by = updated_by
-        record.updated_at = datetime.utcnow()
-        record.calculate_completeness()
-        
-        if record.staff_id:
-            emp_result = await db.execute(
-                select(Employee).where(Employee.employee_id == record.staff_id)
-            )
-            emp = emp_result.scalar_one_or_none()
-            if emp:
-                record.employee_id = emp.id
-        
-        updated_count += 1
-    
-    await db.commit()
-    return {"updated": updated_count}
+@router.get("/batches/list")
+async def list_import_batches(db: AsyncSession = Depends(get_session)):
+    result = await db.execute(
+        select(InsuranceCensusImportBatch).order_by(InsuranceCensusImportBatch.imported_at.desc())
+    )
+    batches = result.scalars().all()
+    return [
+        {
+            "id": b.id,
+            "batch_id": b.batch_id,
+            "filename": b.filename,
+            "entity": b.entity,
+            "insurance_type": b.insurance_type,
+            "total_records": b.total_records,
+            "linked_records": b.linked_records,
+            "unlinked_records": b.unlinked_records,
+            "imported_at": b.imported_at.isoformat() if b.imported_at else None,
+        }
+        for b in batches
+    ]
 
 
 @router.post("/import")
@@ -417,75 +433,93 @@ async def import_census_from_excel(
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
 
 
-@router.get("/export/excel")
-async def export_census_to_excel(
+@router.put("/batch-update")
+async def batch_update_census_records(
+    data: BatchUpdateRequest,
     db: AsyncSession = Depends(get_session),
-    entity: Optional[str] = Query(None),
-    insurance_type: Optional[str] = Query(None),
+    updated_by: str = Query("system"),
 ):
-    query = select(InsuranceCensusRecord)
-    if entity:
-        query = query.where(InsuranceCensusRecord.entity == entity)
-    if insurance_type:
-        query = query.where(InsuranceCensusRecord.insurance_type == insurance_type)
+    updated_count = 0
     
-    result = await db.execute(query)
-    records = result.scalars().all()
+    for item in data.updates:
+        result = await db.execute(
+            select(InsuranceCensusRecord).where(InsuranceCensusRecord.id == item.id)
+        )
+        record = result.scalar_one_or_none()
+        if not record:
+            continue
+        
+        update_data = item.model_dump(exclude_unset=True, exclude={"id"})
+        for field, value in update_data.items():
+            if value is not None:
+                setattr(record, field, value)
+        
+        record.updated_by = updated_by
+        record.updated_at = datetime.utcnow()
+        record.calculate_completeness()
+        
+        if record.staff_id:
+            emp_result = await db.execute(
+                select(Employee).where(Employee.employee_id == record.staff_id)
+            )
+            emp = emp_result.scalar_one_or_none()
+            if emp:
+                record.employee_id = emp.id
+        
+        updated_count += 1
     
-    data = []
-    for r in records:
-        data.append({
-            'SR NO.': r.sr_no,
-            'FIRST NAME': r.first_name,
-            'SECOND NAME': r.second_name,
-            'FAMILY NAME': r.family_name,
-            'FULL NAME': r.full_name,
-            'DOB': r.dob,
-            'GENDER': r.gender,
-            'MARITAL STATUS': r.marital_status,
-            'MATERNITY COVERAGE': r.maternity_coverage,
-            'RELATION': r.relation,
-            'STAFF ID': r.staff_id,
-            'EMPLOYEE CARD NUMBER': r.employee_card_number,
-            'CATEGORY': r.category,
-            'SUB-GROUP NAME': r.sub_group_name,
-            'BILLING ENTITY': r.billing_entity,
-            'DEPARTMENT': r.department,
-            'NATIONALITY': r.nationality,
-            'EFFECTIVE DATE': r.effective_date,
-            'EMIRATES ID NUMBER': r.emirates_id_number,
-            'EMIRATES ID APP NO': r.emirates_id_application_number,
-            'BIRTH NOTIFICATION NO': r.birth_notification_no,
-            'UID NUMBER': r.uid_number,
-            'GDRFA FILE NUMBER': r.gdrfa_file_number,
-            'COUNTRY OF RESIDENCY': r.country_of_residency,
-            'MEMBER TYPE': r.member_type,
-            'OCCUPATION': r.occupation,
-            'EMIRATE OF RESIDENCY': r.emirate_of_residency,
-            'RESIDENCY LOCATION': r.residency_location,
-            'EMIRATE OF WORK': r.emirate_of_work,
-            'WORK LOCATION': r.work_location,
-            'EMIRATE OF VISA': r.emirate_of_visa,
-            'PASSPORT NUMBER': r.passport_number,
-            'SALARY': r.salary,
-            'MOBILE NO': r.mobile_no,
-            'PERSONAL EMAIL': r.personal_email,
-            'COMPLETENESS %': r.completeness_pct,
-            'MISSING FIELDS': ', '.join(r.missing_fields or []),
-        })
-    
-    df = pd.DataFrame(data)
-    output = io.BytesIO()
-    df.to_excel(output, index=False, engine='openpyxl')
-    output.seek(0)
-    
-    from fastapi.responses import StreamingResponse
-    filename = f"census_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return StreamingResponse(
-        output,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    await db.commit()
+    return {"updated": updated_count}
+
+
+# =============================================================================
+# PARAMETERIZED ROUTES - Must come AFTER static routes to avoid conflicts
+# =============================================================================
+
+@router.get("/{record_id}")
+async def get_census_record(record_id: int, db: AsyncSession = Depends(get_session)):
+    result = await db.execute(
+        select(InsuranceCensusRecord).where(InsuranceCensusRecord.id == record_id)
     )
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    return record.to_dict()
+
+
+@router.put("/{record_id}")
+async def update_census_record(
+    record_id: int,
+    data: CensusRecordUpdate,
+    db: AsyncSession = Depends(get_session),
+    updated_by: str = Query("system"),
+):
+    result = await db.execute(
+        select(InsuranceCensusRecord).where(InsuranceCensusRecord.id == record_id)
+    )
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(record, field, value)
+    
+    record.updated_by = updated_by
+    record.updated_at = datetime.utcnow()
+    record.calculate_completeness()
+    
+    if record.staff_id:
+        emp_result = await db.execute(
+            select(Employee).where(Employee.employee_id == record.staff_id)
+        )
+        emp = emp_result.scalar_one_or_none()
+        if emp:
+            record.employee_id = emp.id
+    
+    await db.commit()
+    await db.refresh(record)
+    return record.to_dict()
 
 
 @router.delete("/{record_id}")
@@ -500,25 +534,3 @@ async def delete_census_record(record_id: int, db: AsyncSession = Depends(get_se
     await db.delete(record)
     await db.commit()
     return {"success": True, "deleted_id": record_id}
-
-
-@router.get("/batches/list")
-async def list_import_batches(db: AsyncSession = Depends(get_session)):
-    result = await db.execute(
-        select(InsuranceCensusImportBatch).order_by(InsuranceCensusImportBatch.imported_at.desc())
-    )
-    batches = result.scalars().all()
-    return [
-        {
-            "id": b.id,
-            "batch_id": b.batch_id,
-            "filename": b.filename,
-            "entity": b.entity,
-            "insurance_type": b.insurance_type,
-            "total_records": b.total_records,
-            "linked_records": b.linked_records,
-            "unlinked_records": b.unlinked_records,
-            "imported_at": b.imported_at.isoformat() if b.imported_at else None,
-        }
-        for b in batches
-    ]
