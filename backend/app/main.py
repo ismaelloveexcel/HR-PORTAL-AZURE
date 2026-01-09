@@ -70,6 +70,15 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def on_startup():
         logger.info("Application startup", extra={"env": settings.app_env})
+        
+        # Run startup migrations for data consistency
+        try:
+            from app.startup_migrations import run_startup_migrations
+            from app.database import AsyncSessionLocal
+            async with AsyncSessionLocal() as session:
+                await run_startup_migrations(session)
+        except Exception as e:
+            logger.error(f"Startup migrations failed: {e}")
 
     @app.on_event("shutdown")
     async def on_shutdown():
