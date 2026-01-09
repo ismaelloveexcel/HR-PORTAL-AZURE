@@ -450,12 +450,12 @@ export function NominationPass() {
           </div>
         )}
 
-        {/* Step: Select Nominee */}
-        {step === 'select-nominee' && (
+        {/* Step: Select Nominee - Org Chart Style */}
+        {step === 'select-nominee' && selectedManager && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">Select Employee to Nominate</h2>
-              <p className="text-sm text-gray-500">Choose a team member for Employee of the Year</p>
+              <h2 className="font-semibold text-gray-900">Your Team</h2>
+              <p className="text-sm text-gray-500">Select a team member to nominate for Employee of the Year</p>
             </div>
             
             {loading ? (
@@ -463,41 +463,80 @@ export function NominationPass() {
                 <div className="w-8 h-8 border-3 rounded-full animate-spin" style={{ borderColor: THEME_COLOR, borderTopColor: 'transparent' }} />
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
-                {eligibleEmployees.map(emp => (
-                  <button
-                    key={emp.id}
-                    onClick={() => handleNomineeSelect(emp)}
-                    disabled={emp.already_nominated}
-                    className={`w-full p-4 text-left flex items-center justify-between transition-colors ${
-                      emp.already_nominated ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-50'
-                    }`}
+              <div className="p-4">
+                {/* Manager at Top - Org Chart Head */}
+                <div className="flex flex-col items-center mb-4">
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg border-4 border-white shadow-lg"
+                    style={{ backgroundColor: THEME_COLOR }}
                   >
-                    <div className="flex items-center gap-3">
+                    {selectedManager.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <div className="text-center mt-2">
+                    <p className="font-semibold text-gray-900">{selectedManager.name}</p>
+                    <p className="text-xs text-gray-500">{selectedManager.job_title}</p>
+                    <span 
+                      className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-medium text-white"
+                      style={{ backgroundColor: THEME_COLOR }}
+                    >
+                      LINE MANAGER
+                    </span>
+                  </div>
+                  
+                  {/* Connecting Line */}
+                  <div className="w-0.5 h-6 bg-gray-300 mt-3"></div>
+                  
+                  {/* Horizontal Branch Line */}
+                  <div className="relative w-full max-w-xs">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-gray-300"></div>
+                  </div>
+                </div>
+                
+                {/* Team Members Grid */}
+                <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pt-2">
+                  {eligibleEmployees.map((emp, index) => (
+                    <button
+                      key={emp.id}
+                      onClick={() => handleNomineeSelect(emp)}
+                      disabled={emp.already_nominated}
+                      className={`relative flex flex-col items-center p-3 rounded-xl border-2 transition-all ${
+                        emp.already_nominated 
+                          ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200' 
+                          : 'hover:border-opacity-50 hover:shadow-md bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                      style={!emp.already_nominated ? { '--hover-border': THEME_COLOR } as any : {}}
+                    >
+                      {/* Vertical Line from Branch */}
+                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0.5 h-2 bg-gray-300"></div>
+                      
                       <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                        style={{ backgroundColor: THEME_COLOR }}
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm"
+                        style={{ backgroundColor: emp.already_nominated ? '#9ca3af' : THEME_COLOR }}
                       >
                         {emp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{emp.name}</p>
-                        <p className="text-xs text-gray-500">{emp.job_title}</p>
+                      <div className="text-center mt-2 w-full">
+                        <p className="font-medium text-gray-900 text-sm truncate">{emp.name}</p>
+                        <p className="text-[10px] text-gray-500 truncate">{emp.job_title}</p>
                       </div>
-                    </div>
-                    {emp.already_nominated ? (
-                      <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">
-                        Already Nominated
-                      </span>
-                    ) : (
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
+                      {emp.already_nominated && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium mt-1">
+                          Nominated
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                
                 {eligibleEmployees.length === 0 && !loading && (
                   <p className="text-center text-gray-500 py-8">No eligible team members found.</p>
+                )}
+                
+                {/* Team Count */}
+                {eligibleEmployees.length > 0 && (
+                  <p className="text-center text-xs text-gray-400 mt-4">
+                    {eligibleEmployees.length} team member{eligibleEmployees.length !== 1 ? 's' : ''} eligible for nomination
+                  </p>
                 )}
               </div>
             )}
