@@ -151,20 +151,34 @@ Main tables with migrations managed by Alembic:
 - Green neumorphic design (#22c55e theme) with 5-step progress indicator
 - Multi-step flow:
   1. Manager selects their name from list of eligible managers
-  2. Manager verifies identity via email or Employee ID
+  2. Manager verifies identity via email (6-digit code sent)
   3. Manager views eligible direct reports (Officer level or below only)
   4. Manager fills nomination form (min 50 character justification)
   5. Success confirmation with nomination summary
 - Security: Token-based verification system
-  - POST `/api/nominations/pass/verify` validates email/employee ID, returns 15-min token
+  - POST `/api/nominations/pass/verify` validates email only, returns 30-min token
   - POST `/api/nominations/pass/submit` requires valid token (single-use, invalidated after submission)
   - No legacy unsecured endpoints exist
 - Eligibility: Only employees at Officer, Coordinator, Skilled Labour, or Non Skilled Labour levels can be nominated
 - Duplicate prevention: One nomination per employee per year (unique constraint on nominee_id + nomination_year)
-- Database table: `eoy_nominations` with status workflow (pending → shortlisted → winner/not_selected)
+- Database tables: `eoy_nominations` (status workflow: pending → shortlisted → winner/not_selected), `nomination_settings` (admin configuration)
 - Line manager relationships stored in `employees` table (line_manager_id, line_manager_name, line_manager_email)
 - Components: `frontend/src/components/NominationPass/NominationPass.tsx`
 - API Routes: `backend/app/routers/nominations.py`
+
+**EOY Admin Panel** (Admin → EOY Award tab):
+- Header with year, status badge (OPEN/CLOSED), and toggle button
+- Four tabs: Overview, Managers, Nominations, Settings
+- **Overview tab**: Statistics cards (Total Managers, Submitted, Pending, Shortlisted), nomination link copy button, send invitations button
+- **Managers tab**: Track manager submission progress with columns (Manager, Department, Status, Nominee, Date)
+- **Nominations tab**: Review all nominations with shortlist/select winner actions
+- **Settings tab**: Configure deadline, email subject, email body template
+- API endpoints:
+  - GET/PUT `/api/nominations/admin/settings` - nomination period configuration
+  - GET `/api/nominations/admin/manager-progress` - manager submission tracking
+  - POST `/api/nominations/{id}/review` - shortlist/select winner actions
+- Components: `frontend/src/components/EOYAdminPanel/EOYAdminPanel.tsx`
+- Model: `backend/app/models/nomination_settings.py`
 
 ### Development Setup
 

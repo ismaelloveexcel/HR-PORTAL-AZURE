@@ -572,10 +572,15 @@ async def get_all_nominations(
 async def review_nomination(
     nomination_id: int,
     update: NominationUpdate,
-    reviewer_id: int = Query(..., description="ID of the reviewer"),
+    reviewer_id: int = Query(..., gt=0, description="ID of the reviewer (must be positive)"),
     session: AsyncSession = Depends(get_session),
 ):
     """Update nomination status during committee review"""
+    # Validate reviewer exists
+    reviewer = await session.get(Employee, reviewer_id)
+    if not reviewer:
+        raise HTTPException(status_code=400, detail="Invalid reviewer ID: employee not found")
+    
     stmt = select(EoyNomination).where(EoyNomination.id == nomination_id)
     result = await session.execute(stmt)
     nomination = result.scalar_one_or_none()

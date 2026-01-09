@@ -256,6 +256,7 @@ class LoginResponse(BaseModel):
     access_token: str = Field(..., description="JWT access token")
     token_type: str = Field(default="bearer", description="Token type")
     requires_password_change: bool = Field(..., description="Whether user must change password")
+    id: int = Field(..., description="Database ID of the employee")
     employee_id: str = Field(..., description="Employee ID")
     name: str = Field(..., description="Employee name")
     role: str = Field(..., description="User role")

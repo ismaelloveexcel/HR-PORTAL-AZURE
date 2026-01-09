@@ -133,6 +133,7 @@ class EmployeeService:
             access_token=token,
             token_type="bearer",
             requires_password_change=not employee.password_changed,
+            id=employee.id,
             employee_id=employee.employee_id,
             name=employee.name,
             role=employee.role,
