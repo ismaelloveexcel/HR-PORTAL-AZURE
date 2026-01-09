@@ -85,9 +85,22 @@ def create_app() -> FastAPI:
         logger.info("Application shutdown")
 
     # Serve static files in production (frontend build)
-    static_dir = Path(__file__).parent.parent / "static"
-    if static_dir.exists():
-        app.mount("/assets", StaticFiles(directory=str(static_dir / "assets")), name="assets")
+    # Check multiple possible locations for the frontend build
+    possible_static_dirs = [
+        Path(__file__).parent.parent / "static",  # backend/static
+        Path(__file__).parent.parent.parent / "frontend" / "dist",  # frontend/dist
+    ]
+    
+    static_dir = None
+    for dir_path in possible_static_dirs:
+        if dir_path.exists() and (dir_path / "index.html").exists():
+            static_dir = dir_path
+            break
+    
+    if static_dir:
+        assets_dir = static_dir / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
         
         @app.get("/{full_path:path}")
         async def serve_spa(full_path: str):
