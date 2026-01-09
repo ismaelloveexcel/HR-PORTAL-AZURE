@@ -243,13 +243,21 @@ export function NominationPass() {
 
   const getStepLabel = () => {
     switch (step) {
-      case 'select-manager': return 'Select Your Name'
-      case 'verify': return 'Verify Identity'
-      case 'already-nominated': return 'Already Submitted'
-      case 'select-nominee': return 'Select Nominee'
-      case 'form': return 'Submit Justification'
-      case 'success': return 'Nomination Complete'
-      default: return 'Nomination'
+      case 'select-manager': return 'Selection'
+      case 'verify': return 'Verification'
+      case 'already-nominated': return 'Submission'
+      case 'select-nominee': return 'Nomination'
+      case 'form': return 'Nomination'
+      case 'success': return 'Submission'
+      default: return 'Access'
+    }
+  }
+
+  const getStatusLabel = () => {
+    switch (step) {
+      case 'success': return 'Completed'
+      case 'already-nominated': return 'Completed'
+      default: return 'In Progress'
     }
   }
 
@@ -307,7 +315,7 @@ export function NominationPass() {
                   </div>
                   <div>
                     <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">Status</p>
-                    <p className="text-[11px] sm:text-xs font-semibold text-gray-700">{step === 'success' ? 'Complete' : 'In Progress'}</p>
+                    <p className="text-[11px] sm:text-xs font-semibold text-gray-700">{getStatusLabel()}</p>
                   </div>
                 </div>
               </div>
