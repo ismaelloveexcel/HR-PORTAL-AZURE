@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import os
 import secrets
 from datetime import datetime, timedelta
@@ -11,11 +12,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.models import Employee, EoyNomination, ELIGIBLE_JOB_LEVELS
+from app.models.audit_log import AuditLog
+from app.models.notification import Notification
 from app.schemas.nomination import (
     NominationCreate, NominationResponse, NominationUpdate,
     EligibleEmployee, NominationListResponse, NominationStats, EligibleManager,
-    VerifyManagerRequest, VerifyManagerResponse, NominationSubmitRequest
+    VerifyManagerRequest, VerifyManagerResponse, NominationSubmitRequest,
+    ManagerNominationStatus
 )
+from app.services.email_service import send_nomination_confirmation_email
 
 VERIFICATION_SECRET = os.environ.get("AUTH_SECRET_KEY", "nomination-verify-secret-key")
 TOKEN_EXPIRY_MINUTES = 15
@@ -167,6 +172,71 @@ def check_eligible_job_level(job_title: str | None) -> bool:
 
 
 @router.get(
+    "/pass/status/{manager_id}",
+    response_model=ManagerNominationStatus,
+    summary="Check if manager has already submitted their nomination",
+)
+async def get_manager_nomination_status(
+    manager_id: int,
+    year: int = Query(default=None, description="Nomination year (defaults to current year)"),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Check if a manager has already submitted their one allowed nomination for the year.
+    Returns nomination details if already submitted.
+    """
+    if year is None:
+        year = datetime.now().year
+    
+    # Check for existing nomination by this manager for this year
+    stmt = select(EoyNomination).where(
+        and_(
+            EoyNomination.nominator_id == manager_id,
+            EoyNomination.nomination_year == year
+        )
+    )
+    result = await session.execute(stmt)
+    existing_nomination = result.scalar_one_or_none()
+    
+    if existing_nomination:
+        nominee = await session.get(Employee, existing_nomination.nominee_id)
+        nominator = await session.get(Employee, existing_nomination.nominator_id)
+        reviewer = await session.get(Employee, existing_nomination.reviewed_by) if existing_nomination.reviewed_by else None
+        
+        nomination_response = NominationResponse(
+            id=existing_nomination.id,
+            nominee_id=existing_nomination.nominee_id,
+            nominee_name=nominee.name if nominee else "Unknown",
+            nominee_job_title=nominee.job_title if nominee else None,
+            nominee_department=nominee.department if nominee else None,
+            nominator_id=existing_nomination.nominator_id,
+            nominator_name=nominator.name if nominator else "Unknown",
+            nomination_year=existing_nomination.nomination_year,
+            justification=existing_nomination.justification,
+            achievements=existing_nomination.achievements,
+            impact_description=existing_nomination.impact_description,
+            status=existing_nomination.status,
+            reviewed_by=existing_nomination.reviewed_by,
+            reviewer_name=reviewer.name if reviewer else None,
+            reviewed_at=existing_nomination.reviewed_at,
+            review_notes=existing_nomination.review_notes,
+            created_at=existing_nomination.created_at
+        )
+        
+        return ManagerNominationStatus(
+            has_nominated=True,
+            nomination=nomination_response,
+            can_nominate=False
+        )
+    
+    return ManagerNominationStatus(
+        has_nominated=False,
+        nomination=None,
+        can_nominate=True
+    )
+
+
+@router.get(
     "/eligible-employees/{manager_id}",
     response_model=List[EligibleEmployee],
     summary="Get employees eligible for nomination by this manager",
@@ -234,7 +304,8 @@ async def submit_nomination_secure(
     - Valid verification token
     - Nominee is in nominator's team
     - Nominee is at Officer level or below
-    - No duplicate nomination for same year
+    - Nominee has not already been nominated this year
+    - Manager has not already submitted their one nomination for the year (only 1 allowed)
     """
     nominator_id = validate_verification_token(request.verification_token)
     if nominator_id is None:
@@ -264,17 +335,32 @@ async def submit_nomination_secure(
             detail="Only employees at Officer level or below can be nominated"
         )
     
-    existing_stmt = select(EoyNomination).where(
+    # Check if the nominee has already been nominated by anyone this year
+    existing_nominee_stmt = select(EoyNomination).where(
         and_(
             EoyNomination.nominee_id == request.nominee_id,
             EoyNomination.nomination_year == year
         )
     )
-    existing_result = await session.execute(existing_stmt)
-    if existing_result.scalar_one_or_none():
+    existing_nominee_result = await session.execute(existing_nominee_stmt)
+    if existing_nominee_result.scalar_one_or_none():
         raise HTTPException(
             status_code=409,
             detail="This employee has already been nominated for this year"
+        )
+    
+    # Check if this manager has already submitted their one nomination for the year
+    existing_nominator_stmt = select(EoyNomination).where(
+        and_(
+            EoyNomination.nominator_id == nominator_id,
+            EoyNomination.nomination_year == year
+        )
+    )
+    existing_nominator_result = await session.execute(existing_nominator_stmt)
+    if existing_nominator_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=409,
+            detail="You have already submitted your nomination for this year. Only 1 nomination is allowed per manager."
         )
     
     nominator_stmt = select(Employee).where(Employee.id == nominator_id)
@@ -292,13 +378,51 @@ async def submit_nomination_secure(
     )
     
     session.add(new_nomination)
-    await session.commit()
-    await session.refresh(new_nomination)
+    await session.flush()  # Flush to get the nomination ID without committing
     
     invalidate_token(request.verification_token)
     
-    if nominator and nominator.line_manager_email:
-        pass
+    # Create audit log for the nomination (same transaction)
+    audit_details = json.dumps({
+        "nominee_id": nominee.id,
+        "nominee_name": nominee.name,
+        "nomination_year": year,
+        "justification_length": len(request.justification)
+    })
+    audit_log = AuditLog(
+        action="EOY_NOMINATION_SUBMITTED",
+        entity="eoy_nominations",
+        entity_id=new_nomination.id,
+        user_id=str(nominator_id),
+        details=audit_details
+    )
+    session.add(audit_log)
+    
+    # Create notification for the manager with link to view/revise (same transaction)
+    nomination_url = f"/nomination-pass?view={new_nomination.id}"
+    notification = Notification(
+        user_id=str(nominator_id),
+        title="EOY Nomination Submitted",
+        message=f"Your nomination of {nominee.name} for Employee of the Year {year} has been submitted successfully. Click to view details.",
+        type="eoy_nomination",
+        link=nomination_url,
+        is_read=False
+    )
+    session.add(notification)
+    
+    # Commit all changes atomically
+    await session.commit()
+    await session.refresh(new_nomination)
+    
+    # Send confirmation email to manager (async, non-blocking)
+    if nominator and nominator.email:
+        await send_nomination_confirmation_email(
+            manager_email=nominator.email,
+            manager_name=nominator.name,
+            nominee_name=nominee.name,
+            nomination_year=year,
+            nomination_id=new_nomination.id
+        )
     
     return NominationResponse(
         id=new_nomination.id,
@@ -458,11 +582,29 @@ async def review_nomination(
     if not nomination:
         raise HTTPException(status_code=404, detail="Nomination not found")
     
+    old_status = nomination.status
     nomination.status = update.status
     nomination.review_notes = update.review_notes
     nomination.reviewed_by = reviewer_id
     nomination.reviewed_at = datetime.now()
     
+    # Create audit log for the review action (same transaction)
+    audit_details = json.dumps({
+        "nomination_id": nomination_id,
+        "old_status": old_status,
+        "new_status": update.status,
+        "review_notes": update.review_notes
+    })
+    audit_log = AuditLog(
+        action="EOY_NOMINATION_REVIEWED",
+        entity="eoy_nominations",
+        entity_id=nomination_id,
+        user_id=str(reviewer_id),
+        details=audit_details
+    )
+    session.add(audit_log)
+    
+    # Commit all changes atomically
     await session.commit()
     await session.refresh(nomination)
     
