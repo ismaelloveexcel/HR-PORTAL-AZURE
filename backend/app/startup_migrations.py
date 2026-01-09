@@ -18,6 +18,7 @@ async def run_startup_migrations(session: AsyncSession):
     try:
         await normalize_employment_status(session)
         await ensure_admin_access(session)
+        await backfill_line_manager_ids(session)
         await session.commit()
         logger.info("Startup migrations completed successfully")
     except Exception as e:
@@ -115,3 +116,68 @@ async def ensure_admin_access(session: AsyncSession):
         logger.info(f"Reset password and role for {ADMIN_EMPLOYEE_ID}")
     else:
         logger.info(f"Admin {ADMIN_EMPLOYEE_ID} password already valid")
+
+
+async def backfill_line_manager_ids(session: AsyncSession):
+    """Backfill line_manager_id from line_manager_name for nominations system."""
+    # Check how many employees have line_manager_name but no line_manager_id
+    check_result = await session.execute(
+        text("""
+            SELECT COUNT(*) FROM employees 
+            WHERE line_manager_name IS NOT NULL 
+            AND line_manager_name != ''
+            AND line_manager_id IS NULL
+        """)
+    )
+    missing_count = check_result.scalar() or 0
+    
+    if missing_count == 0:
+        logger.info("All line_manager_id fields already populated")
+        return
+    
+    logger.info(f"Found {missing_count} employees with line_manager_name but no line_manager_id")
+    
+    # Backfill line_manager_id by matching line_manager_name to employee names
+    result = await session.execute(
+        text("""
+            UPDATE employees e
+            SET line_manager_id = m.id
+            FROM employees m
+            WHERE e.line_manager_name IS NOT NULL 
+            AND e.line_manager_name != ''
+            AND e.line_manager_id IS NULL
+            AND LOWER(TRIM(e.line_manager_name)) = LOWER(TRIM(m.name))
+        """)
+    )
+    exact_matches = result.rowcount if hasattr(result, 'rowcount') else 0
+    logger.info(f"Backfilled {exact_matches} line_manager_id values (exact name match)")
+    
+    # Also try matching with normalized whitespace
+    result2 = await session.execute(
+        text("""
+            UPDATE employees e
+            SET line_manager_id = m.id
+            FROM employees m
+            WHERE e.line_manager_name IS NOT NULL 
+            AND e.line_manager_name != ''
+            AND e.line_manager_id IS NULL
+            AND LOWER(regexp_replace(e.line_manager_name, '\\s+', ' ', 'g')) = 
+                LOWER(regexp_replace(m.name, '\\s+', ' ', 'g'))
+        """)
+    )
+    fuzzy_matches = result2.rowcount if hasattr(result2, 'rowcount') else 0
+    if fuzzy_matches > 0:
+        logger.info(f"Backfilled {fuzzy_matches} more line_manager_id values (whitespace normalized)")
+    
+    # Ensure is_active matches employment_status
+    is_active_result = await session.execute(
+        text("""
+            UPDATE employees 
+            SET is_active = true 
+            WHERE LOWER(TRIM(COALESCE(employment_status, ''))) = 'active'
+            AND (is_active IS NULL OR is_active = false)
+        """)
+    )
+    is_active_fixed = is_active_result.rowcount if hasattr(is_active_result, 'rowcount') else 0
+    if is_active_fixed > 0:
+        logger.info(f"Fixed {is_active_fixed} is_active flags to match employment_status")
