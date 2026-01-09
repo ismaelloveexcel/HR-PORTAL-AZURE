@@ -304,7 +304,7 @@ export function NominationPass() {
               <div className="flex-1 flex flex-col justify-between py-0.5">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Employee of the Year</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">{selectedManager?.department || 'Year 2025'}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{selectedManager?.department || <span className="font-bold">Year 2025</span>}</p>
                 </div>
                 
                 {/* Stage & Status Row */}
@@ -339,7 +339,7 @@ export function NominationPass() {
             </div>
 
             {/* Progress Steps */}
-            <div className="flex items-center mb-3 sm:mb-5 px-2">
+            <div className="flex items-start justify-between mb-3 sm:mb-5 px-1">
               {stepLabels.map((label, i) => {
                 const isCompleted = stepIndex > i
                 const isCurrent = stepIndex === i
@@ -349,10 +349,16 @@ export function NominationPass() {
                 return (
                   <div 
                     key={label} 
-                    className={`flex flex-col items-center ${isLast ? '' : 'flex-1'} cursor-pointer`}
+                    className="flex flex-col items-center flex-1 relative"
                     title={stepDescriptions[i]}
                   >
-                    <div className="flex items-center w-full">
+                    <div className="flex items-center w-full justify-center">
+                      {i > 0 && (
+                        <div 
+                          className={`h-0.5 flex-1 ${stepIndex > i - 1 ? '' : 'bg-gray-200'}`}
+                          style={stepIndex > i - 1 ? { backgroundColor: '#22c55e' } : {}}
+                        />
+                      )}
                       <div 
                         className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
                           stepIndex >= i ? 'text-white' : 'bg-gray-200 text-gray-500'
@@ -370,12 +376,12 @@ export function NominationPass() {
                       </div>
                       {!isLast && (
                         <div 
-                          className={`h-0.5 flex-1 mx-1 ${stepIndex > i ? '' : 'bg-gray-200'}`}
+                          className={`h-0.5 flex-1 ${stepIndex > i ? '' : 'bg-gray-200'}`}
                           style={stepIndex > i ? { backgroundColor: '#22c55e' } : {}}
                         />
                       )}
                     </div>
-                    <span className="text-[8px] sm:text-[9px] text-gray-500 mt-1 sm:mt-1.5 text-center">{label}</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-500 mt-1 sm:mt-1.5 text-center whitespace-nowrap">{label}</span>
                   </div>
                 )
               })}

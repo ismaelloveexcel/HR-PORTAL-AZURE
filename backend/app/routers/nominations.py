@@ -128,7 +128,7 @@ async def get_eligible_managers(
     all_employees_stmt = select(Employee).where(
         and_(
             Employee.is_active == True,
-            Employee.employment_status == "Active"
+            func.lower(func.trim(Employee.employment_status)) == "active"
         )
     )
     result = await session.execute(all_employees_stmt)
@@ -260,7 +260,7 @@ async def get_eligible_employees(
         and_(
             Employee.line_manager_id == manager_id,
             Employee.is_active == True,
-            Employee.employment_status == "Active"
+            func.lower(func.trim(Employee.employment_status)) == "active"
         )
     )
     result = await session.execute(stmt)
@@ -777,7 +777,7 @@ async def get_manager_progress(
     all_employees_stmt = select(Employee).where(
         and_(
             Employee.is_active == True,
-            Employee.employment_status == "Active"
+            func.lower(func.trim(Employee.employment_status)) == "active"
         )
     )
     result = await session.execute(all_employees_stmt)
@@ -853,7 +853,7 @@ async def send_invitation_emails(
     all_employees_stmt = select(Employee).where(
         and_(
             Employee.is_active == True,
-            Employee.employment_status == "Active"
+            func.lower(func.trim(Employee.employment_status)) == "active"
         )
     )
     result = await session.execute(all_employees_stmt)
