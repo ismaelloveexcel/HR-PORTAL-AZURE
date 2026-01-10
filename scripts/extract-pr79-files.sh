@@ -73,37 +73,37 @@ FILES_COPIED=0
 if [ -f "$SOURCE_DIR/docs/PERFORMANCE_OPTIMIZATION_GUIDE.md" ]; then
     cp "$SOURCE_DIR/docs/PERFORMANCE_OPTIMIZATION_GUIDE.md" docs/
     echo "  ✓ PERFORMANCE_OPTIMIZATION_GUIDE.md"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/docs/DEPLOYMENT_ALTERNATIVES_GUIDE.md" ]; then
     cp "$SOURCE_DIR/docs/DEPLOYMENT_ALTERNATIVES_GUIDE.md" docs/
     echo "  ✓ DEPLOYMENT_ALTERNATIVES_GUIDE.md"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/docs/AWESOME_RESOURCES.md" ]; then
     cp "$SOURCE_DIR/docs/AWESOME_RESOURCES.md" docs/
     echo "  ✓ AWESOME_RESOURCES.md"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/docs/PERFORMANCE_DEPLOYMENT_QUICK_REFERENCE.md" ]; then
     cp "$SOURCE_DIR/docs/PERFORMANCE_DEPLOYMENT_QUICK_REFERENCE.md" docs/
     echo "  ✓ PERFORMANCE_DEPLOYMENT_QUICK_REFERENCE.md"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/docs/IMPLEMENTATION_SUMMARY.md" ]; then
     cp "$SOURCE_DIR/docs/IMPLEMENTATION_SUMMARY.md" docs/
     echo "  ✓ IMPLEMENTATION_SUMMARY.md"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/QUICK_START.md" ]; then
     cp "$SOURCE_DIR/QUICK_START.md" .
     echo "  ✓ QUICK_START.md"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 # Copy Docker configuration
@@ -112,31 +112,31 @@ echo -e "${GREEN}🐳 Copying Docker configuration...${NC}"
 if [ -f "$SOURCE_DIR/docker-compose.yml" ]; then
     cp "$SOURCE_DIR/docker-compose.yml" .
     echo "  ✓ docker-compose.yml"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/.dockerignore" ]; then
     cp "$SOURCE_DIR/.dockerignore" .
     echo "  ✓ .dockerignore"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/backend/Dockerfile" ]; then
     cp "$SOURCE_DIR/backend/Dockerfile" backend/
     echo "  ✓ backend/Dockerfile"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/frontend/Dockerfile" ]; then
     cp "$SOURCE_DIR/frontend/Dockerfile" frontend/
     echo "  ✓ frontend/Dockerfile"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/frontend/nginx.conf" ]; then
     cp "$SOURCE_DIR/frontend/nginx.conf" frontend/
     echo "  ✓ frontend/nginx.conf"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 # Copy scripts
@@ -146,20 +146,20 @@ if [ -f "$SOURCE_DIR/scripts/deploy-docker.sh" ]; then
     cp "$SOURCE_DIR/scripts/deploy-docker.sh" scripts/
     chmod +x scripts/deploy-docker.sh
     echo "  ✓ deploy-docker.sh"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/scripts/deploy-docker.bat" ]; then
     cp "$SOURCE_DIR/scripts/deploy-docker.bat" scripts/
     echo "  ✓ deploy-docker.bat"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 if [ -f "$SOURCE_DIR/scripts/backup-database.sh" ]; then
     cp "$SOURCE_DIR/scripts/backup-database.sh" scripts/
     chmod +x scripts/backup-database.sh
     echo "  ✓ backup-database.sh"
-    ((FILES_COPIED++))
+    FILES_COPIED=$((FILES_COPIED+1))
 fi
 
 # Create basic README
