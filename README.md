@@ -72,6 +72,9 @@ Ask: "Scan for security vulnerabilities"
 | Document | Description | Audience |
 |----------|-------------|----------|
 | [Contributing Guide](CONTRIBUTING.md) | **NEW!** Setup instructions, Copilot best practices, troubleshooting | Contributors/Developers |
+| [Azure Deployment Guide](docs/AZURE_DEPLOYMENT_GUIDE.md) | **NEW!** Complete Azure deployment guide with 3 deployment options | Admins/DevOps |
+| [Azure Quick Start](docs/AZURE_QUICK_START.md) | **NEW!** Deploy to Azure in 20 minutes | Admins |
+| [Azure Deployment Checklist](docs/AZURE_DEPLOYMENT_CHECKLIST.md) | **NEW!** Track deployment progress step-by-step | Admins/DevOps |
 | [HR User Guide](docs/HR_USER_GUIDE.md) | How to use the portal | HR Users |
 | [HR Templates Reference](docs/HR_TEMPLATES_REFERENCE.md) | **NEW!** Performance Evaluation & Employee of the Year templates | HR Users/Managers |
 | [App Analysis Report](docs/APP_ANALYSIS_REPORT.md) | **NEW!** Comprehensive codebase analysis and issue remediation | Admins/Developers |
