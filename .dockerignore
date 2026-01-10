@@ -39,10 +39,9 @@ logs/
 .coverage
 htmlcov/
 
-# Frontend
+# Frontend - exclude build artifacts but keep dist directory
 node_modules/
-frontend/dist/
-frontend/build/
+# Note: frontend/dist is INCLUDED for Docker build
 
 # OS
 .DS_Store

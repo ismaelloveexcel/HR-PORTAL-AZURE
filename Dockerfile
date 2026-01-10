@@ -26,8 +26,10 @@ RUN pip install --upgrade pip && \
 # Copy backend application
 COPY backend /app
 
-# Copy frontend build (if available)
-COPY frontend/dist /app/static 2>/dev/null || mkdir -p /app/static
+# Create static directory and copy frontend build
+# Note: Build frontend first with: cd frontend && npm install && npm run build
+RUN mkdir -p /app/static
+COPY frontend/dist /app/static
 
 # Create necessary directories
 RUN mkdir -p /app/logs
