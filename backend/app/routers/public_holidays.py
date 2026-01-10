@@ -1,8 +1,7 @@
 """Public holiday management router."""
-from datetime import date, datetime, timezone
-from typing import List, Optional
+from datetime import date
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 import jwt
 from jwt.exceptions import PyJWTError
 from sqlalchemy import and_, select

@@ -10,7 +10,7 @@ This service provides:
 7. Public holiday integration
 """
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import List, Optional, Dict, Any
 

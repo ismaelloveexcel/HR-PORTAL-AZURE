@@ -5,7 +5,7 @@ This module provides:
 - Manager approval workflow
 - Payroll export integration
 """
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 

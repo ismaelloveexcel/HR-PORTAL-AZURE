@@ -9,7 +9,6 @@ Uses APScheduler for task scheduling.
 Install with: pip install apscheduler
 """
 import logging
-from datetime import datetime, time
 from typing import Optional
 
 try:
