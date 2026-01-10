@@ -46,6 +46,7 @@
 | [HR Assistant](.github/agents/hr-assistant.md) | HR workflows & portal engineering | Planning features, automation ideas, finding HR modules |
 | [Portal Engineer](.github/agents/portal-engineer.md) | Technical implementation | Building features, fixing bugs, optimizing code |
 | [Code Quality Monitor](.github/agents/code-quality-monitor.md) | Security & quality scanning | Checking security, code quality, performance |
+| [Azure Deployer](.github/agents/azure-deployer.md) | Azure deployment automation | Deploying to Azure, CI/CD, infrastructure |
 
 ### Quick Start with Agents
 
@@ -61,9 +62,13 @@ Ask: "Create API endpoints for probation tracking"
 # Check code quality
 Open: .github/agents/code-quality-monitor.md
 Ask: "Scan for security vulnerabilities"
+
+# Deploy to Azure
+Open: .github/agents/azure-deployer.md
+Ask: "Set up Azure infrastructure and deploy the app"
 ```
 
-**📖 Full Documentation**: [Copilot Agents Guide](docs/COPILOT_AGENTS.md) | [Quick Reference](.github/agents/QUICK_REFERENCE.md) | [Deployment Guide](docs/AGENT_DEPLOYMENT_GUIDE.md)
+**📖 Full Documentation**: [Copilot Agents Guide](docs/COPILOT_AGENTS.md) | [Quick Reference](.github/agents/QUICK_REFERENCE.md) | [Agent Deployment Guide](docs/AGENT_DEPLOYMENT_GUIDE.md) | [Azure Deployment Guide](docs/AZURE_DEPLOYMENT_GUIDE.md)
 
 ---
 
@@ -78,6 +83,7 @@ Ask: "Scan for security vulnerabilities"
 | [Process Simplification (UAE)](docs/PROCESS_SIMPLIFICATION_UAE.md) | **NEW!** Automated workflows for solo HR/multi-entity operations | HR Leadership |
 | [Copilot Agents Guide](docs/COPILOT_AGENTS.md) | AI agents for development assistance | Developers |
 | [Agent Deployment Guide](docs/AGENT_DEPLOYMENT_GUIDE.md) | How to deploy and use agents | Developers |
+| [Azure Deployment Guide](docs/AZURE_DEPLOYMENT_GUIDE.md) | **NEW!** Complete guide for deploying to Microsoft Azure | DevOps/Developers |
 | [System Health Check](docs/SYSTEM_HEALTH_CHECK.md) | Application assessment & roadmap | Admins/Developers |
 | [Recommended Add-ons](docs/RECOMMENDED_ADDONS.md) | Integration options | Developers |
 | [HR Implementation Plan](docs/HR_IMPLEMENTATION_PLAN.md) | Migration, admin hardening, and HR ops structure | HR Leadership/Admins |
@@ -263,7 +269,25 @@ DEV_USER_ROLE=admin
 
 ## 🚀 Deployment
 
-### Replit Deployment (Recommended)
+### Azure Deployment (Recommended for Production)
+
+Deploy to Microsoft Azure with zero manual intervention using GitHub Actions.
+
+**Features:**
+- ✅ Automatic deployment on push to `main` branch
+- ✅ Slot-based deployments (staging → production swap)
+- ✅ Health checks before production swap
+- ✅ OIDC authentication (passwordless)
+- ✅ Zero-downtime deployments
+
+**Quick Start:**
+1. Run infrastructure provisioning script
+2. Configure GitHub Secrets (from provision output)
+3. Push to `main` - automatic deployment begins!
+
+**📖 Full Guide**: [Azure Deployment Guide](docs/AZURE_DEPLOYMENT_GUIDE.md) | [Azure Deployer Agent](.github/agents/azure-deployer.md)
+
+### Replit Deployment (Development/Testing)
 
 The app is configured for **Replit** deployment under your company domain.
 

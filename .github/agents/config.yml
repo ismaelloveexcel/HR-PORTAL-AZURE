@@ -69,6 +69,32 @@ agents:
       - "react component"
       - "api design"
       - "deployment"
+    
+  - name: azure-deployer
+    file: .github/agents/azure-deployer.md
+    description: "Expert Azure Deployment Specialist for automated cloud deployments"
+    capabilities:
+      - azure_deployment
+      - infrastructure_provisioning
+      - cicd_pipelines
+      - zero_touch_deployment
+      - slot_management
+      - health_checks
+    scope:
+      - .github/workflows/
+      - deploy_to_azure.sh
+      - docs/AZURE_DEPLOYMENT_GUIDE.md
+    triggers:
+      - "azure"
+      - "deploy"
+      - "deployment"
+      - "infrastructure"
+      - "app service"
+      - "static web app"
+      - "ci/cd"
+      - "github actions"
+      - "production"
+      - "staging"
 
 # Collaboration rules
 collaboration:
@@ -84,9 +110,13 @@ collaboration:
     primary: code-quality-monitor
     secondary: [portal-engineer]
     
+  deployment_phase:
+    primary: azure-deployer
+    secondary: [code-quality-monitor, portal-engineer]
+    
   production_maintenance:
     primary: code-quality-monitor
-    secondary: [hr-assistant, portal-engineer]
+    secondary: [hr-assistant, portal-engineer, azure-deployer]
 
 # Agent priorities
 priorities:
@@ -107,6 +137,11 @@ priorities:
   bug_report:
     handler: portal-engineer
     verify_by: code-quality-monitor
+    
+  azure_deployment:
+    handler: azure-deployer
+    verify_by: code-quality-monitor
+    coordinate_with: portal-engineer
 
 # Quality gates
 quality_gates:
@@ -135,6 +170,14 @@ quality_gates:
     - check: hr_workflow_validation
       agent: hr-assistant
       blocking: false
+      
+    - check: infrastructure_readiness
+      agent: azure-deployer
+      blocking: true
+      
+    - check: health_check_verification
+      agent: azure-deployer
+      blocking: true
 
 # Metrics tracking
 metrics:
@@ -155,6 +198,13 @@ metrics:
     - manual_tasks_eliminated
     - workflow_efficiency
     - user_satisfaction
+    
+  deployment:
+    - deployment_success_rate
+    - deployment_frequency
+    - mean_time_to_deploy
+    - rollback_count
+    - zero_downtime_percentage
 
 # Integration points
 integrations:
@@ -163,6 +213,7 @@ integrations:
     workflows:
       - ci.yml
       - security-scan.yml
+      - deploy-azure.yml
       
   github_issues:
     enabled: true
