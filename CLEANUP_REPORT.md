@@ -221,12 +221,79 @@ All current, relevant documentation retained:
 
 ---
 
+## Stale Branches Cleanup (Action Required)
+
+⚠️ **Why "Compare & Pull Request" Prompts Appear**
+
+GitHub shows a "compare and pull request" prompt for every branch that has commits different from the main branch. The repository has accumulated **21 stale branches** from previous Copilot work sessions that need to be deleted.
+
+### Branches to Delete (21 branches)
+
+These branches are from closed/merged PRs or abandoned work sessions:
+
+| Branch Name | Associated PR | Status |
+|-------------|---------------|--------|
+| `copilot/automate-deployment-on-azure` | None | Stale |
+| `copilot/check-branch-merge-status` | None | Stale |
+| `copilot/check-merge-request-failure` | None | Stale |
+| `copilot/clone-repository` | None | Stale |
+| `copilot/clone-repository-again` | PR #5 | Closed |
+| `copilot/create-deployment-agent-azure` | None | Stale |
+| `copilot/create-new-repo-instead` | PR #2 | Closed |
+| `copilot/create-new-repo-with-revisions` | None | Stale |
+| `copilot/deploy-application-on-microsoft` | None | Stale |
+| `copilot/identify-essential-deployment-files` | PR #3 | Closed |
+| `copilot/improve-app-performance` | None | Stale |
+| `copilot/improve-code-efficiency` | None | Stale |
+| `copilot/increase-codespaces-budget` | None | Stale |
+| `copilot/pull-data-from-replit` | None | Stale |
+| `copilot/review-attendance-module` | None | Stale |
+| `copilot/review-documentation-feedback` | None | Stale |
+| `copilot/review-hr-app-implementation` | None | Stale |
+| `copilot/review-insurance-census-module` | None | Stale |
+| `copilot/review-pull-requests` | PR #4 | Merged |
+| `copilot/transfer-app-to-azure-devops` | None | Stale |
+| `dependabot/github_actions/astral-sh/setup-uv-7` | None | Stale |
+
+### How to Delete Stale Branches
+
+**Option 1: Via GitHub Web Interface (Recommended)**
+1. Go to: https://github.com/ismaelloveexcel/HR-PORTAL-AZURE/branches
+2. Click the trash icon 🗑️ next to each stale branch
+3. Confirm deletion
+
+**Option 2: Via GitHub CLI**
+```bash
+# Delete a single branch
+gh api -X DELETE /repos/ismaelloveexcel/HR-PORTAL-AZURE/git/refs/heads/copilot/automate-deployment-on-azure
+
+# Or use git (if you have push access)
+git push origin --delete copilot/automate-deployment-on-azure
+```
+
+**Option 3: Bulk Delete via GitHub API**
+```bash
+# Delete all copilot/* branches at once
+for branch in copilot/automate-deployment-on-azure copilot/check-branch-merge-status copilot/check-merge-request-failure copilot/clone-repository copilot/clone-repository-again copilot/create-deployment-agent-azure copilot/create-new-repo-instead copilot/create-new-repo-with-revisions copilot/deploy-application-on-microsoft copilot/identify-essential-deployment-files copilot/improve-app-performance copilot/improve-code-efficiency copilot/increase-codespaces-budget copilot/pull-data-from-replit copilot/review-attendance-module copilot/review-documentation-feedback copilot/review-hr-app-implementation copilot/review-insurance-census-module copilot/review-pull-requests copilot/transfer-app-to-azure-devops; do
+  git push origin --delete "$branch"
+done
+```
+
+### After Cleanup
+Once all stale branches are deleted:
+- ✅ No more "compare and pull request" prompts
+- ✅ Cleaner branches view
+- ✅ Only `main` branch remains (plus any active work branches)
+
+---
+
 ## Recommendations
 
 1. **Going Forward:**
    - Use `.gitignore` to prevent committing screenshots/images to `attached_assets/`
    - Archive temporary paste files in local notes instead of repository
    - Delete historical status reports after issues are closed
+   - **Delete branches after PRs are merged or closed**
 
 2. **Data Management:**
    - Consider moving candidate CVs to a secure file storage system
@@ -237,6 +304,10 @@ All current, relevant documentation retained:
    - Review and archive planning documents once features are implemented
    - Consolidate similar documentation to avoid duplication
    - Keep only current, actionable documentation in repository
+
+4. **Branch Management:**
+   - Enable "Automatically delete head branches" in repository settings (Settings → General → Pull Requests)
+   - Regularly review and clean up stale branches
 
 ---
 
