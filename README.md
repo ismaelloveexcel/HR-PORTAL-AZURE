@@ -71,7 +71,8 @@ Ask: "Scan for security vulnerabilities"
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [GitHub Deployment Options](docs/GITHUB_DEPLOYMENT_OPTIONS.md) | **NEW!** Complete guide for local laptop, GitHub Codespaces, and self-hosted deployment options | HR Users/Developers |
+| [Azure Deployment Reference Guide](docs/AZURE_DEPLOYMENT_REFERENCE_GUIDE.md) | **NEW!** Comprehensive reference for all Azure GitHub Actions and deployment patterns | DevOps/Developers |
+| [GitHub Deployment Options](docs/GITHUB_DEPLOYMENT_OPTIONS.md) | Complete guide for local laptop, GitHub Codespaces, and self-hosted deployment options | HR Users/Developers |
 | [VSCode Deployment Guide](docs/VSCODE_DEPLOYMENT_GUIDE.md) | Complete guide for development and deployment in Visual Studio Code | Developers |
 | [Contributing Guide](CONTRIBUTING.md) | Setup instructions, Copilot best practices, troubleshooting | Contributors/Developers |
 | [HR User Guide](docs/HR_USER_GUIDE.md) | How to use the portal | HR Users |
