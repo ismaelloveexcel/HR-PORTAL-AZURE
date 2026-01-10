@@ -5,13 +5,13 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 import jwt
 from jwt.exceptions import PyJWTError
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.database import get_session
 from app.models.employee import Employee
-from app.models.leave import LeaveRequest, LeaveBalance, LEAVE_TYPES, LEAVE_STATUSES
+from app.models.leave import LeaveRequest, LeaveBalance, LEAVE_TYPES
 from app.schemas.leave import (
     LeaveBalanceResponse, LeaveBalanceSummary, LeaveRequestCreate,
     LeaveRequestResponse, LeaveApprovalRequest, LeaveCalendarEntry
