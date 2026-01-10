@@ -22,7 +22,6 @@ except ImportError:
     CronTrigger = None
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session_maker
 from app.models.employee import Employee
