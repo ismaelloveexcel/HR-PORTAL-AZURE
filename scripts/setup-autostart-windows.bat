@@ -58,8 +58,12 @@ REM Create a VBS wrapper to run silently (no command window popup)
 echo Creating silent launcher...
 (
 echo Set WshShell = CreateObject^("WScript.Shell"^)
-echo WshShell.CurrentDirectory = "%PROJECT_DIR%"
-echo WshShell.Run "cmd /c ""%PROJECT_DIR%\scripts\start-portal-windows.bat""", 0, False
+echo Set fso = CreateObject^("Scripting.FileSystemObject"^)
+echo scriptPath = WScript.ScriptFullName
+echo projectDir = fso.GetParentFolderName^(scriptPath^)
+echo projectDir = fso.GetParentFolderName^(projectDir^)
+echo WshShell.CurrentDirectory = projectDir
+echo WshShell.Run "cmd /c """ ^& projectDir ^& "\scripts\start-portal-windows.bat""", 0, False
 ) > "%PROJECT_DIR%\scripts\start-portal-silent.vbs"
 
 REM Method 1: Add to Startup folder (simpler, works for current user)
