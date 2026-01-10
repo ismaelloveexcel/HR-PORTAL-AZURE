@@ -1,7 +1,7 @@
 """Add database indexes for performance
 
-Revision ID: 20260110_0001
-Revises: 
+Revision ID: 20260110_0021
+Revises: 20260110_0020
 Create Date: 2026-01-10
 
 """
@@ -9,8 +9,8 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = '20260110_0001_indexes'
-down_revision = None  # Update this with your latest migration
+revision = '20260110_0021'
+down_revision = '20260110_0020'
 branch_labels = None
 depends_on = None
 

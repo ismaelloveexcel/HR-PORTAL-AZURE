@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
+import { useState, useEffect, FormEvent, ChangeEvent, useCallback } from 'react'
 import { GlassLoader } from './components/GlassLoader'
 import { TemplateList } from './components/Templates/TemplateList'
 import { EmployeeProfile } from './components/EmployeeProfile'
@@ -9,6 +9,7 @@ import { Performance } from './components/Performance'
 import { EoyNominations } from './components/EoyNominations'
 import { EOYAdminPanel } from './components/EOYAdminPanel/EOYAdminPanel'
 import { InsuranceCensus } from './components/InsuranceCensus'
+import { useDebounce } from './hooks/useDebounce'
 
 type Section = 'home' | 'employees' | 'onboarding' | 'external' | 'admin' | 'secret-chamber' | 'passes' | 'public-onboarding' | 'recruitment' | 'recruitment-request' | 'recruitment-benefits' | 'templates' | 'template-manager' | 'template-candidate' | 'template-onboarding' | 'template-employee' | 'attendance' | 'compliance-alerts' | 'candidate-pass' | 'manager-pass' | 'performance' | 'insurance-census' | 'nomination-pass'
 
@@ -662,23 +663,38 @@ function App() {
     }
   }
 
-  const fetchRecruitmentData = async () => {
+  const fetchRecruitmentData = useCallback(async () => {
     if (!user || (user.role !== 'admin' && user.role !== 'hr')) return
     try {
-      const [statsRes, requestsRes, pipelineRes, candidatesRes] = await Promise.all([
+      const [statsRes, requestsRes, pipelineRes] = await Promise.all([
         fetchWithAuth(`${API_BASE}/recruitment/stats`),
         fetchWithAuth(`${API_BASE}/recruitment/requests`),
-        fetchWithAuth(`${API_BASE}/recruitment/pipeline`),
-        fetchWithAuth(`${API_BASE}/recruitment/candidates`)
+        fetchWithAuth(`${API_BASE}/recruitment/pipeline`)
       ])
       if (statsRes.ok) setRecruitmentStats(await statsRes.json())
       if (requestsRes.ok) setRecruitmentRequests(await requestsRes.json())
       if (pipelineRes.ok) setPipelineCounts(await pipelineRes.json())
-      if (candidatesRes.ok) setCandidatesList(await candidatesRes.json())
     } catch (err) {
       console.error('Failed to fetch recruitment data:', err)
     }
-  }
+  }, [user])
+
+  const fetchRecruitmentCandidates = useCallback(async (searchTerm: string = '') => {
+    if (!user || (user.role !== 'admin' && user.role !== 'hr')) return
+    try {
+      const url = searchTerm
+        ? `${API_BASE}/recruitment/candidates?search=${encodeURIComponent(searchTerm)}`
+        : `${API_BASE}/recruitment/candidates`
+      const res = await fetchWithAuth(url)
+      if (res.ok) {
+        setCandidatesList(await res.json())
+      }
+    } catch (err) {
+      console.error('Failed to fetch recruitment candidates:', err)
+    }
+  }, [user])
+
+  const debouncedFetchRecruitmentCandidates = useDebounce(fetchRecruitmentCandidates, 400)
 
   const handleCreateRecruitmentRequest = async () => {
     if (!user) return
@@ -1068,7 +1084,13 @@ function App() {
         fetchRecruitmentData()
       }
     }
-  }, [adminTab, activeSection, user])
+  }, [adminTab, activeSection, user, fetchRecruitmentData])
+
+  useEffect(() => {
+    if (activeSection === 'admin' && adminTab === 'recruitment' && user?.role && (user.role === 'admin' || user.role === 'hr')) {
+      debouncedFetchRecruitmentCandidates(candidateSearchQuery)
+    }
+  }, [candidateSearchQuery, activeSection, adminTab, user, debouncedFetchRecruitmentCandidates])
 
   const loginModal = showLoginModal ? (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

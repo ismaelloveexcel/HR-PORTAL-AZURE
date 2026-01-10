@@ -8,8 +8,16 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
+          if (id.includes("/components/EOY") || id.includes("/components/EOYAdminPanel") || id.includes("/components/Performance") || id.includes("/components/Insurance")) {
+            return "admin";
+          }
+          if (id.includes("/components/Recruit") || id.includes("/recruit") || id.includes("/Candidate")) {
+            return "recruitment";
+          }
         },
       },
     },
