@@ -1,0 +1,193 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+  workflow_dispatch:
+    inputs:
+      deploy_backend:
+        description: 'Deploy backend to Azure App Service'
+        type: boolean
+        default: true
+      deploy_frontend:
+        description: 'Deploy frontend to Azure Static Web Apps'
+        type: boolean
+        default: true
+
+env:
+  WEBAPP_NAME: secure-renewals-api
+  RESOURCE_GROUP: secure-renewals-rg
+  SLOT_NAME: staging
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # Check what changed to determine what to deploy
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  # Build and deploy backend to Azure App Service
+  deploy-backend:
+    needs: changes
+    if: |
+      needs.changes.outputs.backend == 'true' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_backend == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run syntax check
+        run: find app -name '*.py' -exec uv run python -m py_compile {} +
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to staging slot
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEBAPP_NAME }}
+          slot-name: ${{ env.SLOT_NAME }}
+          package: backend
+
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Health check on staging
+        run: |
+          for i in {1..5}; do
+            if curl --max-time 30 -f "https://${{ env.WEBAPP_NAME }}-${{ env.SLOT_NAME }}.azurewebsites.net/api/health"; then
+              echo "Health check passed!"
+              exit 0
+            fi
+            echo "Health check attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 5 attempts"
+          exit 1
+
+      - name: Swap staging to production
+        run: |
+          az webapp deployment slot swap \
+            --name "${{ env.WEBAPP_NAME }}" \
+            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --slot "${{ env.SLOT_NAME }}" \
+            --target-slot production
+
+      - name: Health check on production
+        run: |
+          for i in {1..3}; do
+            if curl --max-time 30 -f "https://${{ env.WEBAPP_NAME }}.azurewebsites.net/api/health"; then
+              echo "Production health check passed!"
+              exit 0
+            fi
+            echo "Production health check attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Production health check failed - consider rollback"
+          exit 1
+
+  # Build and deploy frontend to Azure Static Web Apps
+  deploy-frontend:
+    needs: changes
+    if: |
+      needs.changes.outputs.frontend == 'true' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_frontend == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: frontend
+          output_location: dist
+          skip_app_build: true
+
+  # Notify on deployment completion
+  notify:
+    needs: [deploy-backend, deploy-frontend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.deploy-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ needs.deploy-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

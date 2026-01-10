@@ -7,6 +7,7 @@ Need help? Choose your agent:
 - **HR tasks** → HR Assistant
 - **Technical implementation** → Portal Engineer  
 - **Code quality/security** → Code Quality Monitor
+- **Azure deployment** → Azure Deployer
 
 ## 📋 Common Commands
 
@@ -34,6 +35,15 @@ Need help? Choose your agent:
 "Identify performance bottlenecks"
 ```
 
+### Azure Deployer
+```
+"Deploy the app to Azure"
+"Set up Azure infrastructure"
+"Configure GitHub Actions for deployment"
+"Create staging and production slots"
+"Help with Azure OIDC configuration"
+```
+
 ## 🎯 Decision Tree
 
 ```
@@ -51,8 +61,11 @@ Need help? Choose your agent:
 ├─ Concerned about security?
 │  └─→ Code Quality Monitor
 │
-└─ Want to optimize performance?
-   └─→ Code Quality Monitor → Portal Engineer
+├─ Want to optimize performance?
+│  └─→ Code Quality Monitor → Portal Engineer
+│
+└─ Need to deploy to Azure?
+   └─→ Azure Deployer
 ```
 
 ## 📚 Agent Files
@@ -60,6 +73,7 @@ Need help? Choose your agent:
 - **HR Assistant**: `.github/agents/hr-assistant.md`
 - **Portal Engineer**: `.github/agents/portal-engineer.md`
 - **Code Quality Monitor**: `.github/agents/code-quality-monitor.md`
+- **Azure Deployer**: `.github/agents/azure-deployer.md`
 - **Full Guide**: `docs/COPILOT_AGENTS.md`
 - **Configuration**: `.github/agents/config.yml`
 
@@ -110,6 +124,27 @@ Need help? Choose your agent:
 3. **Measure** (Code Quality Monitor)
    - Verify improvements
    - Monitor impact
+
+### Deploying to Azure
+
+1. **Prepare** (Azure Deployer)
+   - Verify infrastructure is provisioned
+   - Check GitHub secrets are configured
+   - Review deployment workflow
+   
+2. **Verify** (Code Quality Monitor)
+   - Security scan passes
+   - No critical vulnerabilities
+   
+3. **Deploy** (Azure Deployer)
+   - Deploy to staging slot
+   - Run health checks
+   - Swap to production
+   
+4. **Monitor** (Azure Deployer + Code Quality Monitor)
+   - Verify production health
+   - Check Application Insights
+   - Watch for errors
 
 ## 🛠️ Code Patterns
 
@@ -163,18 +198,21 @@ export const ExampleList: React.FC = () => {
 
 ## 🔍 Agent Capabilities Matrix
 
-| Capability | HR Assistant | Portal Engineer | Code Monitor |
-|-----------|-------------|----------------|--------------|
-| HR Workflows | ✅ Primary | ⚡ Support | ❌ No |
-| Feature Planning | ✅ Primary | ⚡ Support | ❌ No |
-| Code Implementation | ⚡ Support | ✅ Primary | ❌ No |
-| Architecture Design | ⚡ Support | ✅ Primary | ❌ No |
-| Security Scanning | ⚡ Support | ⚡ Support | ✅ Primary |
-| Code Quality | ❌ No | ⚡ Support | ✅ Primary |
-| Performance Optimization | ❌ No | ✅ Primary | ✅ Primary |
-| Bug Fixing | ❌ No | ✅ Primary | ⚡ Support |
-| Module Discovery | ✅ Primary | ⚡ Support | ❌ No |
-| Documentation | ✅ Primary | ⚡ Support | ❌ No |
+| Capability | HR Assistant | Portal Engineer | Code Monitor | Azure Deployer |
+|-----------|-------------|----------------|--------------|----------------|
+| HR Workflows | ✅ Primary | ⚡ Support | ❌ No | ❌ No |
+| Feature Planning | ✅ Primary | ⚡ Support | ❌ No | ❌ No |
+| Code Implementation | ⚡ Support | ✅ Primary | ❌ No | ❌ No |
+| Architecture Design | ⚡ Support | ✅ Primary | ❌ No | ⚡ Support |
+| Security Scanning | ⚡ Support | ⚡ Support | ✅ Primary | ❌ No |
+| Code Quality | ❌ No | ⚡ Support | ✅ Primary | ❌ No |
+| Performance Optimization | ❌ No | ✅ Primary | ✅ Primary | ❌ No |
+| Bug Fixing | ❌ No | ✅ Primary | ⚡ Support | ❌ No |
+| Module Discovery | ✅ Primary | ⚡ Support | ❌ No | ❌ No |
+| Documentation | ✅ Primary | ⚡ Support | ❌ No | ⚡ Support |
+| Azure Deployment | ❌ No | ⚡ Support | ⚡ Support | ✅ Primary |
+| CI/CD Pipelines | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
+| Infrastructure | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
 
 ## 🎓 Learning Resources
 
@@ -248,6 +286,7 @@ Good agent usage shows:
 - 📈 Improved code quality
 - 📚 Better documentation
 - 💡 Team knowledge growth
+- 🚀 Zero-touch deployments
 
 ## 📞 Getting Help
 
@@ -263,7 +302,9 @@ Good agent usage shows:
 - [HR Assistant Agent](.github/agents/hr-assistant.md)
 - [Portal Engineer Agent](.github/agents/portal-engineer.md)
 - [Code Quality Monitor](.github/agents/code-quality-monitor.md)
+- [Azure Deployer Agent](.github/agents/azure-deployer.md)
 - [Agent Configuration](.github/agents/config.yml)
+- [Azure Deployment Guide](../docs/AZURE_DEPLOYMENT_GUIDE.md)
 
 ---
 
