@@ -75,5 +75,6 @@
   },
   "terminal.integrated.env.windows": {
     "PYTHONPATH": "${workspaceFolder}\\backend"
-  }
+  },
+  "chat.agent.maxRequests": 50
 }
