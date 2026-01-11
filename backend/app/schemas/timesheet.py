@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TimesheetSummary(BaseModel):
@@ -51,8 +51,7 @@ class TimesheetSummary(BaseModel):
     has_compliance_issues: bool
     compliance_notes: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TimesheetResponse(TimesheetSummary):

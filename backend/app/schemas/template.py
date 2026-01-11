@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class TemplateBase(BaseModel):
     name: str = Field(..., max_length=120)
@@ -21,6 +21,4 @@ class TemplateResponse(TemplateBase):
     created_by: str
     created_at: datetime
     is_active: bool
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

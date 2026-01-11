@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EmployeeDocumentBase(BaseModel):
@@ -52,8 +52,7 @@ class EmployeeDocumentResponse(EmployeeDocumentBase):
     is_expired: bool = False
     is_expiring_soon: bool = False
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentVerificationRequest(BaseModel):

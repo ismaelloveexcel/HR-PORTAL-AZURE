@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from typing import Optional, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PublicHolidayCreate(BaseModel):
@@ -43,8 +43,7 @@ class PublicHolidayResponse(BaseModel):
     is_active: bool
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HolidayCalendar(BaseModel):
