@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,9 +14,10 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/secure_renewals",
         description="PostgreSQL connection string using asyncpg driver",
     )
-    allowed_origins: List[str] = Field(
-        default_factory=lambda: ["http://localhost:5000", "http://0.0.0.0:5000"],
-        description="List of allowed CORS origins",
+    # Use Union to accept both string and list, validator will normalize
+    allowed_origins: Union[str, List[str]] = Field(
+        default="http://localhost:5000,http://0.0.0.0:5000",
+        description="Comma-separated list of allowed CORS origins",
     )
     
     # Email settings (SMTP)
@@ -69,7 +70,6 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        parse_env_var={"allowed_origins": lambda v: [origin.strip() for origin in str(v).split(",") if origin.strip()]},
     )
 
     @field_validator("allowed_origins", mode="before")
@@ -83,6 +83,12 @@ class Settings(BaseSettings):
         except Exception:
             pass
         return ["*"]
+    
+    def get_allowed_origins_list(self) -> List[str]:
+        """Get allowed_origins as a list, regardless of how it was parsed."""
+        if isinstance(self.allowed_origins, str):
+            return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+        return self.allowed_origins
 
 
 @lru_cache()
