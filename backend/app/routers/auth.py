@@ -59,6 +59,7 @@ async def login(
     
     If `requires_password_change` is true, you must change your password.
     """
+    settings = get_settings()
     try:
         return await employee_service.login(session, request)
     except HTTPException:
@@ -71,7 +72,6 @@ async def login(
         logger.error(f"Login error traceback: {traceback.format_exc()}")
         
         # In development, show actual error
-        settings = get_settings()
         if settings.app_env == "development":
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

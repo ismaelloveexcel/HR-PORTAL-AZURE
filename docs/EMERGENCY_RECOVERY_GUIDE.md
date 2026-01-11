@@ -75,10 +75,11 @@ curl https://your-domain.com/api/health/db
   "employee_id": "BAYN00008",
   "name": "Admin User",
   "role": "admin",
-  "is_active": true,
-  "default_password": "16051988"
+  "is_active": true
 }
 ```
+
+**Note:** In development mode, response includes `"default_password": "16051988"` for convenience. This is not included in production for security reasons. The password is always `16051988` (admin's date of birth).
 
 **Response (Failure):**
 ```json

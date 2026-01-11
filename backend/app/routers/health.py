@@ -14,6 +14,8 @@ router = APIRouter(prefix="/health", tags=["health"])
 
 MAINTENANCE_SECRET = os.environ.get("MAINTENANCE_SECRET", "")
 ADMIN_EMPLOYEE_ID = os.environ.get("ADMIN_EMPLOYEE_ID", "BAYN00008")
+# Default admin password hash for DOB 16051988
+ADMIN_DEFAULT_PASSWORD_HASH = "3543bc93f69b085852270bb3edfac94a:7e8f4f92a9b90a1260bc005304f5b30f014dd4603056cacb0b6170d05049b832"
 SYSTEM_ADMIN_ID = "ADMIN001"
 SYSTEM_ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
@@ -552,10 +554,6 @@ async def reset_admin_password(
         raise HTTPException(status_code=403, detail="Invalid secret token")
     
     try:
-        # Reset admin password
-        ADMIN_EMPLOYEE_ID = "BAYN00008"
-        ADMIN_PASSWORD_HASH = "3543bc93f69b085852270bb3edfac94a:7e8f4f92a9b90a1260bc005304f5b30f014dd4603056cacb0b6170d05049b832"
-        
         result = await session.execute(
             text("""
                 UPDATE employees 
@@ -567,7 +565,7 @@ async def reset_admin_password(
                 WHERE employee_id = :emp_id
                 RETURNING employee_id, name, role, is_active
             """),
-            {"hash": ADMIN_PASSWORD_HASH, "emp_id": ADMIN_EMPLOYEE_ID}
+            {"hash": ADMIN_DEFAULT_PASSWORD_HASH, "emp_id": ADMIN_EMPLOYEE_ID}
         )
         
         row = result.fetchone()
@@ -575,15 +573,18 @@ async def reset_admin_password(
         
         if row:
             logger.info(f"Admin password reset successful for {ADMIN_EMPLOYEE_ID}")
-            return {
+            response = {
                 "success": True,
                 "message": f"Password reset for {row[0]} - {row[1]}",
                 "employee_id": row[0],
                 "name": row[1],
                 "role": row[2],
                 "is_active": row[3],
-                "default_password": "16051988"
             }
+            # Only include password in development mode
+            if settings.app_env == "development":
+                response["default_password"] = "16051988"
+            return response
         else:
             logger.error(f"Admin employee {ADMIN_EMPLOYEE_ID} not found")
             return {
