@@ -14,6 +14,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ===== VALIDATE REQUIRED SECRETS =====
+      - name: Validate required secrets
+        run: |
+          echo "🔍 Validating required secrets..."
+          
+          if [ -z "${{ secrets.AZURE_CREDENTIALS }}" ]; then
+            echo "❌ ERROR: AZURE_CREDENTIALS secret is not set"
+            echo "Please configure AZURE_CREDENTIALS in repository secrets"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "❌ ERROR: DATABASE_URL secret is not set"
+            echo "Please configure DATABASE_URL in repository secrets"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.AUTH_SECRET_KEY }}" ]; then
+            echo "❌ ERROR: AUTH_SECRET_KEY secret is not set"
+            echo "Please configure AUTH_SECRET_KEY in repository secrets"
+            exit 1
+          fi
+          
+          echo "✅ All required secrets are present"
+
       # ===== BUILD FRONTEND =====
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,13 +61,34 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Verify frontend build
+      - name: Verify frontend build in backend/static
         run: |
-          echo "✅ Frontend already built to backend/static (Vite config)"
-          ls -la backend/static/ || echo "Warning: backend/static may not exist yet"
+          echo "🔍 Verifying frontend build output..."
+          if [ ! -d "backend/static" ]; then
+            echo "❌ ERROR: backend/static directory does not exist"
+            echo "Frontend build did not output to the expected location"
+            exit 1
+          fi
+          
+          if [ ! -f "backend/static/index.html" ]; then
+            echo "❌ ERROR: backend/static/index.html not found"
+            echo "Frontend build appears incomplete"
+            exit 1
+          fi
+          
+          echo "✅ Frontend built successfully to backend/static"
+          echo "Contents:"
+          ls -lh backend/static/
+          
+          # Show bundle sizes
+          if [ -d "backend/static/assets" ]; then
+            echo "Asset files:"
+            du -h backend/static/assets/* | sort -h
+          fi
 
       - name: Create deployment package
         run: |
+          echo "📦 Creating deployment package..."
           cd backend
           zip -r ../deploy.zip . \
             -x "*.pyc" \
@@ -55,7 +101,22 @@ jobs:
             -x "*.bak" \
             -x "*.tmp"
           cd ..
-          echo "Package size: $(du -h deploy.zip | cut -f1)"
+          echo "✅ Package created: $(du -h deploy.zip | cut -f1)"
+          
+          # Verify static files are in the package
+          echo "Verifying static files in package..."
+          if ! unzip -l deploy.zip | grep -q "static/index.html"; then
+            echo "❌ ERROR: static/index.html not found in package"
+            exit 1
+          else
+            echo "✅ index.html included"
+          fi
+          if ! unzip -l deploy.zip | grep -q "static/assets"; then
+            echo "❌ ERROR: static/assets directory not found in package"
+            exit 1
+          else
+            echo "✅ assets directory included"
+          fi
 
       # ===== DEPLOY TO AZURE =====
       - name: Login to Azure
@@ -71,16 +132,115 @@ jobs:
 
       - name: Configure App Settings
         run: |
-          echo "Configuring Azure App Service settings..."
-          az webapp config appsettings set --name BaynunahHRPortal --resource-group BaynunahHR --settings \
-            ALLOWED_ORIGINS="https://baynunahhrportal.azurewebsites.net" \
-            APP_ENV="production" \
-            SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
+          echo "⚙️  Configuring Azure App Service settings..."
+          az webapp config appsettings set \
+            --name BaynunahHRPortal \
+            --resource-group BaynunahHR \
+            --settings \
+              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              AUTH_SECRET_KEY="${{ secrets.AUTH_SECRET_KEY }}" \
+              ALLOWED_ORIGINS="https://baynunahhrportal.azurewebsites.net" \
+              APP_ENV="production" \
+              SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
             --output none
-          echo "✅ App settings configured (DATABASE_URL and AUTH_SECRET_KEY preserved from Azure)"
+          echo "✅ App settings configured successfully"
+
+      # ===== POST-DEPLOYMENT MIGRATION =====
+      - name: Run Alembic migrations
+        continue-on-error: true
+        run: |
+          echo "🔄 Attempting to run Alembic migrations..."
+          echo ""
+          echo "NOTE: This step runs migrations via Azure CLI. It may fail if:"
+          echo "  - The app is still starting up"
+          echo "  - Database connection requires different credentials"
+          echo "  - Migrations require manual intervention"
+          echo ""
+          
+          # Try to run migrations via SSH (best effort)
+          SSH_SUCCESS=false
+          if az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR --timeout 60 << 'EOF'
+          cd /home/site/wwwroot
+          python -m alembic upgrade head
+          EOF
+          then
+            echo "✅ Migrations completed successfully via SSH"
+            SSH_SUCCESS=true
+          else
+            echo "⚠️  Could not run migrations via SSH"
+            echo "This is expected for some Azure App Service configurations"
+          fi
+          
+          # Alternative: Try using Azure Web Jobs API (also best effort)
+          if [ "$SSH_SUCCESS" = "false" ]; then
+            echo "⚠️  SSH method failed, attempting via kudu API..."
+            
+            # Ensure jq is available
+            if ! command -v jq >/dev/null 2>&1; then
+              echo "⚠️  jq not found, cannot parse credentials"
+              echo "Skipping Kudu API method"
+              echo ""
+              echo "MANUAL MIGRATION REQUIRED:"
+              echo "  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
+              echo "  cd /home/site/wwwroot"
+              echo "  python -m alembic upgrade head"
+              exit 0
+            fi
+            
+            # Get publishing credentials
+            KUDU_CREDS=$(az webapp deployment list-publishing-credentials \
+              --name BaynunahHRPortal \
+              --resource-group BaynunahHR \
+              --query "{username:publishingUserName,password:publishingPassword}" \
+              -o json 2>/dev/null) || {
+              echo "⚠️  Could not retrieve kudu credentials"
+              echo "Skipping automatic migration - please run manually"
+              echo ""
+              echo "MANUAL MIGRATION REQUIRED:"
+              echo "  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
+              echo "  cd /home/site/wwwroot"
+              echo "  python -m alembic upgrade head"
+              exit 0
+            }
+            
+            USERNAME=$(echo $KUDU_CREDS | jq -r .username)
+            PASSWORD=$(echo $KUDU_CREDS | jq -r .password)
+            
+            # Run migration via kudu
+            if curl -X POST \
+              "https://baynunahhrportal.scm.azurewebsites.net/api/command" \
+              -u "$USERNAME:$PASSWORD" \
+              -H "Content-Type: application/json" \
+              -d '{"command": "cd /home/site/wwwroot && python -m alembic upgrade head", "dir": "/home/site/wwwroot"}' \
+              --max-time 120 --silent --show-error; then
+              echo "✅ Migrations completed via kudu API"
+            else
+              echo "⚠️  Kudu API method also failed"
+              echo ""
+              echo "MANUAL MIGRATION REQUIRED:"
+              echo "  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
+              echo "  cd /home/site/wwwroot"
+              echo "  python -m alembic upgrade head"
+            fi
+          fi
 
       - name: Deployment Summary
         run: |
-          echo "🎉 Deployment Complete!"
-          echo "📱 App URL: https://baynunahhrportal.azurewebsites.net"
-          echo "📚 API Docs: https://baynunahhrportal.azurewebsites.net/docs"
+          echo ""
+          echo "🎉 ================================================"
+          echo "   DEPLOYMENT COMPLETE!"
+          echo "================================================"
+          echo ""
+          echo "📱 App URL:      https://baynunahhrportal.azurewebsites.net"
+          echo "📚 API Docs:     https://baynunahhrportal.azurewebsites.net/docs"
+          echo "🔍 Health Check: https://baynunahhrportal.azurewebsites.net/api/health"
+          echo ""
+          echo "✅ Frontend assets deployed to backend/static"
+          echo "✅ App settings configured (DATABASE_URL, AUTH_SECRET_KEY)"
+          echo "⚠️  Check migration step above for any manual actions needed"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Verify the app is running: curl https://baynunahhrportal.azurewebsites.net/api/health"
+          echo "  2. Check logs if needed: az webapp log tail --name BaynunahHRPortal --resource-group BaynunahHR"
+          echo "  3. Test login at: https://baynunahhrportal.azurewebsites.net"
+          echo ""
