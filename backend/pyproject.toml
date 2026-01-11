@@ -18,6 +18,8 @@ dependencies = [
     "pyjwt[crypto]>=2.10.1",
     "httpx>=0.27.0",
     "python-multipart>=0.0.9",
+    "msoffcrypto-tool>=5.0.0",
+    "openpyxl>=3.1.0",
 ]
 
 
