@@ -35,6 +35,63 @@
 
 ---
 
+## 🤖 Automated Review & Maintenance System
+
+**Comprehensive AI-powered system** for efficient reviews, deployment monitoring, and proactive maintenance.
+
+### 🎯 Key Features
+
+**✅ Automated PR Reviews**:
+- Code quality checks (backend + frontend)
+- Security pattern detection
+- UAE compliance verification
+- Documentation gap detection
+- PR size optimization suggestions
+
+**✅ Deployment Monitoring**:
+- Post-deployment health checks
+- Performance monitoring
+- Plain-language alerts for non-technical admins
+- Automatic rollback guidance
+
+**✅ Proactive Maintenance**:
+- Monthly dependency security audits
+- Stale branch cleanup detection
+- Documentation currency checks
+- Monthly add-on/integration discovery
+
+### 🚀 For HR Admins (Non-Technical)
+
+The system provides **plain-language guidance** for all technical matters:
+
+📖 **[Copilot Agent System Guide](docs/COPILOT_AGENT_SYSTEM_GUIDE.md)** - Complete guide for non-technical users  
+❓ **[FAQ](docs/HR_PORTAL_FAQ.md)** - Common questions answered  
+📋 **[Onboarding Checklist](docs/HR_ADMIN_ONBOARDING.md)** - Step-by-step learning path  
+🎯 **[Quick Reference Card](docs/QUICK_REFERENCE_CARD.md)** - At-a-glance guide  
+🔄 **[Rollback Guide](docs/ROLLBACK_RECOVERY_GUIDE.md)** - Emergency recovery procedures
+
+**Traffic Light System**:
+- 🟢 **Green** = Safe to proceed
+- 🟡 **Yellow** = Review recommended
+- 🔴 **Red** = Stop, issues must be fixed
+
+### 🛠️ For Developers
+
+**Automated Workflows** (`.github/workflows/`):
+- `pr-quality-check.yml` - Comprehensive PR validation
+- `post-deployment-health.yml` - Deployment monitoring
+- `automated-maintenance.yml` - Monthly maintenance automation
+- `addon-discovery.yml` - Integration opportunity discovery
+
+**Templates**:
+- `.github/PULL_REQUEST_TEMPLATE.md` - Comprehensive PR checklist
+- `.github/ISSUE_TEMPLATE/` - Bug, feature, maintenance templates
+- `.github/labeler.yml` - Auto-labeling configuration
+
+**See**: [Contributing Guide](CONTRIBUTING.md) for full automation details
+
+---
+
 ## 🤖 GitHub Copilot Agents
 
 **Need development assistance?** We have specialized AI agents to help!
@@ -74,7 +131,12 @@ Ask: "Scan for security vulnerabilities"
 | [Azure Deployment Reference Guide](docs/AZURE_DEPLOYMENT_REFERENCE_GUIDE.md) | **NEW!** Comprehensive reference for all Azure GitHub Actions and deployment patterns | DevOps/Developers |
 | [GitHub Deployment Options](docs/GITHUB_DEPLOYMENT_OPTIONS.md) | Complete guide for local laptop, GitHub Codespaces, and self-hosted deployment options | HR Users/Developers |
 | [VSCode Deployment Guide](docs/VSCODE_DEPLOYMENT_GUIDE.md) | Complete guide for development and deployment in Visual Studio Code | Developers |
-| [Contributing Guide](CONTRIBUTING.md) | Setup instructions, Copilot best practices, troubleshooting | Contributors/Developers |
+| [Contributing Guide](CONTRIBUTING.md) | Setup instructions, Copilot best practices, **automated review system**, troubleshooting | Contributors/Developers |
+| **[Copilot Agent System Guide](docs/COPILOT_AGENT_SYSTEM_GUIDE.md)** | **NEW!** Plain-language guide to automated reviews, maintenance, and monitoring for non-technical admins | **HR Admins** |
+| **[HR Portal FAQ](docs/HR_PORTAL_FAQ.md)** | **NEW!** Comprehensive FAQ covering portal usage, automation, compliance, and troubleshooting | **HR Admins/All Users** |
+| **[HR Admin Onboarding](docs/HR_ADMIN_ONBOARDING.md)** | **NEW!** Complete onboarding checklist for solo HR operators | **HR Admins** |
+| **[Quick Reference Card](docs/QUICK_REFERENCE_CARD.md)** | **NEW!** At-a-glance guide: traffic lights, workflows, emergency contacts | **HR Admins** |
+| **[Rollback & Recovery Guide](docs/ROLLBACK_RECOVERY_GUIDE.md)** | **NEW!** Emergency procedures for deployment failures and system recovery | **HR Admins/DevOps** |
 | [HR User Guide](docs/HR_USER_GUIDE.md) | How to use the portal | HR Users |
 | [HR Templates Reference](docs/HR_TEMPLATES_REFERENCE.md) | Performance Evaluation & Employee of the Year templates | HR Users/Managers |
 | [App Analysis Report](docs/APP_ANALYSIS_REPORT.md) | Comprehensive codebase analysis and issue remediation | Admins/Developers |

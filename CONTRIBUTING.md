@@ -170,7 +170,7 @@ uv run alembic upgrade head
 
 ## GitHub Copilot Best Practices
 
-This repository is optimized for GitHub Copilot and Copilot Agents. Follow these practices to get the best results:
+This repository is optimized for GitHub Copilot and Copilot Agents, with an **automated review and maintenance system** for efficient, secure development.
 
 ### 1. Repository Context Files
 
@@ -179,10 +179,39 @@ We maintain these key context files for Copilot:
 - **`README.md`** - Project overview and quick start
 - **`CONTRIBUTING.md`** - This file - setup and guidelines
 - **`docs/`** - Detailed documentation for specific topics
+- **`.github/copilot-instructions.md`** - Copilot coding guidelines
+- **`.github/PULL_REQUEST_TEMPLATE.md`** - Comprehensive PR template
 
 **Best Practice:** Keep these files up-to-date as the codebase evolves.
 
-### 2. Code Organization
+### 2. Automated Review System
+
+Every Pull Request automatically receives:
+
+**✅ Code Quality Checks**:
+- Backend linting and syntax validation
+- Frontend TypeScript checking
+- Security pattern detection (SQL injection, hardcoded secrets)
+- Code style compliance
+
+**✅ UAE Compliance Verification**:
+- Detects changes to compliance features (visa, EID, contracts)
+- Provides compliance-specific checklist
+- Ensures labor law requirements maintained
+
+**✅ Documentation Review**:
+- Checks if code changes require doc updates
+- Suggests relevant documentation to update
+- Reminds about non-technical user guidance
+
+**✅ PR Size Analysis**:
+- Warns if PR is too large (>20 files or >500 lines)
+- Suggests breaking into smaller PRs
+- Provides guidance on optimal PR structure
+
+**See**: [Copilot Agent System Guide](docs/COPILOT_AGENT_SYSTEM_GUIDE.md) for detailed information about automated reviews.
+
+### 3. Code Organization
 
 Our codebase follows consistent patterns that help Copilot understand context:
 
@@ -199,7 +228,7 @@ Our codebase follows consistent patterns that help Copilot understand context:
 
 **Best Practice:** Follow existing patterns when adding new features.
 
-### 3. Using GitHub Copilot Agents
+### 4. Using GitHub Copilot Agents
 
 We have specialized Copilot Agents for different tasks:
 
@@ -217,7 +246,79 @@ We have specialized Copilot Agents for different tasks:
 
 **Best Practice:** Use agents before starting major features to get architectural guidance.
 
-### 4. Writing Copilot-Friendly Code
+### 5. Pull Request Process with Automation
+
+**Creating a PR**:
+1. Create a branch with descriptive name (e.g., `feature/visa-tracking-improvements`)
+2. Make your changes following project conventions
+3. Push to GitHub
+4. Open PR using the template (auto-populated)
+5. **Automated checks will run immediately**
+
+**Understanding Automated Feedback**:
+
+The PR quality check workflow will post comments with:
+- 🐍 **Backend Quality Results**: Python syntax, security patterns
+- ⚛️ **Frontend Quality Results**: TypeScript, console statements, API keys
+- 🇦🇪 **UAE Compliance Impact**: If compliance features affected
+- 📚 **Documentation Reminder**: If docs need updating
+- 📏 **PR Size Warning**: If PR is too large
+
+**Your Action**: Address any ❌ red flags before requesting review.
+
+**Traffic Light System**:
+- 🟢 **Green (all checks pass)**: Ready for human review
+- 🟡 **Yellow (minor warnings)**: Address if reasonable
+- 🔴 **Red (critical issues)**: Must fix before merging
+
+### 6. Deployment Monitoring
+
+After PR is merged and deployed, **automated health checks** run:
+
+**What's Checked**:
+- Backend health endpoint (HTTP 200 response)
+- Frontend accessibility
+- Basic smoke tests (API docs, OpenAPI schema)
+- Response time performance
+
+**You'll receive**:
+- ✅ **Success notification**: If all checks pass
+- ⚠️ **Manual verification request**: For database/data integrity
+- 🚨 **Critical alert with issue**: If deployment failed
+
+**For Non-Technical Contributors**:
+The system explains issues in plain language and provides step-by-step guidance for common fixes.
+
+**See**: [Post-Deployment Health Check Workflow](.github/workflows/post-deployment-health.yml)
+
+### 7. Monthly Maintenance
+
+The system performs **automated monthly maintenance** including:
+
+**Dependency Audits**:
+- Scans for security vulnerabilities
+- Creates issues for critical updates
+- Provides prioritized action list
+
+**System Health**:
+- Identifies stale branches for cleanup
+- Checks documentation currency
+- Generates maintenance summary
+
+**You'll receive**:
+- Monthly maintenance summary issue
+- Specific action items (security updates, cleanup tasks)
+- Priority guidance (critical, high, medium, low)
+
+**Responding to Maintenance**:
+- Review monthly summary issue
+- Approve Dependabot PRs for security updates quickly
+- Schedule time for non-critical updates
+- Follow provided testing checklist
+
+**See**: [Automated Maintenance Workflow](.github/workflows/automated-maintenance.yml)
+
+### 8. Writing Copilot-Friendly Code
 
 To help Copilot assist you effectively:
 
@@ -540,10 +641,78 @@ SQL injection vulnerability in renewal search functionality.
 
 ### PR Review Process
 
-- PRs require review before merging
-- CI checks must pass (linting, security scan)
+**Automated Review**:
+1. PR is opened
+2. Automated checks run immediately:
+   - Backend quality check
+   - Frontend quality check
+   - UAE compliance check
+   - Documentation check
+   - PR size analysis
+3. Review comments posted automatically
+4. Traffic light status indicated (🟢🟡🔴)
+
+**Human Review**:
+- PRs require human review before merging
+- All automated checks should pass (green checkmarks)
 - Address reviewer feedback
 - Keep PRs focused and reasonably sized
+
+**Merging**:
+- All CI checks must pass
+- At least one approval required
+- No unresolved conversations
+- Branch up to date with main
+
+**Post-Merge**:
+- Deployment triggers automatically
+- Health checks run after deployment
+- Performance monitoring begins
+- Issues created if problems detected
+
+**See Full Guide**: [Copilot Agent System Guide](docs/COPILOT_AGENT_SYSTEM_GUIDE.md)
+
+---
+
+## Automated System Overview
+
+### For Technical Contributors
+
+The repository includes comprehensive automation:
+
+**PR Automation** (`.github/workflows/pr-quality-check.yml`):
+- Auto-labeling based on files changed
+- Security pattern detection
+- Compliance impact analysis
+- Documentation gap detection
+- Size warnings for large PRs
+
+**Deployment Automation** (`.github/workflows/post-deployment-health.yml`):
+- Health endpoint checking
+- Performance monitoring
+- Smoke tests
+- Plain-language alerts
+- Rollback guidance
+
+**Maintenance Automation** (`.github/workflows/automated-maintenance.yml`):
+- Monthly dependency audits
+- Stale branch detection
+- Documentation review reminders
+- Maintenance summary generation
+
+### For Non-Technical Contributors
+
+**You don't need to manage the automation**, but you should:
+
+✅ **Read automated PR comments** - They explain issues in simple terms
+✅ **Approve Dependabot PRs** - Especially security updates
+✅ **Review monthly summaries** - Take action on critical items
+✅ **Follow health check guidance** - If deployment issues arise
+
+**Resources for Non-Technical Users**:
+- [Copilot Agent System Guide](docs/COPILOT_AGENT_SYSTEM_GUIDE.md) - Plain-language guide
+- [HR Portal FAQ](docs/HR_PORTAL_FAQ.md) - Common questions answered
+- [HR Admin Onboarding](docs/HR_ADMIN_ONBOARDING.md) - Complete onboarding checklist
 
 ---
 
