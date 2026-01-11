@@ -105,8 +105,18 @@ jobs:
           
           # Verify static files are in the package
           echo "Verifying static files in package..."
-          unzip -l deploy.zip | grep -q "static/index.html" && echo "✅ index.html included" || echo "⚠️  index.html not found in package"
-          unzip -l deploy.zip | grep -q "static/assets" && echo "✅ assets directory included" || echo "⚠️  assets not found in package"
+          if ! unzip -l deploy.zip | grep -q "static/index.html"; then
+            echo "❌ ERROR: static/index.html not found in package"
+            exit 1
+          else
+            echo "✅ index.html included"
+          fi
+          if ! unzip -l deploy.zip | grep -q "static/assets"; then
+            echo "❌ ERROR: static/assets directory not found in package"
+            exit 1
+          else
+            echo "✅ assets directory included"
+          fi
 
       # ===== DEPLOY TO AZURE =====
       - name: Login to Azure
@@ -148,26 +158,34 @@ jobs:
           echo ""
           
           # Try to run migrations via SSH (best effort)
-          az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR --timeout 60 << 'EOF' || {
-            echo "⚠️  Could not run migrations via SSH"
-            echo "This is expected for some Azure App Service configurations"
-            echo ""
-            echo "To run migrations manually:"
-            echo "  1. SSH into the app: az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
-            echo "  2. Navigate to app directory: cd /home/site/wwwroot"
-            echo "  3. Run migrations: python -m alembic upgrade head"
-            echo ""
-            exit 0
-          }
-          
+          SSH_SUCCESS=false
+          if az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR --timeout 60 << 'EOF'
           cd /home/site/wwwroot
           python -m alembic upgrade head
-          echo "✅ Migrations completed successfully"
           EOF
+          then
+            echo "✅ Migrations completed successfully via SSH"
+            SSH_SUCCESS=true
+          else
+            echo "⚠️  Could not run migrations via SSH"
+            echo "This is expected for some Azure App Service configurations"
+          fi
           
           # Alternative: Try using Azure Web Jobs API (also best effort)
-          if [ $? -ne 0 ]; then
+          if [ "$SSH_SUCCESS" = "false" ]; then
             echo "⚠️  SSH method failed, attempting via kudu API..."
+            
+            # Ensure jq is available
+            if ! command -v jq >/dev/null 2>&1; then
+              echo "⚠️  jq not found, cannot parse credentials"
+              echo "Skipping Kudu API method"
+              echo ""
+              echo "MANUAL MIGRATION REQUIRED:"
+              echo "  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
+              echo "  cd /home/site/wwwroot"
+              echo "  python -m alembic upgrade head"
+              exit 0
+            fi
             
             # Get publishing credentials
             KUDU_CREDS=$(az webapp deployment list-publishing-credentials \
@@ -177,6 +195,11 @@ jobs:
               -o json 2>/dev/null) || {
               echo "⚠️  Could not retrieve kudu credentials"
               echo "Skipping automatic migration - please run manually"
+              echo ""
+              echo "MANUAL MIGRATION REQUIRED:"
+              echo "  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
+              echo "  cd /home/site/wwwroot"
+              echo "  python -m alembic upgrade head"
               exit 0
             }
             
@@ -184,23 +207,21 @@ jobs:
             PASSWORD=$(echo $KUDU_CREDS | jq -r .password)
             
             # Run migration via kudu
-            curl -X POST \
+            if curl -X POST \
               "https://baynunahhrportal.scm.azurewebsites.net/api/command" \
               -u "$USERNAME:$PASSWORD" \
               -H "Content-Type: application/json" \
               -d '{"command": "cd /home/site/wwwroot && python -m alembic upgrade head", "dir": "/home/site/wwwroot"}' \
-              --max-time 120 || {
+              --max-time 120 --silent --show-error; then
+              echo "✅ Migrations completed via kudu API"
+            else
               echo "⚠️  Kudu API method also failed"
               echo ""
               echo "MANUAL MIGRATION REQUIRED:"
-              echo "Run these commands after deployment:"
               echo "  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR"
               echo "  cd /home/site/wwwroot"
               echo "  python -m alembic upgrade head"
-              exit 0
-            }
-            
-            echo "✅ Migrations completed via kudu API"
+            fi
           fi
 
       - name: Deployment Summary
