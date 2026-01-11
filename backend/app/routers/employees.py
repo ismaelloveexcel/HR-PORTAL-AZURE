@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, File, UploadFile, status, Query
+from fastapi import APIRouter, Depends, File, UploadFile, status, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import require_role
@@ -24,11 +24,14 @@ router = APIRouter(prefix="/employees", tags=["employees"])
     summary="List all employees",
 )
 async def list_employees(
+    response: Response,
     active_only: bool = True,
     role: str = Depends(require_role(["admin", "hr"])),
     session: AsyncSession = Depends(get_session),
 ):
     """List all employees. Only admin and HR can access."""
+    # Cache for 60 seconds
+    response.headers["Cache-Control"] = "private, max-age=60"
     return await employee_service.list_employees(session, active_only)
 
 
@@ -115,6 +118,7 @@ async def get_compliance_alerts(
 )
 async def get_employee(
     employee_id: str,
+    response: Response,
     role: str = Depends(require_role(["admin", "hr", "viewer"])),
     session: AsyncSession = Depends(get_session),
 ):
@@ -123,6 +127,8 @@ async def get_employee(
     
     Returns full employee details including UAE compliance fields.
     """
+    # Cache for 5 minutes (employee data changes less frequently)
+    response.headers["Cache-Control"] = "private, max-age=300"
     return await employee_service.get_employee(session, employee_id)
 
 

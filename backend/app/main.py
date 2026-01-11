@@ -105,7 +105,16 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def on_startup():
         # Legacy startup hook (kept for compatibility, main logic in lifespan)
-        pass
+        logger.info("Application startup", extra={"env": settings.app_env})
+
+        # Run startup migrations for data consistency
+        try:
+            from app.startup_migrations import run_startup_migrations
+            from app.database import AsyncSessionLocal
+            async with AsyncSessionLocal() as session:
+                await run_startup_migrations(session)
+        except Exception as e:
+            logger.error(f"Startup migrations failed: {e}")
 
     @app.on_event("shutdown")
     async def on_shutdown():
@@ -113,9 +122,22 @@ def create_app() -> FastAPI:
         pass
 
     # Serve static files in production (frontend build)
-    static_dir = Path(__file__).parent.parent / "static"
-    if static_dir.exists():
-        app.mount("/assets", StaticFiles(directory=str(static_dir / "assets")), name="assets")
+    # Check multiple possible locations for the frontend build
+    possible_static_dirs = [
+        Path(__file__).parent.parent / "static",  # backend/static
+        Path(__file__).parent.parent.parent / "frontend" / "dist",  # frontend/dist
+    ]
+    
+    static_dir = None
+    for dir_path in possible_static_dirs:
+        if dir_path.exists() and (dir_path / "index.html").exists():
+            static_dir = dir_path
+            break
+    
+    if static_dir:
+        assets_dir = static_dir / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
         
         @app.get("/{full_path:path}")
         async def serve_spa(full_path: str):

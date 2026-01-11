@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from pydantic import AnyHttpUrl, Field, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/secure_renewals",
         description="PostgreSQL connection string using asyncpg driver",
     )
-    allowed_origins: List[AnyHttpUrl] = Field(
+    allowed_origins: List[str] = Field(
         default_factory=lambda: ["http://localhost:5000", "http://0.0.0.0:5000"],
         description="List of allowed CORS origins",
     )
@@ -69,18 +69,22 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        parse_env_var={"allowed_origins": lambda v: [origin.strip() for origin in str(v).split(",") if origin.strip()]},
     )
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def split_origins(cls, value):
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return value
+        try:
+            if isinstance(value, str):
+                return [origin.strip() for origin in value.split(",") if origin.strip()]
+            if isinstance(value, list):
+                return value
+        except Exception:
+            pass
+        return ["*"]
 
 
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
-
-

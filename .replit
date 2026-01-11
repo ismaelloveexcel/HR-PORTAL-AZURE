@@ -8,6 +8,10 @@ externalPort = 80
 localPort = 5001
 externalPort = 3000
 
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
 [nix]
 channel = "stable-25_05"
 packages = ["glibcLocales", "libxcrypt", "postgresql"]
@@ -51,8 +55,13 @@ waitForPort = 5001
 
 [deployment]
 build = ["sh", "-c", "cd frontend && npm run build"]
-run = ["sh", "-c", "cd backend && uv run uvicorn app.main:app --host 0.0.0.0 --port 5000"]
+run = ["sh", "-c", "cd backend && ./start.sh"]
 deploymentTarget = "cloudrun"
 
 [agent]
 integrations = ["python_openai_ai_integrations:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+MAINTENANCE_SECRET = "MvkLDDNaG1VfGGNIivQV2esjNFJWPUgLpk15efwJWWc"

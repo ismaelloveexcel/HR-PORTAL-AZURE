@@ -1,0 +1,22 @@
+name: Automated Database Backup
+on:
+  schedule:
+    - cron: "0 2 * * *" # daily at 2am
+jobs:
+  backup:
+    name: Backup PostgreSQL Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump PostgreSQL database
+        env:
+          PGHOST: ${{ secrets.PGHOST }}
+          PGUSER: ${{ secrets.PGUSER }}
+          PGPASSWORD: ${{ secrets.PGPASSWORD }}
+          PGDATABASE: ${{ secrets.PGDATABASE }}
+        run: |
+          pg_dump -h "$PGHOST" -U "$PGUSER" "$PGDATABASE" > backup.sql
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: backup.sql

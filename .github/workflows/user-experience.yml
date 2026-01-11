@@ -1,0 +1,17 @@
+name: User Experience Monitor
+on:
+  workflow_dispatch: # Manual trigger only until URLs are configured
+  # schedule:
+  #   - cron: "0 * * * *" # hourly
+jobs:
+  ux-monitor:
+    name: Monitor User Experience
+    runs-on: ubuntu-latest
+    if: false # Disabled until Azure URLs are configured
+    steps:
+      - name: Check page load speed
+        run: |
+          curl -w "Time: %{time_total}\n" -o /dev/null -s https://<YOUR_STATIC_WEB_APP_URL>
+      - name: Check API response time
+        run: |
+          curl -w "Time: %{time_total}\n" -o /dev/null -s https://<YOUR_BACKEND_APP_SERVICE_URL>/health

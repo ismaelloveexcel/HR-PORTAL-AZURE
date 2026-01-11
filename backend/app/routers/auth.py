@@ -59,7 +59,17 @@ async def login(
     
     If `requires_password_change` is true, you must change your password.
     """
-    return await employee_service.login(session, request)
+    try:
+        return await employee_service.login(session, request)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Login error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred during login. Please try again.",
+        )
 
 
 @router.post(
