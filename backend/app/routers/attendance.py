@@ -1105,11 +1105,11 @@ async def approve_wfh(
     if not await check_feature_enabled(session, "feature_attendance_wfh"):
         raise HTTPException(status_code=403, detail="WFH feature is disabled")
     
-    if current_user.role not in ["admin", "hr"]:
+    if current_user.role not in ["admin", "hr", "manager"]:
         raise HTTPException(status_code=403, detail="Access denied")
     
     result = await session.execute(
-        select(AttendanceRecord, Employee.name).join(
+        select(AttendanceRecord, Employee.name, Employee.line_manager_id).join(
             Employee, AttendanceRecord.employee_id == Employee.id
         ).where(AttendanceRecord.id == record_id)
     )

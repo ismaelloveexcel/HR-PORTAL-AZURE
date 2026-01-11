@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class NotificationBase(BaseModel):
@@ -16,5 +16,4 @@ class NotificationResponse(NotificationBase):
     id: int
     is_read: bool
     created_at: datetime
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

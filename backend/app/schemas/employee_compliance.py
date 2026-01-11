@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EmployeeComplianceBase(BaseModel):
@@ -86,8 +86,7 @@ class EmployeeComplianceResponse(EmployeeComplianceBase):
     iloe_days_until_expiry: Optional[int] = None
     contract_days_until_expiry: Optional[int] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ComplianceAlertItem(BaseModel):

@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class AuditLogBase(BaseModel):
@@ -12,5 +12,4 @@ class AuditLogBase(BaseModel):
 class AuditLogResponse(AuditLogBase):
     id: int
     timestamp: datetime
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

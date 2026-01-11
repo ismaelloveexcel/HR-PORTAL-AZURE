@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ActivityLogCreate(BaseModel):
@@ -24,8 +24,7 @@ class ActivityLogResponse(BaseModel):
     timestamp: datetime
     visibility: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ActivityLogListResponse(BaseModel):

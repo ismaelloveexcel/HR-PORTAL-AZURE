@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PerformanceCycleCreate(BaseModel):
@@ -32,8 +32,7 @@ class PerformanceCycleResponse(BaseModel):
     created_at: datetime
     review_count: int = 0
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PerformanceRatingCreate(BaseModel):
@@ -56,8 +55,7 @@ class PerformanceRatingResponse(BaseModel):
     manager_rating: Optional[int]
     manager_comments: Optional[str]
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SelfAssessmentSubmit(BaseModel):
@@ -121,8 +119,7 @@ class PerformanceReviewResponse(BaseModel):
     
     ratings: List[PerformanceRatingResponse] = []
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BulkReviewCreate(BaseModel):
