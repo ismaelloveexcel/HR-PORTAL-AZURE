@@ -46,6 +46,8 @@ interface Employee {
   gender?: string
   joining_date?: string
   line_manager_name?: string
+  function?: string
+  status?: string
 }
 
 interface EmployeeFormData {
@@ -3946,7 +3948,7 @@ function App() {
   }
 
   // Templates Section
-  if (activeSection === 'templates' || activeSection === 'template-manager' || activeSection === 'template-candidate' || activeSection === 'template-onboarding' || activeSection === 'template-employee') {
+  if (activeSection === 'template-manager' || activeSection === 'template-candidate' || activeSection === 'template-onboarding' || activeSection === 'template-employee') {
     const templateType = activeSection === 'template-manager' ? 'manager' :
                          activeSection === 'template-candidate' ? 'candidate' :
                          activeSection === 'template-onboarding' ? 'onboarding' :
