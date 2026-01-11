@@ -1,7 +1,7 @@
 from functools import lru_cache
-from typing import List, Optional, Union
+from typing import List, Optional
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,8 +14,9 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/secure_renewals",
         description="PostgreSQL connection string using asyncpg driver",
     )
-    # Use Union to accept both string and list, validator will normalize
-    allowed_origins: Union[str, List[str]] = Field(
+    # Store as plain string to avoid pydantic_settings JSON parsing issues
+    # Use get_allowed_origins_list() to get the parsed list
+    allowed_origins: str = Field(
         default="http://localhost:5000,http://0.0.0.0:5000",
         description="Comma-separated list of allowed CORS origins",
     )
