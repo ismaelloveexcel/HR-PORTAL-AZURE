@@ -1,6 +1,5 @@
 """Geofence management router."""
-from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 import jwt
