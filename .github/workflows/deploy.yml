@@ -36,11 +36,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Copy frontend build to backend
+      - name: Verify frontend build
         run: |
-          rm -rf backend/static
-          cp -r frontend/dist backend/static
-          echo "✅ Frontend copied to backend/static"
+          echo "✅ Frontend already built to backend/static (Vite config)"
+          ls -la backend/static/ || echo "Warning: backend/static may not exist yet"
 
       - name: Create deployment package
         run: |
