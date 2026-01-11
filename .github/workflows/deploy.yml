@@ -3,40 +3,84 @@ name: Deploy to Azure
 on:
   push:
     branches: [main]
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
-  deploy-frontend:
-    name: Deploy Frontend to Azure Static Web Apps
+  build-and-deploy:
+    name: Build and Deploy HR Portal
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build and Deploy Static Web App
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
-          app_location: "frontend"
-          output_location: "frontend/dist"
-          api_location: "backend/app"
 
-  deploy-backend:
-    name: Deploy Backend to Azure App Service
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ===== BUILD FRONTEND =====
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://baynunahhrportal.azurewebsites.net/api
+
+      # ===== PREPARE BACKEND =====
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-      - name: Install dependencies
-        run: uv sync
-        working-directory: backend
-      - name: Deploy to Azure Web App
+
+      - name: Verify frontend build
+        run: |
+          echo "✅ Frontend already built to backend/static (Vite config)"
+          ls -la backend/static/ || echo "Warning: backend/static may not exist yet"
+
+      - name: Create deployment package
+        run: |
+          cd backend
+          zip -r ../deploy.zip . \
+            -x "*.pyc" \
+            -x "*__pycache__*" \
+            -x "*.git*" \
+            -x "*.env*" \
+            -x "*.example" \
+            -x "*.md" \
+            -x "*test*.py" \
+            -x "*.bak" \
+            -x "*.tmp"
+          cd ..
+          echo "Package size: $(du -h deploy.zip | cut -f1)"
+
+      # ===== DEPLOY TO AZURE =====
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: backend/app
+          app-name: BaynunahHRPortal
+          package: deploy.zip
+
+      - name: Configure App Settings
+        run: |
+          echo "Configuring Azure App Service settings..."
+          az webapp config appsettings set --name BaynunahHRPortal --resource-group BaynunahHR --settings \
+            ALLOWED_ORIGINS="https://baynunahhrportal.azurewebsites.net" \
+            APP_ENV="production" \
+            SCM_DO_BUILD_DURING_DEPLOYMENT="true" \
+            --output none
+          echo "✅ App settings configured (DATABASE_URL and AUTH_SECRET_KEY preserved from Azure)"
+
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Deployment Complete!"
+          echo "📱 App URL: https://baynunahhrportal.azurewebsites.net"
+          echo "📚 API Docs: https://baynunahhrportal.azurewebsites.net/docs"

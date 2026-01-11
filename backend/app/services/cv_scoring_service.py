@@ -11,24 +11,33 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client for CV analysis
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY") or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY"),
-    base_url=os.environ.get("OPENAI_BASE_URL") or os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
-)
+_client: Optional[OpenAI] = None
+
+
+def _build_openai_client() -> Optional[OpenAI]:
+    """Construct a client only when credentials are present."""
+    api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
+    if not api_key:
+        logger.warning("OpenAI API key missing; CV scoring disabled.")
+        return None
+
+    return OpenAI(
+        api_key=api_key,
+        base_url=os.environ.get("OPENAI_BASE_URL") or os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL"),
+    )
 
 async def analyze_cv(
     cv_text: str,
     job_title: str,
     job_description: str,
     required_skills: list[str] = None
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:
     """
     Analyze CV text against job requirements and return scoring.
     
     Returns:
         Dict with cv_scoring, skills_match_score, education_level, 
-        years_experience, current_position
+        years_experience, current_position or None when disabled/failed.
     """
     required_skills = required_skills or []
     skills_list = ", ".join(required_skills) if required_skills else "Not specified"
@@ -58,6 +67,12 @@ Provide a JSON response with these exact fields:
 
 Be accurate and fair in scoring. A score of 80+ indicates excellent match, 60-79 good match, 40-59 moderate match, below 40 poor match.
 Return ONLY valid JSON, no additional text."""
+
+    global _client
+    client = _client or _build_openai_client()
+    _client = client
+    if client is None:
+        return None
 
     try:
         response = client.chat.completions.create(
