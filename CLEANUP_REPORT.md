@@ -227,33 +227,41 @@ All current, relevant documentation retained:
 
 GitHub shows a "compare and pull request" prompt for every branch that has commits different from the main branch. The repository has accumulated **21 stale branches** from previous Copilot work sessions that need to be deleted.
 
+**Last Updated:** January 10, 2026
+
 ### Branches to Delete (21 branches)
 
 These branches are from closed/merged PRs or abandoned work sessions:
 
-| Branch Name | Associated PR | Status |
-|-------------|---------------|--------|
-| `copilot/automate-deployment-on-azure` | None | Stale |
-| `copilot/check-branch-merge-status` | None | Stale |
-| `copilot/check-merge-request-failure` | None | Stale |
-| `copilot/clone-repository` | None | Stale |
-| `copilot/clone-repository-again` | PR #5 | Closed |
-| `copilot/create-deployment-agent-azure` | None | Stale |
-| `copilot/create-new-repo-instead` | PR #2 | Closed |
-| `copilot/create-new-repo-with-revisions` | None | Stale |
-| `copilot/deploy-application-on-microsoft` | None | Stale |
-| `copilot/identify-essential-deployment-files` | PR #3 | Closed |
-| `copilot/improve-app-performance` | None | Stale |
-| `copilot/improve-code-efficiency` | None | Stale |
-| `copilot/increase-codespaces-budget` | None | Stale |
-| `copilot/pull-data-from-replit` | None | Stale |
-| `copilot/review-attendance-module` | None | Stale |
-| `copilot/review-documentation-feedback` | None | Stale |
-| `copilot/review-hr-app-implementation` | None | Stale |
-| `copilot/review-insurance-census-module` | None | Stale |
-| `copilot/review-pull-requests` | PR #4 | Merged |
-| `copilot/transfer-app-to-azure-devops` | None | Stale |
-| `dependabot/github_actions/astral-sh/setup-uv-7` | None | Stale |
+| Branch Name | Associated PR | Status | Action |
+|-------------|---------------|--------|--------|
+| `copilot/automate-deployment-on-azure` | None | Stale | ❌ DELETE |
+| `copilot/check-branch-merge-status` | None | Stale | ❌ DELETE |
+| `copilot/check-merge-request-failure` | None | Stale | ❌ DELETE |
+| `copilot/clone-repository` | None | Stale | ❌ DELETE |
+| `copilot/create-deployment-agent-azure` | None | Stale | ❌ DELETE |
+| `copilot/create-new-repo-instead` | PR #2 | Closed | ❌ DELETE |
+| `copilot/create-new-repo-with-revisions` | None | Stale | ❌ DELETE |
+| `copilot/deploy-application-on-microsoft` | None | Stale | ❌ DELETE |
+| `copilot/identify-azure-deployment-repos` | PR #7 | Merged | ❌ DELETE |
+| `copilot/identify-essential-deployment-files` | PR #3 | Closed | ❌ DELETE |
+| `copilot/improve-app-performance` | None | Stale | ❌ DELETE |
+| `copilot/improve-code-efficiency` | None | Stale | ❌ DELETE |
+| `copilot/increase-codespaces-budget` | None | Stale | ❌ DELETE |
+| `copilot/pull-data-from-replit` | None | Stale | ❌ DELETE |
+| `copilot/review-attendance-module` | None | Stale | ❌ DELETE |
+| `copilot/review-documentation-feedback` | None | Stale | ❌ DELETE |
+| `copilot/review-hr-app-implementation` | None | Stale | ❌ DELETE |
+| `copilot/review-insurance-census-module` | None | Stale | ❌ DELETE |
+| `copilot/review-pull-requests` | PR #4 | Merged | ❌ DELETE |
+| `copilot/transfer-app-to-azure-devops` | None | Stale | ❌ DELETE |
+| `dependabot/github_actions/astral-sh/setup-uv-7` | None | Stale Dependabot | ❌ DELETE |
+
+### Branches to Keep
+
+| Branch Name | Purpose |
+|-------------|---------|
+| `main` | Primary production branch |
 
 ### How to Delete Stale Branches
 
@@ -271,13 +279,44 @@ gh api -X DELETE /repos/ismaelloveexcel/HR-PORTAL-AZURE/git/refs/heads/copilot/a
 git push origin --delete copilot/automate-deployment-on-azure
 ```
 
-**Option 3: Bulk Delete via GitHub API**
+**Option 3: Bulk Delete Script**
 ```bash
-# Delete all copilot/* branches at once
-for branch in copilot/automate-deployment-on-azure copilot/check-branch-merge-status copilot/check-merge-request-failure copilot/clone-repository copilot/clone-repository-again copilot/create-deployment-agent-azure copilot/create-new-repo-instead copilot/create-new-repo-with-revisions copilot/deploy-application-on-microsoft copilot/identify-essential-deployment-files copilot/improve-app-performance copilot/improve-code-efficiency copilot/increase-codespaces-budget copilot/pull-data-from-replit copilot/review-attendance-module copilot/review-documentation-feedback copilot/review-hr-app-implementation copilot/review-insurance-census-module copilot/review-pull-requests copilot/transfer-app-to-azure-devops; do
+# Delete all obsolete branches at once
+for branch in \
+  copilot/automate-deployment-on-azure \
+  copilot/check-branch-merge-status \
+  copilot/check-merge-request-failure \
+  copilot/clone-repository \
+  copilot/create-deployment-agent-azure \
+  copilot/create-new-repo-instead \
+  copilot/create-new-repo-with-revisions \
+  copilot/deploy-application-on-microsoft \
+  copilot/identify-azure-deployment-repos \
+  copilot/identify-essential-deployment-files \
+  copilot/improve-app-performance \
+  copilot/improve-code-efficiency \
+  copilot/increase-codespaces-budget \
+  copilot/pull-data-from-replit \
+  copilot/review-attendance-module \
+  copilot/review-documentation-feedback \
+  copilot/review-hr-app-implementation \
+  copilot/review-insurance-census-module \
+  copilot/review-pull-requests \
+  copilot/transfer-app-to-azure-devops \
+  dependabot/github_actions/astral-sh/setup-uv-7; do
   git push origin --delete "$branch"
 done
 ```
+
+### Prevent Future Branch Accumulation
+
+To prevent stale branches from accumulating in the future:
+
+1. **Enable automatic branch deletion** in repository settings:
+   - Go to: Settings → General → Pull Requests
+   - ✅ Check "Automatically delete head branches"
+
+2. **Clean up branches after merging PRs manually** if automatic deletion is not enabled
 
 ### After Cleanup
 Once all stale branches are deleted:
