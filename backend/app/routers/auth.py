@@ -93,11 +93,10 @@ async def login(
         import logging
         import traceback
         logger = logging.getLogger(__name__)
-        # Mask employee_id to prevent clear-text logging of sensitive information
-        # The employee_id is sanitized through _mask_employee_id() before logging
+        # Mask employee_id if needed for future non-logging use
         masked_id = _mask_employee_id(request.employee_id)
-        # Log with masked ID only - never log request.employee_id directly
-        logger.error(f"Login error for employee_id={masked_id}: {str(e)}")
+        # Do not log employee IDs (even masked) to avoid exposing sensitive information
+        logger.error(f"Login error during authentication: {str(e)}")
         logger.error(f"Login error traceback: {traceback.format_exc()}")
         
         # In development, show actual error
