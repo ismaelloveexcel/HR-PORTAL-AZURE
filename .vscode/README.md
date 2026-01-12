@@ -37,11 +37,41 @@ Pre-configured tasks accessible via `Ctrl+Shift+P` → "Tasks: Run Task"
 | | Database Migrations: Downgrade | Rollback last migration |
 | **Quality** | Lint Backend (Type Check) | Run mypy |
 | | Lint Frontend (Type Check) | Run TypeScript compiler |
-| **Deployment** | Deploy to Azure | Run Azure deployment script |
+| **Azure Deployment** | Deploy to Azure | Run Azure deployment script |
+| | Azure: Build and Deploy Full Stack | Build frontend + create deployment package |
+| | Azure: Complete Deployment Workflow | Full automated deployment to Azure |
+| | Azure: Check Health Endpoints | Verify deployment health |
+| | Azure: View Logs | Stream live logs from Azure |
+| | Azure: SSH into App Service | Direct SSH access to Azure |
+| | Azure: Restart App Service | Restart the Azure app |
+| | Azure: Run Migrations | Run Alembic migrations on Azure |
+| | Azure: Reset Admin Password | Emergency password reset |
+| | Azure: Fix Production Data | Data normalization fix |
 | **Maintenance** | Clean Build Artifacts | Remove temporary files |
+| | Verify Backend Environment | Check Python/UV setup |
 
 **Quick Access:**
 - Default build task: Press `Ctrl+Shift+B`
+
+### `deploy-azure.code-workspace`
+**NEW!** Dedicated workspace for Azure deployment operations.
+
+**To use:**
+```bash
+code .vscode/deploy-azure.code-workspace
+```
+
+**Features:**
+- Pre-configured Azure App Service settings
+- Deployment-specific tasks
+- Recommended Azure extensions
+- Quick access to deployment commands
+
+### `deploy-azure-backend.code-workspace`
+Backend-only workspace for Azure App Service deployment.
+
+### `deploy-azure-frontend.code-workspace`
+Frontend-only workspace for Azure Static Web Apps deployment.
 
 ### `launch.json`
 Debug configurations accessible via `F5` or Debug panel
@@ -87,6 +117,9 @@ Recommended extensions for optimal development experience
 | Path Intellisense | Auto-complete file paths |
 | IntelliCode | AI-assisted coding |
 | Code Spell Checker | Spell checking in code |
+| **Azure App Service** | Deploy to Azure App Service |
+| **Azure Account** | Azure account management |
+| **GitHub Copilot** | AI code assistance |
 
 **Installation:**
 - Click "Install All" when prompted
@@ -157,6 +190,15 @@ F5 (select configuration)
 
 # Test API
 Open .vscode/api-tests.http and click "Send Request"
+```
+
+### Azure Deployment
+```bash
+# One-click deployment
+Ctrl+Shift+P → "Tasks: Run Task" → "Azure: Complete Deployment Workflow"
+
+# Or open dedicated workspace
+code .vscode/deploy-azure.code-workspace
 ```
 
 ## Keyboard Shortcuts
@@ -230,10 +272,17 @@ Add to `launch.json`:
 - Manually install: `Ctrl+Shift+X` → Search → Install
 - Check VSCode version is latest
 
+### Azure Deployment Issues
+- Ensure Azure CLI is installed: `az --version`
+- Login to Azure: `az login`
+- Check Azure App Service extension is installed
+- Consult the [Azure Deployment Specialist Agent](../.github/agents/azure-deployment-specialist.md)
+
 ## Additional Resources
 
 - [VSCode Quick Start Guide](../docs/VSCODE_QUICK_START.md)
 - [VSCode Deployment Guide](../docs/VSCODE_DEPLOYMENT_GUIDE.md)
+- [Azure Deployment Specialist Agent](../.github/agents/azure-deployment-specialist.md)
 - [Main README](../README.md)
 - [Contributing Guide](../CONTRIBUTING.md)
 
@@ -242,7 +291,8 @@ Add to `launch.json`:
 For issues with VSCode configuration:
 1. Check [Troubleshooting](#troubleshooting) above
 2. Review [VSCode Deployment Guide](../docs/VSCODE_DEPLOYMENT_GUIDE.md)
-3. Open an issue on GitHub
+3. Use the [Azure Deployment Specialist Agent](../.github/agents/azure-deployment-specialist.md)
+4. Open an issue on GitHub
 
 ---
 

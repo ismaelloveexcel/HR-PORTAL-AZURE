@@ -1,0 +1,121 @@
+{
+  "folders": [
+    { "path": ".." }
+  ],
+  "settings": {
+    "azureAppService.showExplorer": true,
+    "azureAppService.defaultWebAppToDeploy": "/subscriptions/*/resourceGroups/BaynunahHR/providers/Microsoft.Web/sites/BaynunahHRPortal",
+    "azureFunctions.showExplorer": false,
+    "azureStaticWebApps.showExplorer": false,
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/node_modules": true,
+      "**/.git": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-azuretools.vscode-azureappservice",
+      "ms-azuretools.vscode-azureresourcegroups",
+      "ms-vscode.azure-account",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "GitHub.copilot",
+      "GitHub.copilot-chat"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Azure: Deploy Backend",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "bash",
+        "runtimeArgs": [
+          "-c",
+          "cd ${workspaceFolder} && bash deploy_to_azure.sh"
+        ],
+        "console": "integratedTerminal"
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Azure: Full Stack Deploy",
+        "type": "shell",
+        "command": "echo '🚀 Starting Azure Deployment...' && cd frontend && npm run build && cd ../backend && zip -r ../deploy.zip . -x '*.pyc' -x '*__pycache__*' -x '*.git*' -x '*.env*' && cd .. && az webapp deployment source config-zip --name BaynunahHRPortal --resource-group BaynunahHR --src deploy.zip && echo '✅ Deployment complete!'",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Azure: Verify Deployment",
+        "type": "shell",
+        "command": "echo '🔍 Checking deployment health...' && echo '' && echo '=== Health Check ===' && curl -s https://baynunahhrportal.azurewebsites.net/api/health && echo '' && echo '' && echo '=== Database Health ===' && curl -s https://baynunahhrportal.azurewebsites.net/api/health/db && echo '' && echo '✅ Health check complete'",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Azure: View Live Logs",
+        "type": "shell",
+        "command": "az webapp log tail --name BaynunahHRPortal --resource-group BaynunahHR",
+        "isBackground": true,
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Azure: SSH into App",
+        "type": "shell",
+        "command": "az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Azure: Restart App Service",
+        "type": "shell",
+        "command": "echo '🔄 Restarting App Service...' && az webapp restart --name BaynunahHRPortal --resource-group BaynunahHR && echo '✅ Restart complete'",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Azure: Run Migrations",
+        "type": "shell",
+        "command": "echo '🔄 Running database migrations...' && az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR --command 'cd /home/site/wwwroot && python -m alembic upgrade head'",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Azure: Reset Admin Password",
+        "type": "shell",
+        "command": "echo '🔐 Resetting admin password...' && echo 'Enter your AUTH_SECRET_KEY:' && read -s AUTH_KEY && curl -X POST 'https://baynunahhrportal.azurewebsites.net/api/health/reset-admin-password' -H \"X-Admin-Secret: $AUTH_KEY\" && echo '' && echo '✅ Admin password reset complete'",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      }
+    ]
+  }
+}

@@ -27,10 +27,18 @@
     // Docker (if needed later)
     "ms-azuretools.vscode-docker",
     
+    // Azure extensions for deployment
+    "ms-azuretools.vscode-azureappservice",
+    "ms-azuretools.vscode-azureresourcegroups",
+    "ms-vscode.azure-account",
+    
+    // GitHub Copilot
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    
     // Utilities
     "christian-kohler.path-intellisense",
     "visualstudioexptteam.vscodeintellicode",
-    "streetsidesoftware.code-spell-checker",
-    "ms-azuretools.vscode-azurevirtualmachines"
+    "streetsidesoftware.code-spell-checker"
   ]
 }

@@ -205,11 +205,32 @@ export const ExampleList: React.FC = () => {
 | Module Discovery | ✅ Primary | ⚡ Support | ❌ No | ❌ No |
 | Documentation | ✅ Primary | ⚡ Support | ❌ No | ❌ No |
 | Azure Deployment | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
+| VS Code Deployment | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
 | Login Troubleshooting | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
 | Database Issues | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
 | Python Environment | ❌ No | ⚡ Support | ❌ No | ✅ Primary |
 
 ## 🚀 Deployment Workflow
+
+### VS Code Quick Deployment
+
+1. **Press `Ctrl+Shift+P`** → "Tasks: Run Task"
+2. **Select "Azure: Complete Deployment Workflow"**
+3. **Wait for completion** - frontend builds, deploys, and verifies
+
+### Available VS Code Tasks
+
+| Task | Purpose |
+|------|---------|
+| `Azure: Complete Deployment Workflow` | Full automated deployment |
+| `Azure: Build and Deploy Full Stack` | Build + create package |
+| `Azure: Check Health Endpoints` | Verify deployment health |
+| `Azure: View Logs` | Stream live logs |
+| `Azure: SSH into App Service` | Direct SSH access |
+| `Azure: Restart App Service` | Restart the app |
+| `Azure: Run Migrations` | Run database migrations |
+| `Azure: Reset Admin Password` | Emergency password reset |
+| `Azure: Fix Production Data` | Data normalization fix |
 
 ### Deploying to Azure
 
@@ -220,7 +241,7 @@ export const ExampleList: React.FC = () => {
 2. **Deploy** (Azure Deployment Specialist)
    - Push to `main` branch OR
    - Run GitHub Action manually OR
-   - Use VS Code task "Deploy to Azure"
+   - Use VS Code task "Azure: Complete Deployment Workflow"
 
 3. **Verify** (Azure Deployment Specialist)
    - Check `/api/health` endpoint

@@ -241,6 +241,46 @@
         "reveal": "always",
         "panel": "new"
       }
+    },
+    {
+      "label": "Azure: Run Migrations",
+      "type": "shell",
+      "command": "echo '🔄 Running database migrations on Azure...' && az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR --command 'cd /home/site/wwwroot && python -m alembic upgrade head' && echo '✅ Migrations complete'",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Reset Admin Password",
+      "type": "shell",
+      "command": "echo '🔐 Resetting admin password...' && echo 'This will reset the admin password to the default DOB format.' && echo '' && read -p 'Enter your AUTH_SECRET_KEY: ' -s AUTH_KEY && echo '' && curl -X POST 'https://baynunahhrportal.azurewebsites.net/api/health/reset-admin-password' -H \"X-Admin-Secret: $AUTH_KEY\" && echo '' && echo '✅ Done! Default credentials: BAYN00008 / 16051988'",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Fix Production Data",
+      "type": "shell",
+      "command": "echo '🔧 Running production data fix...' && read -p 'Enter your MAINTENANCE_SECRET: ' -s MAINT_KEY && echo '' && curl -X POST \"https://baynunahhrportal.azurewebsites.net/api/health/fix-production?token=$MAINT_KEY\" && echo '' && echo '✅ Production fix complete'",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Complete Deployment Workflow",
+      "type": "shell",
+      "command": "echo '🚀 Starting complete Azure deployment workflow...' && echo '' && echo '=== Step 1: Building frontend ===' && cd frontend && npm run build && echo '' && echo '=== Step 2: Creating deployment package ===' && cd ../backend && zip -r ../deploy.zip . -x '*.pyc' -x '*__pycache__*' -x '*.git*' -x '*.env*' -x '*.example' -x '*.md' && echo '' && echo '=== Step 3: Deploying to Azure ===' && cd .. && az webapp deployment source config-zip --name BaynunahHRPortal --resource-group BaynunahHR --src deploy.zip && echo '' && echo '=== Step 4: Verifying deployment ===' && sleep 10 && curl -s https://baynunahhrportal.azurewebsites.net/api/health && echo '' && echo '' && echo '✅ Deployment complete! App is live at: https://baynunahhrportal.azurewebsites.net'",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
     }
   ],
   "inputs": [
