@@ -28,6 +28,7 @@ interface NominationForm {
   achievements: string
   impact_description: string
   achievement_categories: string[]
+  supportingFiles?: File[]
 }
 
 interface NominationInfo {
@@ -272,7 +273,7 @@ export function NominationPass() {
     setVerificationToken(null)
     setEligibleEmployees([])
     setExistingNomination(null)
-    setForm({ nominee_id: null, justification: '', achievements: '', impact_description: '' })
+    setForm({ nominee_id: null, justification: '', achievements: '', impact_description: '', achievement_categories: [] })
     setSubmittedNomination(null)
     setError(null)
     setActiveTab('home')

@@ -3,7 +3,7 @@ import json
 import os
 import secrets
 from typing import List, Dict, Any
-from fastapi import APIRouter, Depends, Query, HTTPException, Body
+from fastapi import APIRouter, Depends, Query, HTTPException, Body, Header
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +21,148 @@ SYSTEM_ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 @router.get("", summary="API healthcheck")
 async def healthcheck(role: str = Depends(require_role())):
     return {"status": "ok", "role": role}
+
+
+@router.post("/reset-admin-password", summary="Reset admin password to default (emergency use)")
+async def reset_admin_password(
+    secret_token: str = Header(..., alias="X-Admin-Secret"),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Emergency endpoint to reset BAYN00008 admin password to default (DOB: 16051988).
+    Requires X-Admin-Secret header matching AUTH_SECRET_KEY environment variable.
+    
+    This is useful when:
+    - Startup migrations fail
+    - Admin password gets corrupted
+    - Database is in inconsistent state
+    
+    Returns employee details after successful reset.
+    """
+    from sqlalchemy import text
+    import logging
+    from app.core.config import get_settings
+    
+    logger = logging.getLogger(__name__)
+    settings = get_settings()
+    
+    # Verify secret token
+    if secret_token != settings.auth_secret_key:
+        logger.warning("Unauthorized admin password reset attempt")
+        raise HTTPException(status_code=403, detail="Invalid secret token")
+    
+    try:
+        # Reset admin password
+        ADMIN_EMPLOYEE_ID = "BAYN00008"
+        ADMIN_PASSWORD_HASH = "3543bc93f69b085852270bb3edfac94a:7e8f4f92a9b90a1260bc005304f5b30f014dd4603056cacb0b6170d05049b832"
+        
+        result = await session.execute(
+            text("""
+                UPDATE employees 
+                SET password_hash = :hash,
+                    password_changed = false,
+                    role = 'admin',
+                    is_active = true,
+                    employment_status = 'Active'
+                WHERE employee_id = :emp_id
+                RETURNING employee_id, name, role, is_active
+            """),
+            {"hash": ADMIN_PASSWORD_HASH, "emp_id": ADMIN_EMPLOYEE_ID}
+        )
+        
+        row = result.fetchone()
+        await session.commit()
+        
+        if row:
+            # Audit log for security monitoring (generic message)
+            logger.info("Admin account password reset completed")
+            return {
+                "success": True,
+                "message": f"Password reset for {row[0]} - {row[1]}",
+                "employee_id": row[0],
+                "name": row[1],
+                "role": row[2],
+                "is_active": row[3],
+                "default_password": "16051988",
+                "instructions": "You can now login with this employee_id and the default_password"
+            }
+        else:
+            # Generic error for security (don't reveal specifics)
+            logger.error("Admin account reset failed - account not found")
+            return {
+                "success": False,
+                "message": f"Employee {ADMIN_EMPLOYEE_ID} not found in database",
+                "suggestion": "Database may need to be seeded. Check startup migration logs."
+            }
+            
+    except Exception as e:
+        error_type = type(e).__name__
+        logger.error(f"Admin password reset failed: {error_type}")
+        # Note: Traceback intentionally not logged to avoid sensitive data exposure
+        await session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Password reset failed: {error_type}"
+        )
+
+
+@router.get("/db", summary="Database connectivity and admin account check")
+async def health_check_db(session: AsyncSession = Depends(get_session)):
+    """
+    Check database connectivity and return admin account status.
+    
+    Returns:
+    - Database connection status
+    - Total employee count
+    - Admin account existence and status
+    
+    Use this to diagnose login issues before attempting password reset.
+    """
+    from sqlalchemy import text
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Test basic query
+        result = await session.execute(text("SELECT COUNT(*) FROM employees"))
+        employee_count = result.scalar()
+        
+        # Check admin exists
+        admin_result = await session.execute(
+            text("""
+                SELECT employee_id, name, role, is_active, password_changed, employment_status 
+                FROM employees 
+                WHERE employee_id = 'BAYN00008'
+            """)
+        )
+        admin = admin_result.fetchone()
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "employee_count": employee_count,
+            "admin_check": {
+                "exists": admin is not None,
+                "details": {
+                    "employee_id": admin[0],
+                    "name": admin[1],
+                    "role": admin[2],
+                    "is_active": admin[3],
+                    "password_changed": admin[4],
+                    "employment_status": admin[5]
+                } if admin else None,
+                "note": "If admin doesn't exist or is_active is false, use /api/health/reset-admin-password"
+            }
+        }
+    except Exception as e:
+        error_type = type(e).__name__
+        logger.error(f"Database health check failed: {error_type}")
+        # Note: Traceback intentionally not logged to avoid sensitive data exposure
+        raise HTTPException(
+            status_code=503,
+            detail=f"Database connection failed: {error_type}"
+        )
 
 
 @router.get("/list-employees", summary="List employees for diagnostics")

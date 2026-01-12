@@ -73,10 +73,13 @@ Go to your GitHub repository:
 
 The workflow file is already configured at `.github/workflows/deploy.yml`. It includes:
 
-✅ Frontend build with Vite  
-✅ Backend packaging  
-✅ Azure App Service deployment  
-✅ Environment variable configuration
+✅ **Secrets validation** - Fails early if required secrets are missing  
+✅ **Frontend build** with Vite  
+✅ **Static asset verification** - Ensures frontend is included  
+✅ **Backend packaging** with all dependencies  
+✅ **Azure App Service deployment**  
+✅ **Environment variable configuration** (DATABASE_URL, AUTH_SECRET_KEY)  
+✅ **Automatic database migrations** - Runs `alembic upgrade head` post-deploy
 
 No changes needed unless you want to customize!
 
@@ -105,12 +108,17 @@ git push origin main
 1. Go to GitHub → **Actions** tab
 2. Click on the running workflow
 3. Watch real-time logs for each step:
+   - ✅ Validate secrets
    - ✅ Build frontend
+   - ✅ Verify static assets
    - ✅ Package backend
    - ✅ Deploy to Azure
-   - ✅ Configure settings
+   - ✅ Configure app settings
+   - ✅ Run database migrations
 
 Deployment typically takes **3-5 minutes**.
+
+**Note:** The migration step may fail if the app is still starting up. If it fails, you can run migrations manually (see Troubleshooting).
 
 ---
 
@@ -126,25 +134,43 @@ Once complete, check:
 
 ## Troubleshooting
 
+### Workflow Fails at "Validate required secrets"
+
+- **Issue:** One or more required secrets (AZURE_CREDENTIALS, DATABASE_URL, AUTH_SECRET_KEY) are missing
+- **Fix:** Add all required secrets in GitHub Settings → Secrets and variables → Actions
+
 ### Deployment Fails at "Login to Azure"
 
-- **Issue:** AZURE_CREDENTIALS secret is missing or invalid
+- **Issue:** AZURE_CREDENTIALS secret is invalid
 - **Fix:** Verify secret matches service principal JSON exactly (including quotes)
 
 ### Deployment Succeeds but App Won't Start
 
-- **Issue:** DATABASE_URL or other secrets missing
-- **Fix:** Check all required secrets are added in GitHub Settings
+- **Issue:** DATABASE_URL or AUTH_SECRET_KEY incorrect
+- **Fix:** 
+  1. Verify secrets are correct in GitHub Settings
+  2. Check Azure Portal → App Service → Configuration to verify settings were applied
+  3. Review app logs: `az webapp log tail --name BaynunahHRPortal --resource-group BaynunahHR`
 
 ### Frontend Not Loading
 
-- **Issue:** Build output not copied to backend/static
-- **Fix:** Check workflow logs for "Copy frontend build to backend" step
+- **Issue:** Build output not in backend/static
+- **Fix:** Check workflow logs for "Verify frontend build in backend/static" step. Should show index.html and assets directory.
+
+### Database Migrations Failed
+
+- **Issue:** Migration step timed out or couldn't connect
+- **Fix:** Run migrations manually:
+  ```bash
+  az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR
+  cd /home/site/wwwroot
+  python -m alembic upgrade head
+  ```
 
 ### Database Connection Error
 
 - **Issue:** DATABASE_URL incorrect or database not accessible
-- **Fix:** Verify VNet integration is enabled on App Service
+- **Fix:** Verify VNet integration is enabled on App Service and connection string format is correct
 
 ---
 
@@ -205,17 +231,16 @@ az webapp deployment slot swap \
 
 ## Advanced Configuration
 
-### Add Database Migrations
+### Database Migrations
 
-Update workflow to run migrations after deployment:
+✅ **Already Configured!** The workflow automatically runs `alembic upgrade head` after deployment.
 
-```yaml
-- name: Run Database Migrations
-  run: |
-    az webapp ssh \
-      --name BaynunahHRPortal \
-      --resource-group BaynunahHR \
-      --command "cd /home/site/wwwroot && python -m alembic upgrade head"
+The migration step uses `continue-on-error: true` so it won't block the deployment if it fails. If migrations fail, you'll see clear instructions in the workflow logs for running them manually:
+
+```bash
+az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR
+cd /home/site/wwwroot
+python -m alembic upgrade head
 ```
 
 ### Deploy Notifications

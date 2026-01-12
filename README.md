@@ -329,6 +329,95 @@ If you forget your password:
 2. Enter your Employee ID
 3. System sends a reset link (or HR can reset manually)
 
+---
+
+## 🚨 Emergency Admin Password Reset
+
+If you cannot log in as admin (`BAYN00008`), use these emergency diagnostic and recovery endpoints:
+
+### Check Database Health
+
+```bash
+# Check if database is connected and admin account exists
+curl "https://your-backend-url/api/health/db"
+```
+
+**Example response:**
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "employee_count": 48,
+  "admin_check": {
+    "exists": true,
+    "details": {
+      "employee_id": "BAYN00008",
+      "name": "Mohammad Ismael Sudally",
+      "role": "admin",
+      "is_active": true,
+      "password_changed": false,
+      "employment_status": "Active"
+    }
+  }
+}
+```
+
+### Reset Admin Password
+
+```bash
+# Replace YOUR_SECRET_KEY with your AUTH_SECRET_KEY from environment variables
+curl -X POST "https://your-backend-url/api/health/reset-admin-password" \
+  -H "X-Admin-Secret: YOUR_SECRET_KEY"
+```
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Password reset for BAYN00008 - Mohammad Ismael Sudally",
+  "employee_id": "BAYN00008",
+  "name": "Mohammad Ismael Sudally",
+  "role": "admin",
+  "is_active": true,
+  "default_password": "16051988",
+  "instructions": "You can now login with this employee_id and the default_password"
+}
+```
+
+### After Password Reset
+
+Login with:
+- **Employee ID**: `BAYN00008`
+- **Password**: `16051988`
+
+### Local Development
+
+For local testing:
+
+```bash
+# Check database health
+curl "http://localhost:8000/api/health/db"
+
+# Reset admin password (use your local AUTH_SECRET_KEY)
+curl -X POST "http://localhost:8000/api/health/reset-admin-password" \
+  -H "X-Admin-Secret: dev-secret-key-change-in-production"
+```
+
+### When to Use
+
+Use these emergency endpoints when:
+- ✅ Login fails with "An error occurred during login"
+- ✅ Startup migrations failed
+- ✅ Admin password got corrupted
+- ✅ Admin account is inactive (`is_active: false`)
+- ✅ Database is in an inconsistent state
+
+### Security Note
+
+⚠️ The reset endpoint requires your `AUTH_SECRET_KEY` environment variable. Only someone with access to your server's environment variables can use this endpoint. All reset attempts are logged.
+
+
+
 ### Environment Variables
 
 ```env
