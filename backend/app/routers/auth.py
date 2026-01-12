@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 import jwt
 from jwt.exceptions import PyJWTError
 from sqlalchemy.ext.asyncio import AsyncSession
+import hashlib
 
 from app.core.config import get_settings
 from app.database import get_session
@@ -65,11 +66,27 @@ async def login(
         raise
     except Exception as e:
         import logging
-        logging.getLogger(__name__).error(f"Login error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred during login. Please try again.",
+        logger = logging.getLogger(__name__)
+        # Log error type and a hashed employee_id for debugging (avoid logging sensitive data)
+        error_type = type(e).__name__
+        employee_id_hash = hashlib.sha256(request.employee_id.encode("utf-8")).hexdigest()
+        logger.error(
+            f"Login error for employee_id_hash={employee_id_hash}: {error_type}"
         )
+        # Note: Traceback intentionally not logged to avoid potential sensitive data exposure
+        
+        # In development, show error type only (not the full message)
+        settings = get_settings()
+        if settings.app_env == "development":
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Login error: {error_type}",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="An error occurred during login. Please check server logs or contact support.",
+            )
 
 
 @router.post(

@@ -113,8 +113,24 @@ def create_app() -> FastAPI:
             from app.database import AsyncSessionLocal
             async with AsyncSessionLocal() as session:
                 await run_startup_migrations(session)
+            logger.info("✅ Startup migrations completed successfully")
         except Exception as e:
-            logger.error(f"Startup migrations failed: {e}")
+            import traceback
+            logger.error(f"❌ Startup migrations failed: {e}")
+            logger.error(f"Startup migration traceback: {traceback.format_exc()}")
+            logger.error("=" * 80)
+            logger.error("STARTUP MIGRATION FAILURE - RECOVERY INSTRUCTIONS:")
+            logger.error("1. Check database connectivity: curl http://localhost:8000/api/health/db")
+            logger.error("2. Reset admin password: curl -X POST http://localhost:8000/api/health/reset-admin-password -H 'X-Admin-Secret: YOUR_SECRET'")
+            logger.error("3. Check logs above for specific error details")
+            logger.error("=" * 80)
+            
+            # In production, log but continue (don't crash the app)
+            # Admins can use /api/health/reset-admin-password to recover
+            if settings.app_env == "development":
+                logger.warning("⚠️  Continuing in development mode despite migration failure")
+            else:
+                logger.error("⚠️  Continuing in production mode - use emergency endpoints to recover")
 
     @app.on_event("shutdown")
     async def on_shutdown():
