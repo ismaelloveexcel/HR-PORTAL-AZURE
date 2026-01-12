@@ -90,6 +90,36 @@ For system engineering tasks, use the **Portal Engineer agent** (`.github/agents
 - "Help me create a database migration for the onboarding module"
 ```
 
+### 4. Azure Deployment Specialist Agent
+**File**: `.github/agents/azure-deployment-specialist.md`
+
+**Purpose**: Expert in Azure deployment, repository history, and troubleshooting login, database, and Python issues. The designated expert for all deployment-related tasks.
+
+**Key Capabilities**:
+- **Azure Deployment**: GitHub Actions deployment, VS Code deployment, manual Azure CLI deployment
+- **Login Troubleshooting**: Authentication issues, password resets, admin account recovery
+- **Database Issues**: PostgreSQL connection problems, SSL configuration, migration failures
+- **Python Environment**: Dependency issues, version conflicts, runtime errors
+- **Repository Knowledge**: Complete understanding of project structure, history, and architecture
+
+**Best For**:
+- Deploying to Azure App Service
+- Troubleshooting login and authentication errors
+- Fixing database connection issues
+- Resolving Python environment problems
+- Emergency recovery procedures
+- Understanding repository architecture
+
+**Example Use Cases**:
+```
+- "Deploy the application to Azure App Service"
+- "Troubleshoot login errors in production"
+- "Fix database connection failed error"
+- "Reset admin password for recovery"
+- "Debug Python module not found error"
+- "Run database migrations on Azure"
+```
+
 ## How to Use These Agents
 
 ### Integration with GitHub Copilot
@@ -123,6 +153,18 @@ Need help with database design?
 
 Want architectural guidance?
   → Portal Engineer Agent
+
+Need to deploy to Azure?
+  → Azure Deployment Specialist Agent
+
+Having login or authentication issues?
+  → Azure Deployment Specialist Agent
+
+Database connection problems?
+  → Azure Deployment Specialist Agent
+
+Python environment issues?
+  → Azure Deployment Specialist Agent
 ```
 
 ### Combining Agents
@@ -134,6 +176,7 @@ For complex tasks, you may need multiple agents:
 1. **HR Assistant** - Understand the HR workflow and requirements
 2. **Portal Engineer** - Design and implement the technical solution
 3. **Code Quality Monitor** - Verify the implementation is secure and high-quality
+4. **Azure Deployment Specialist** - Deploy to Azure and verify health
 
 ## Agent Collaboration Workflow
 
@@ -154,6 +197,13 @@ For complex tasks, you may need multiple agents:
 - Check code quality and patterns
 - Verify performance
 - Ensure accessibility compliance
+
+### Phase 4: Deployment (Azure Deployment Specialist)
+- Build and deploy to Azure App Service
+- Configure environment variables
+- Run database migrations
+- Verify health endpoints
+- Troubleshoot any deployment issues
 
 ## Common Workflows
 
