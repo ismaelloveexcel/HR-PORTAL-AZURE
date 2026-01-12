@@ -81,6 +81,23 @@ cd frontend && npm install && npm run dev
 
 Use `Ctrl+Shift+B` → "Start Full Application" to run backend + frontend in parallel. See `.vscode/tasks.json`.
 
+**Available Tasks:**
+- Start Full Application (both backend & frontend)
+- Start Backend Server
+- Start Frontend Dev Server
+- Run Database Migrations
+- Create New Migration
+- Backend Syntax Check
+
+**Debug Configurations:**
+- F5 to debug Python backend
+- See `.vscode/launch.json` for all configurations
+
+**Code Snippets:**
+- Type `fastapi-router` for router template
+- Type `react-component` for React component template
+- See `.vscode/*.code-snippets` for all available snippets
+
 ### Database Setup
 
 ```bash
@@ -165,6 +182,18 @@ Backend serves frontend build from `backend/static/` or `frontend/dist/` (checks
 - **Azure:** `deploy_to_azure.sh` + GitHub Actions workflows (see `docs/AZURE_DEPLOYMENT_REFERENCE_GUIDE.md`)
 - **Replit:** Pre-configured in `.replit` with custom domain support
 - **Codespaces:** Auto-configured dev container for cloud development
+
+### CI/CD & Automation
+
+The repository includes comprehensive GitHub Actions workflows:
+
+- **PR Quality Check** (`.github/workflows/pr-quality-check.yml`) - Automated code review, security checks
+- **Post-Deployment Health** (`.github/workflows/post-deployment-health.yml`) - Health monitoring after deployments
+- **Automated Maintenance** (`.github/workflows/automated-maintenance.yml`) - Monthly dependency audits
+- **Deploy** (`.github/workflows/deploy.yml`) - Azure deployment automation
+- **CI** (`.github/workflows/ci.yml`) - Continuous integration checks
+
+These workflows automatically run on PRs and deployments. See `CONTRIBUTING.md` for details.
 
 ### Environment Variables
 
