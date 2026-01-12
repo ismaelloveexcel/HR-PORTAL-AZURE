@@ -97,24 +97,6 @@
           "reveal": "always",
           "panel": "new"
         }
-      },
-      {
-        "label": "Azure: Run Migrations",
-        "type": "shell",
-        "command": "echo '🔄 Running database migrations...' && az webapp ssh --name BaynunahHRPortal --resource-group BaynunahHR --command 'cd /home/site/wwwroot && python -m alembic upgrade head'",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        }
-      },
-      {
-        "label": "Azure: Reset Admin Password",
-        "type": "shell",
-        "command": "echo '🔐 Resetting admin password...' && echo 'Enter your AUTH_SECRET_KEY:' && read -s AUTH_KEY && curl -X POST 'https://baynunahhrportal.azurewebsites.net/api/health/reset-admin-password' -H \"X-Admin-Secret: $AUTH_KEY\" && echo '' && echo '✅ Admin password reset complete'",
-        "presentation": {
-          "reveal": "always",
-          "panel": "new"
-        }
       }
     ]
   }
