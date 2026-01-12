@@ -8,6 +8,30 @@
 
 ---
 
+## ⚡ ONE-CLICK Deployment (Automatic!)
+
+**Download the project and double-click to deploy - everything installs automatically!**
+
+### Windows:
+1. Download this project (green "Code" button → "Download ZIP")
+2. Extract the ZIP file
+3. Double-click `scripts\one-click-deploy-windows.bat`
+4. Wait 5-10 minutes - opens automatically at http://localhost:5000
+
+### Mac/Linux:
+```bash
+git clone https://github.com/ismaelloveexcel/HR-PORTAL-AZURE.git
+cd HR-PORTAL-AZURE
+chmod +x scripts/one-click-deploy.sh
+./scripts/one-click-deploy.sh
+```
+
+**That's it!** The script installs Python, Node.js, and everything else automatically.
+
+📖 **[Full Deployment Guide](docs/EASIEST_DEPLOYMENT_GUIDE.md)** - All options including Codespaces
+
+---
+
 ## 📋 Table of Contents
 
 - [Quick Start for HR Users](#-quick-start-for-hr-users)

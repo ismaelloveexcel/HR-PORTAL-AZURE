@@ -136,13 +136,13 @@ if not exist ".env" (
         copy ".env.example" ".env"
         echo [OK] Backend .env created
         echo.
-        echo IMPORTANT: Edit backend\.env with your database settings
+        echo Using SQLite database (no PostgreSQL needed!)
+        echo Database file: backend\hr_portal.db
     ) else (
-        echo [!] No .env.example found - creating minimal PostgreSQL .env
-        echo DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/DATABASE_NAME > .env
+        echo [!] No .env.example found - creating minimal SQLite .env
+        echo DATABASE_URL=sqlite:///./hr_portal.db > .env
         echo DEV_MODE=true >> .env
-        echo [OK] Created minimal .env for PostgreSQL - please edit with your settings
-        echo IMPORTANT: Edit backend\.env with your PostgreSQL database settings
+        echo [OK] Created minimal .env with SQLite (easiest setup)
     )
 ) else (
     echo [OK] Backend .env already exists

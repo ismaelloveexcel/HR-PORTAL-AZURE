@@ -125,7 +125,8 @@ if [ ! -f ".env" ]; then
         cp ".env.example" ".env"
         echo -e "${GREEN}[OK]${NC} Backend .env created"
         echo ""
-        echo -e "${YELLOW}IMPORTANT: Edit backend/.env with your database settings${NC}"
+        echo -e "${GREEN}Using SQLite database (no PostgreSQL needed!)${NC}"
+        echo "Database file: backend/hr_portal.db"
     else
         echo -e "${YELLOW}[!]${NC} No .env.example found - creating minimal .env"
         echo "DATABASE_URL=sqlite:///./hr_portal.db" > .env
