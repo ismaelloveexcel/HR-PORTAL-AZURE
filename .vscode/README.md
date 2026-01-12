@@ -40,13 +40,16 @@ Pre-configured tasks accessible via `Ctrl+Shift+P` → "Tasks: Run Task"
 | **Azure Deployment** | Deploy to Azure | Run Azure deployment script |
 | | Azure: Build and Deploy Full Stack | Build frontend + create deployment package |
 | | Azure: Complete Deployment Workflow | Full automated deployment to Azure |
+| | Azure: Create Deployment Package | Create zip package for deployment |
+| | Azure: Deploy Package | Deploy zip package to Azure |
 | | Azure: Check Health Endpoints | Verify deployment health |
+| | Azure: Verify Health | Check health endpoint |
 | | Azure: View Logs | Stream live logs from Azure |
 | | Azure: SSH into App Service | Direct SSH access to Azure |
 | | Azure: Restart App Service | Restart the Azure app |
 | | Azure: Run Migrations | Run Alembic migrations on Azure |
-| | Azure: Reset Admin Password | Emergency password reset |
-| | Azure: Fix Production Data | Data normalization fix |
+| | Azure: Reset Admin Password | Emergency password reset (uses secure input) |
+| | Azure: Fix Production Data | Data normalization fix (uses secure input) |
 | **Maintenance** | Clean Build Artifacts | Remove temporary files |
 | | Verify Backend Environment | Check Python/UV setup |
 
@@ -54,7 +57,7 @@ Pre-configured tasks accessible via `Ctrl+Shift+P` → "Tasks: Run Task"
 - Default build task: Press `Ctrl+Shift+B`
 
 ### `deploy-azure.code-workspace`
-**NEW!** Dedicated workspace for Azure deployment operations.
+Dedicated workspace for Azure deployment operations with pre-configured settings.
 
 **To use:**
 ```bash
