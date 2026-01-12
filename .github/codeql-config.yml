@@ -1,0 +1,17 @@
+# CodeQL Custom Configuration for HR Portal
+# This configuration defines custom sanitizers for sensitive data
+
+name: hr-portal-codeql-config
+
+queries:
+  - uses: security-extended
+
+# Define custom sanitizers
+extensions:
+  - addsTo:
+      pack: codeql/python-all
+      extensible: sanitizers
+    data:
+      # Our _mask_employee_id function is a sanitizer for employee ID data
+      - ['app.routers.auth._mask_employee_id', 'ReturnValue']
+      - ['app.routers.health._mask_employee_id', 'ReturnValue']

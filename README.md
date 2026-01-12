@@ -314,6 +314,37 @@ PASSWORD_MIN_LENGTH=8
 SESSION_TIMEOUT_MINUTES=480
 ```
 
+---
+
+## 🚨 Emergency Admin Password Reset
+
+If you cannot log in as admin (BAYN00008), use this emergency endpoint:
+
+```bash
+# Replace YOUR_SECRET_KEY with your AUTH_SECRET_KEY from environment variables
+curl -X POST "https://your-backend-url/api/health/reset-admin-password" \
+  -H "X-Admin-Secret: YOUR_SECRET_KEY"
+```
+
+This will reset the admin password to the default: `16051988`
+
+**Check database health:**
+```bash
+curl "https://your-backend-url/api/health/db"
+```
+
+**Local testing:**
+```bash
+# Reset admin password
+curl -X POST "http://localhost:8000/api/health/reset-admin-password" \
+  -H "X-Admin-Secret: dev-secret-key-change-in-production"
+
+# Check database health
+curl "http://localhost:8000/api/health/db"
+```
+
+---
+
 ### Development Mode
 
 For local testing:

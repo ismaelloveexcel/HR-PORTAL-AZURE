@@ -42,6 +42,31 @@ async def get_current_employee_id(authorization: str = Header(...)) -> str:
         )
 
 
+def _mask_employee_id(employee_id: str) -> str:
+    """
+    Mask employee ID for logging to prevent clear-text logging of sensitive information.
+    
+    This function acts as a sanitizer for PII data, masking the middle characters
+    while preserving the first and last 2 characters for debugging purposes.
+    
+    Args:
+        employee_id: The employee ID to mask (sensitive PII)
+    
+    Returns:
+        Masked employee ID safe for logging (sanitized)
+    
+    Examples:
+        >>> _mask_employee_id("BAYN00008")
+        'BA***08'
+        >>> _mask_employee_id("ABC")
+        '***'
+    """
+    if not employee_id or len(employee_id) < 4:
+        return "***"
+    # Show first 2 and last 2 characters, mask the middle
+    return f"{employee_id[:2]}***{employee_id[-2:]}"
+
+
 @router.post(
     "/login",
     response_model=LoginResponse,
@@ -59,17 +84,33 @@ async def login(
     
     If `requires_password_change` is true, you must change your password.
     """
+    settings = get_settings()
     try:
         return await employee_service.login(session, request)
     except HTTPException:
         raise
     except Exception as e:
         import logging
-        logging.getLogger(__name__).error(f"Login error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred during login. Please try again.",
-        )
+        import traceback
+        logger = logging.getLogger(__name__)
+        # Mask employee_id to prevent clear-text logging of sensitive information
+        # The employee_id is sanitized through _mask_employee_id() before logging
+        masked_id = _mask_employee_id(request.employee_id)
+        # Log with masked ID only - never log request.employee_id directly
+        logger.error(f"Login error for employee_id={masked_id}: {str(e)}")
+        logger.error(f"Login error traceback: {traceback.format_exc()}")
+        
+        # In development, show actual error
+        if settings.app_env == "development":
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Login error: {str(e)}",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="An error occurred during login. Please check server logs or contact support.",
+            )
 
 
 @router.post(
