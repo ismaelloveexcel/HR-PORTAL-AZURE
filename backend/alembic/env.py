@@ -50,9 +50,11 @@ def do_run_migrations(connection):
 
 
 def run_migrations_online() -> None:
-    # Prepare connect_args for SSL if required
+    # Prepare connect_args based on database type
     connect_args = {}
-    if ssl_required:
+    if is_sqlite:
+        connect_args = {"check_same_thread": False}
+    elif ssl_required:
         connect_args = {"ssl": "require"}
     
     configuration = config.get_section(config.config_ini_section)
