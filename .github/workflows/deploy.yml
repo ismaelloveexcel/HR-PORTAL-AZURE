@@ -151,7 +151,7 @@ jobs:
           az webapp config set \
             --name BaynunahHRPortal \
             --resource-group BaynunahHR \
-            --startup-file "gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000" \
+            --startup-file "gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app" \
             --output none
           echo "✅ Startup command configured successfully"
 
@@ -241,11 +241,13 @@ jobs:
           sleep 30
           
           # Try up to 5 times with increasing delays
+          # Using /api/health/db which doesn't require authentication
           for i in 1 2 3 4 5; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://baynunahhrportal.azurewebsites.net/api/health || echo "000")
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://baynunahhrportal.azurewebsites.net/api/health/db || echo "000")
             if [ "$HTTP_STATUS" = "200" ]; then
               echo "✅ Health check passed (HTTP $HTTP_STATUS)"
-              curl -s https://baynunahhrportal.azurewebsites.net/api/health | head -200
+              curl -s https://baynunahhrportal.azurewebsites.net/api/health/db
+              echo ""
               exit 0
             else
               echo "⏳ Attempt $i: HTTP $HTTP_STATUS - waiting..."
@@ -255,7 +257,7 @@ jobs:
           
           echo "⚠️  Health check did not return 200 after 5 attempts"
           echo "The app may still be starting. Check manually:"
-          echo "  curl https://baynunahhrportal.azurewebsites.net/api/health"
+          echo "  curl https://baynunahhrportal.azurewebsites.net/api/health/db"
 
       - name: Deployment Summary
         run: |
