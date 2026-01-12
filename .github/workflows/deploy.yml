@@ -124,6 +124,50 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Ensure Azure Resources Exist
+        run: |
+          echo "🔍 Checking if Azure resources exist..."
+          
+          # Check if resource group exists
+          if ! az group show --name BaynunahHR --query name -o tsv 2>/dev/null; then
+            echo "📦 Creating resource group BaynunahHR..."
+            az group create --name BaynunahHR --location eastus
+          else
+            echo "✅ Resource group BaynunahHR exists"
+          fi
+          
+          # Check if App Service plan exists
+          if ! az appservice plan show --name BaynunahHRPlan --resource-group BaynunahHR --query name -o tsv 2>/dev/null; then
+            echo "📦 Creating App Service plan BaynunahHRPlan..."
+            az appservice plan create \
+              --name BaynunahHRPlan \
+              --resource-group BaynunahHR \
+              --sku B1 \
+              --is-linux
+          else
+            echo "✅ App Service plan BaynunahHRPlan exists"
+          fi
+          
+          # Check if Web App exists
+          if ! az webapp show --name BaynunahHRPortal --resource-group BaynunahHR --query name -o tsv 2>/dev/null; then
+            echo "📦 Creating Web App BaynunahHRPortal..."
+            az webapp create \
+              --name BaynunahHRPortal \
+              --resource-group BaynunahHR \
+              --plan BaynunahHRPlan \
+              --runtime "PYTHON:3.11"
+            
+            # Configure startup command
+            az webapp config set \
+              --name BaynunahHRPortal \
+              --resource-group BaynunahHR \
+              --startup-file "gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000"
+          else
+            echo "✅ Web App BaynunahHRPortal exists"
+          fi
+          
+          echo "✅ All Azure resources verified/created"
+
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
