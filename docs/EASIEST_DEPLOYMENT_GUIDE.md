@@ -4,7 +4,42 @@
 
 ---
 
-## 🆘 FOR NON-TECHNICAL USERS: Step-by-Step with Pictures
+## 🚀 ONE-CLICK DEPLOYMENT (EASIEST!)
+
+**Just double-click and wait - everything installs automatically!**
+
+### Windows Users:
+1. Download this project: Click green "Code" button → "Download ZIP" on GitHub
+2. Extract the ZIP file to your Desktop
+3. Open the extracted folder
+4. Go into the `scripts` folder
+5. **Double-click `one-click-deploy-windows.bat`**
+6. Wait 5-10 minutes (it installs Python, Node.js, and everything else)
+7. Your browser will open automatically with the HR Portal!
+
+### Mac Users:
+1. Open Terminal (press Cmd+Space and type "Terminal")
+2. Download the project:
+```bash
+git clone https://github.com/ismaelloveexcel/HR-PORTAL-AZURE.git
+```
+3. Navigate to the folder:
+```bash
+cd HR-PORTAL-AZURE
+```
+4. Run the one-click installer:
+```bash
+chmod +x scripts/one-click-deploy.sh
+./scripts/one-click-deploy.sh
+```
+5. Wait 5-10 minutes
+6. Your browser will open automatically!
+
+**That's it! No manual installation needed.**
+
+---
+
+## 🆘 MANUAL INSTALLATION (If One-Click Doesn't Work)
 
 **If you've never done this before, follow these exact steps:**
 
