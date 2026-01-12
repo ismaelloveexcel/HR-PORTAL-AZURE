@@ -74,7 +74,8 @@ async def reset_admin_password(
         await session.commit()
         
         if row:
-            logger.info(f"Admin password reset successful for {ADMIN_EMPLOYEE_ID}")
+            # Audit log for security monitoring (generic message)
+            logger.info("Admin account password reset completed")
             return {
                 "success": True,
                 "message": f"Password reset for {row[0]} - {row[1]}",
@@ -86,7 +87,8 @@ async def reset_admin_password(
                 "instructions": "You can now login with this employee_id and the default_password"
             }
         else:
-            logger.error(f"Admin employee {ADMIN_EMPLOYEE_ID} not found")
+            # Generic error for security (don't reveal specifics)
+            logger.error("Admin account reset failed - account not found")
             return {
                 "success": False,
                 "message": f"Employee {ADMIN_EMPLOYEE_ID} not found in database",
@@ -94,13 +96,13 @@ async def reset_admin_password(
             }
             
     except Exception as e:
-        import traceback
-        logger.error(f"Admin password reset failed: {e}")
-        logger.error(f"Reset traceback: {traceback.format_exc()}")
+        error_type = type(e).__name__
+        logger.error(f"Admin password reset failed: {error_type}")
+        # Note: Traceback intentionally not logged to avoid sensitive data exposure
         await session.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Password reset failed: {str(e)}"
+            detail=f"Password reset failed: {error_type}"
         )
 
 
@@ -154,12 +156,12 @@ async def health_check_db(session: AsyncSession = Depends(get_session)):
             }
         }
     except Exception as e:
-        import traceback
-        logger.error(f"Database health check failed: {e}")
-        logger.error(f"Health check traceback: {traceback.format_exc()}")
+        error_type = type(e).__name__
+        logger.error(f"Database health check failed: {error_type}")
+        # Note: Traceback intentionally not logged to avoid sensitive data exposure
         raise HTTPException(
             status_code=503,
-            detail=f"Database connection failed: {str(e)}"
+            detail=f"Database connection failed: {error_type}"
         )
 
 

@@ -65,17 +65,18 @@ async def login(
         raise
     except Exception as e:
         import logging
-        import traceback
         logger = logging.getLogger(__name__)
-        logger.error(f"Login error for employee_id={request.employee_id}: {str(e)}")
-        logger.error(f"Login error traceback: {traceback.format_exc()}")
+        # Log error type and employee_id for debugging (avoid logging exception message)
+        error_type = type(e).__name__
+        logger.error(f"Login error for employee_id={request.employee_id}: {error_type}")
+        # Note: Traceback intentionally not logged to avoid potential sensitive data exposure
         
-        # In development, show actual error
+        # In development, show error type only (not the full message)
         settings = get_settings()
         if settings.app_env == "development":
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Login error: {str(e)}",
+                detail=f"Login error: {error_type}",
             )
         else:
             raise HTTPException(
