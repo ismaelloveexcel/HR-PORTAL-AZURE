@@ -245,7 +245,7 @@
     {
       "label": "Azure: Run Migrations",
       "type": "shell",
-      "command": "echo '🔄 Running database migrations on Azure...' && az webapp ssh --name ${input:azureAppName} --resource-group ${input:azureResourceGroup} --command 'cd /home/site/wwwroot && python -m alembic upgrade head' && echo '✅ Migrations complete'",
+      "command": "echo '🔄 Running database migrations on Azure...' && az webapp ssh --name ${input:azureAppName} --resource-group ${input:azureResourceGroup} --command 'cd /home/site/wwwroot/backend && uv run alembic upgrade head' && echo '✅ Migrations complete'",
       "group": "none",
       "presentation": {
         "reveal": "always",
