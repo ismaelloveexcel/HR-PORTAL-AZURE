@@ -1,52 +1,7 @@
 ---
 description: Custom mode for creating and deploying Azure Static Web Apps
 tools:
-  [
-    "vscode",
-    "execute/getTerminalOutput",
-    "execute/runTask",
-    "execute/createAndRunTask",
-    "execute/runNotebookCell",
-    "execute/testFailure",
-    "execute/runInTerminal",
-    "read",
-    "agent",
-    "edit",
-    "search",
-    "web",
-    "azure-mcp/*",
-    "todo",
-    "github.vscode-pull-request-github/copilotCodingAgent",
-    "github.vscode-pull-request-github/issue_fetch",
-    "github.vscode-pull-request-github/suggest-fix",
-    "github.vscode-pull-request-github/searchSyntax",
-    "github.vscode-pull-request-github/doSearch",
-    "github.vscode-pull-request-github/renderIssues",
-    "github.vscode-pull-request-github/activePullRequest",
-    "github.vscode-pull-request-github/openPullRequest",
-    "ms-azuretools.vscode-azure-github-copilot/azure_recommend_custom_modes",
-    "ms-azuretools.vscode-azure-github-copilot/azure_query_azure_resource_graph",
-    "ms-azuretools.vscode-azure-github-copilot/azure_get_auth_context",
-    "ms-azuretools.vscode-azure-github-copilot/azure_set_auth_context",
-    "ms-azuretools.vscode-azure-github-copilot/azure_get_dotnet_template_tags",
-    "ms-azuretools.vscode-azure-github-copilot/azure_get_dotnet_templates_for_tag",
-    "ms-azuretools.vscode-azureresourcegroups/azureActivityLog",
-    "ms-ossdata.vscode-pgsql/pgsql_listServers",
-    "ms-ossdata.vscode-pgsql/pgsql_connect",
-    "ms-ossdata.vscode-pgsql/pgsql_disconnect",
-    "ms-ossdata.vscode-pgsql/pgsql_open_script",
-    "ms-ossdata.vscode-pgsql/pgsql_visualizeSchema",
-    "ms-ossdata.vscode-pgsql/pgsql_query",
-    "ms-ossdata.vscode-pgsql/pgsql_modifyDatabase",
-    "ms-ossdata.vscode-pgsql/database",
-    "ms-ossdata.vscode-pgsql/pgsql_listDatabases",
-    "ms-ossdata.vscode-pgsql/pgsql_describeCsv",
-    "ms-ossdata.vscode-pgsql/pgsql_bulkLoadCsv",
-    "ms-ossdata.vscode-pgsql/pgsql_getDashboardContext",
-    "ms-ossdata.vscode-pgsql/pgsql_getMetricData",
-    "ms-ossdata.vscode-pgsql/pgsql_migration_oracle_app",
-    "ms-ossdata.vscode-pgsql/pgsql_migration_show_report",
-  ]
+  ['vscode', 'execute/runNotebookCell', 'execute/testFailure', 'execute/getTerminalOutput', 'execute/runTask', 'execute/createAndRunTask', 'execute/runInTerminal', 'read', 'edit', 'search', 'web', 'copilot-container-tools/*', 'agent', 'github.vscode-pull-request-github/copilotCodingAgent', 'github.vscode-pull-request-github/issue_fetch', 'github.vscode-pull-request-github/suggest-fix', 'github.vscode-pull-request-github/searchSyntax', 'github.vscode-pull-request-github/doSearch', 'github.vscode-pull-request-github/renderIssues', 'github.vscode-pull-request-github/activePullRequest', 'github.vscode-pull-request-github/openPullRequest', 'ms-azuretools.vscode-azure-github-copilot/azureGetBestPractices', 'ms-azuretools.vscode-azure-github-copilot/azureRetrieveMsLearnDocumentations', 'ms-azuretools.vscode-azure-github-copilot/azureQueryAzureResourceGraph', 'ms-azuretools.vscode-azure-github-copilot/azureGenerateAzureCliCommand', 'ms-azuretools.vscode-azure-github-copilot/azureGetAuthState', 'ms-azuretools.vscode-azure-github-copilot/azureGetCurrentTenant', 'ms-azuretools.vscode-azure-github-copilot/azureGetAvailableTenants', 'ms-azuretools.vscode-azure-github-copilot/azureSetCurrentTenant', 'ms-azuretools.vscode-azure-github-copilot/azureGetSelectedSubscriptions', 'ms-azuretools.vscode-azure-github-copilot/azureOpenSubscriptionPicker', 'ms-azuretools.vscode-azure-github-copilot/azureSignOut', 'ms-azuretools.vscode-azure-github-copilot/azureDiagnoseResource', 'ms-azuretools.vscode-azure-github-copilot/azureGetRegionsForModel', 'ms-azuretools.vscode-azure-github-copilot/azureGetModelsForRegion', 'ms-azuretools.vscode-azure-github-copilot/azureGetLanguageModelDeployments', 'ms-azuretools.vscode-azure-github-copilot/azureGetLanguageModelUsage', 'ms-azuretools.vscode-azure-github-copilot/azureBicepGetResourceSchema', 'ms-azuretools.vscode-azure-github-copilot/azureRecommendServiceConfig', 'ms-azuretools.vscode-azure-github-copilot/azureCheckPredeploy', 'ms-azuretools.vscode-azure-github-copilot/azureAzdUpDeploy', 'ms-azuretools.vscode-azure-github-copilot/azureGetAzdAppLogs', 'ms-azuretools.vscode-azureresourcegroups/azureActivityLog', 'ms-ossdata.vscode-pgsql/pgsql_listServers', 'ms-ossdata.vscode-pgsql/pgsql_connect', 'ms-ossdata.vscode-pgsql/pgsql_disconnect', 'ms-ossdata.vscode-pgsql/pgsql_open_script', 'ms-ossdata.vscode-pgsql/pgsql_visualizeSchema', 'ms-ossdata.vscode-pgsql/pgsql_query', 'ms-ossdata.vscode-pgsql/pgsql_modifyDatabase', 'ms-ossdata.vscode-pgsql/database', 'ms-ossdata.vscode-pgsql/pgsql_listDatabases', 'ms-ossdata.vscode-pgsql/pgsql_describeCsv', 'ms-ossdata.vscode-pgsql/pgsql_bulkLoadCsv', 'ms-ossdata.vscode-pgsql/pgsql_getDashboardContext', 'ms-ossdata.vscode-pgsql/pgsql_getMetricData', 'ms-ossdata.vscode-pgsql/pgsql_migration_oracle_app', 'ms-ossdata.vscode-pgsql/pgsql_migration_show_report', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_agent_code_gen_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_ai_model_guidance', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_agent_model_code_sample', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_tracing_code_gen_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_evaluation_code_gen_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_evaluation_agent_runner_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_evaluation_planner', 'ms-windows-ai-studio.windows-ai-studio/aitk_open_tracing_page', 'todo']
 ---
 
 # Azure Static Web Apps Assistant
