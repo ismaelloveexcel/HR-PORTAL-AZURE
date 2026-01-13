@@ -241,6 +241,81 @@
         "reveal": "always",
         "panel": "new"
       }
+    },
+    {
+      "label": "Azure: Run Migrations",
+      "type": "shell",
+      "command": "echo '🔄 Running database migrations on Azure...' && az webapp ssh --name ${input:azureAppName} --resource-group ${input:azureResourceGroup} --command 'cd /home/site/wwwroot/backend && uv run alembic upgrade head' && echo '✅ Migrations complete'",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Reset Admin Password",
+      "type": "shell",
+      "command": "curl -X POST \"https://${input:azureAppName}.azurewebsites.net/api/health/reset-admin-password\" -H \"X-Admin-Secret: ${input:authSecretKey}\"",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Fix Production Data",
+      "type": "shell",
+      "command": "curl -X POST \"https://${input:azureAppName}.azurewebsites.net/api/health/fix-production?token=${input:maintenanceSecret}\"",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Deploy Package",
+      "type": "shell",
+      "command": "az webapp deployment source config-zip --name ${input:azureAppName} --resource-group ${input:azureResourceGroup} --src deploy.zip",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Verify Health",
+      "type": "shell",
+      "command": "curl -s https://${input:azureAppName}.azurewebsites.net/api/health",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Create Deployment Package",
+      "type": "shell",
+      "command": "cd backend && zip -r ../deploy.zip . -x '*.pyc' -x '*__pycache__*' -x '*.git*' -x '*.env*' -x '*.md'",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Azure: Complete Deployment Workflow",
+      "dependsOn": [
+        "Build Frontend",
+        "Azure: Create Deployment Package"
+      ],
+      "dependsOrder": "sequence",
+      "type": "shell",
+      "command": "az webapp deployment source config-zip --name ${input:azureAppName} --resource-group ${input:azureResourceGroup} --src deploy.zip && sleep 10 && curl -s https://${input:azureAppName}.azurewebsites.net/api/health",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
     }
   ],
   "inputs": [
@@ -249,6 +324,30 @@
       "type": "promptString",
       "description": "Enter migration message",
       "default": "migration"
+    },
+    {
+      "id": "azureAppName",
+      "type": "promptString",
+      "description": "Azure App Service name",
+      "default": "BaynunahHRPortal"
+    },
+    {
+      "id": "azureResourceGroup",
+      "type": "promptString",
+      "description": "Azure Resource Group name",
+      "default": "BaynunahHR"
+    },
+    {
+      "id": "authSecretKey",
+      "type": "promptString",
+      "description": "AUTH_SECRET_KEY for admin password reset",
+      "password": true
+    },
+    {
+      "id": "maintenanceSecret",
+      "type": "promptString",
+      "description": "MAINTENANCE_SECRET value from Azure App Service settings",
+      "password": true
     }
   ]
 }

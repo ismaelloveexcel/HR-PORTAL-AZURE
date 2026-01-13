@@ -70,6 +70,38 @@ agents:
       - "api design"
       - "deployment"
 
+  - name: azure-deployment-specialist
+    file: .github/agents/azure-deployment-specialist.md
+    description: "Expert in Azure deployment, VS Code integration, and troubleshooting"
+    capabilities:
+      - azure_deployment
+      - vscode_deployment
+      - github_actions
+      - login_troubleshooting
+      - database_issues
+      - python_environment
+      - repository_knowledge
+    scope:
+      - .github/workflows/
+      - .vscode/
+      - deploy_to_azure.sh
+      - backend/app/main.py
+      - backend/app/database.py
+      - backend/app/core/
+      - docs/
+    triggers:
+      - "deploy"
+      - "azure"
+      - "vs code"
+      - "vscode"
+      - "login"
+      - "authentication"
+      - "database connection"
+      - "python error"
+      - "environment"
+      - "troubleshoot"
+      - "production"
+
 # Collaboration rules
 collaboration:
   planning_phase:
@@ -84,9 +116,13 @@ collaboration:
     primary: code-quality-monitor
     secondary: [portal-engineer]
     
+  deployment_phase:
+    primary: azure-deployment-specialist
+    secondary: [portal-engineer, code-quality-monitor]
+    
   production_maintenance:
     primary: code-quality-monitor
-    secondary: [hr-assistant, portal-engineer]
+    secondary: [hr-assistant, portal-engineer, azure-deployment-specialist]
 
 # Agent priorities
 priorities:
@@ -99,6 +135,7 @@ priorities:
     handler: hr-assistant
     implement_by: portal-engineer
     verify_by: code-quality-monitor
+    deploy_by: azure-deployment-specialist
     
   performance_issue:
     handler: code-quality-monitor
@@ -107,6 +144,18 @@ priorities:
   bug_report:
     handler: portal-engineer
     verify_by: code-quality-monitor
+    
+  deployment_issue:
+    handler: azure-deployment-specialist
+    escalate_to: portal-engineer
+    
+  login_issue:
+    handler: azure-deployment-specialist
+    verify_by: code-quality-monitor
+    
+  database_issue:
+    handler: azure-deployment-specialist
+    fix_by: portal-engineer
 
 # Quality gates
 quality_gates:
@@ -135,6 +184,23 @@ quality_gates:
     - check: hr_workflow_validation
       agent: hr-assistant
       blocking: false
+      
+    - check: deployment_readiness
+      agent: azure-deployment-specialist
+      blocking: true
+      
+  after_deployment:
+    - check: health_endpoint_verification
+      agent: azure-deployment-specialist
+      blocking: true
+      
+    - check: database_connectivity
+      agent: azure-deployment-specialist
+      blocking: true
+      
+    - check: login_functionality
+      agent: azure-deployment-specialist
+      blocking: true
 
 # Metrics tracking
 metrics:
@@ -155,6 +221,13 @@ metrics:
     - manual_tasks_eliminated
     - workflow_efficiency
     - user_satisfaction
+    
+  deployment_health:
+    - deployment_success_rate
+    - deployment_time_minutes
+    - rollback_frequency
+    - uptime_percentage
+    - health_check_pass_rate
 
 # Integration points
 integrations:
@@ -162,14 +235,21 @@ integrations:
     enabled: true
     workflows:
       - ci.yml
+      - deploy.yml
       - security-scan.yml
       
+  azure_deployment:
+    enabled: true
+    app_name: baynunahhrportal
+    resource_group: BaynunahHR
+    
   github_issues:
     enabled: true
     auto_create: true
     labels:
       - agent-detected
       - needs-review
+      - deployment-issue
       
   notifications:
     enabled: true

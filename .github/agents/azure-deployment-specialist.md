@@ -102,7 +102,42 @@ HR-PORTAL-AZURE/
 | `Start Full Application` | Run backend + frontend locally |
 | `Build Frontend` | Build React app to `backend/static/` |
 | `Deploy to Azure` | Run `deploy_to_azure.sh` |
-| `Database Migrations: Upgrade` | Run `alembic upgrade head` |
+| `Azure: Build and Deploy Full Stack` | Build frontend + create deployment package |
+| `Azure: Complete Deployment Workflow` | Full automated deployment to Azure |
+| `Azure: Check Health Endpoints` | Verify deployment health |
+| `Azure: View Logs` | Stream live logs from Azure |
+| `Azure: SSH into App Service` | Direct SSH access to Azure |
+| `Azure: Restart App Service` | Restart the Azure app |
+| `Azure: Run Migrations` | Run Alembic migrations on Azure |
+| `Azure: Reset Admin Password` | Emergency password reset |
+| `Azure: Fix Production Data` | Run data normalization fix |
+| `Database Migrations: Upgrade` | Run `alembic upgrade head` locally |
+
+### VS Code Workspace for Deployment
+
+For a dedicated deployment experience, open the Azure deployment workspace:
+
+```bash
+code .vscode/deploy-azure.code-workspace
+```
+
+This workspace includes:
+- Pre-configured Azure deployment tasks
+- Recommended Azure extensions
+- Quick access to deployment commands
+
+### One-Click Deployment
+
+1. **Open VS Code** in the repository
+2. **Press `Ctrl+Shift+P`**
+3. **Type "task"** → Select "Tasks: Run Task"
+4. **Choose "Azure: Complete Deployment Workflow"**
+
+This will:
+- Build the frontend
+- Create deployment package
+- Deploy to Azure App Service
+- Verify the deployment health
 
 ### Step-by-Step Azure Deployment
 
@@ -134,7 +169,21 @@ npm run build
 **Manual trigger:**
 - Go to Actions tab → "Deploy to Azure" → "Run workflow"
 
-#### 4. Azure App Service Configuration
+#### 4. Deploy via VS Code
+
+**Option A: Using Azure App Service Extension**
+1. Install "Azure App Service" extension
+2. Sign in to Azure
+3. Right-click on `backend` folder → "Deploy to Web App"
+4. Select your Azure App Service
+
+**Option B: Using VS Code Tasks**
+1. Press `Ctrl+Shift+P` → "Tasks: Run Task"
+2. Select "Azure: Complete Deployment Workflow"
+3. Wait for deployment to complete
+4. Verify at https://baynunahhrportal.azurewebsites.net
+
+#### 5. Azure App Service Configuration
 
 ```bash
 # Create resources
