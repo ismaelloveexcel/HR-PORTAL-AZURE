@@ -240,7 +240,7 @@ integrations:
       
   azure_deployment:
     enabled: true
-    app_name: BaynunahHRPortal
+    app_name: baynunahhrportal
     resource_group: BaynunahHR
     
   github_issues:
