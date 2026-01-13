@@ -27,21 +27,5 @@
       "GitHub.copilot",
       "GitHub.copilot-chat"
     ]
-  },
-  "launch": {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Azure: Deploy Backend",
-        "type": "node",
-        "request": "launch",
-        "runtimeExecutable": "bash",
-        "runtimeArgs": [
-          "-c",
-          "cd ${workspaceFolder} && bash deploy_to_azure.sh"
-        ],
-        "console": "integratedTerminal"
-      }
-    ]
   }
 }
