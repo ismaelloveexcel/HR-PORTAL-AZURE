@@ -346,7 +346,7 @@
     {
       "id": "maintenanceSecret",
       "type": "promptString",
-      "description": "MAINTENANCE_SECRET for production fix",
+      "description": "MAINTENANCE_SECRET value from Azure App Service settings",
       "password": true
     }
   ]
