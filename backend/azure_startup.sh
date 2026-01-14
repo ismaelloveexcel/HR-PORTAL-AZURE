@@ -9,7 +9,11 @@ echo "Environment: ${APP_ENV:-production}"
 echo "Website: ${WEBSITE_HOSTNAME:-unknown}"
 
 # Navigate to the app directory
-cd /home/site/wwwroot || exit 1
+cd /home/site/wwwroot || {
+    echo "❌ ERROR: Cannot find /home/site/wwwroot directory"
+    echo "Deployment may have failed or files are in wrong location"
+    exit 1
+}
 
 # Azure Oryx pre-builds dependencies during deployment
 # We just need to start the application
@@ -17,6 +21,10 @@ cd /home/site/wwwroot || exit 1
 # Get the port from Azure's PORT environment variable (defaults to 8000)
 export PORT="${PORT:-8000}"
 echo "Binding to port: $PORT"
+
+# Configure workers (default 1 for B1 tier, can override with GUNICORN_WORKERS)
+WORKERS="${GUNICORN_WORKERS:-1}"
+echo "Gunicorn workers: $WORKERS"
 
 # Use Gunicorn with Uvicorn workers (Azure best practice for FastAPI)
 # - Gunicorn manages worker processes and restart
@@ -29,7 +37,7 @@ echo "Starting Gunicorn with Uvicorn workers..."
 exec gunicorn app.main:app \
     --bind 0.0.0.0:$PORT \
     --worker-class uvicorn.workers.UvicornWorker \
-    --workers 1 \
+    --workers $WORKERS \
     --timeout 120 \
     --access-logfile - \
     --error-logfile - \
