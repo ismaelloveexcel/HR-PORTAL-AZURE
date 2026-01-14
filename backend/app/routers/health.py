@@ -19,8 +19,12 @@ SYSTEM_ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 
 @router.get("", summary="API healthcheck")
-async def healthcheck(role: str = Depends(require_role())):
-    return {"status": "ok", "role": role}
+async def healthcheck():
+    """
+    Basic health check endpoint - publicly accessible for monitoring.
+    Returns OK status if the API is running and can process requests.
+    """
+    return {"status": "ok"}
 
 
 @router.post("/reset-admin-password", summary="Reset admin password to default (emergency use)")
