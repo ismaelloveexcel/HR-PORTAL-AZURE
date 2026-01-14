@@ -66,6 +66,10 @@ Go to your GitHub repository:
 | `DATABASE_URL`      | `postgresql+asyncpg://uutfqjkrhm:eC71&&jm5#V7oGO#@baynunahhrportal-server.postgres.database.azure.com:5432/hrportal?ssl=require` | PostgreSQL connection string     |
 | `AUTH_SECRET_KEY`   | Random 32-byte hex string                                                                                                        | Generate: `openssl rand -hex 32` |
 | `OPENAI_API_KEY`    | `sk-proj-l4rHktOS7teKxUpq...`                                                                                                    | Your OpenAI API key              |
+| `BACKEND_URL`       | `https://baynunahhrportal.azurewebsites.net`                                                                                     | Your Azure Web App URL           |
+| `FRONTEND_URL`      | `https://baynunahhrportal.azurewebsites.net`                                                                                     | Same as BACKEND_URL (monolithic) |
+
+> **Note:** `BACKEND_URL` and `FRONTEND_URL` are required for the automated post-deployment health checks. Since this is a monolithic deployment (backend serves frontend), both URLs should be the same.
 
 ---
 
@@ -130,9 +134,37 @@ Once complete, check:
 2. **API Docs:** https://baynunahhrportal.azurewebsites.net/docs
 3. **Health Check:** https://baynunahhrportal.azurewebsites.net/health
 
+### Automated Health Checks
+
+After each deployment, a **Post-Deployment Health Check** workflow automatically runs to verify:
+
+- ✅ Backend API is responding (HTTP 200 from `/health`)
+- ✅ Frontend is accessible (HTTP 200 from root URL)
+- ✅ API documentation is available
+- ⚠️ Database connectivity (requires manual verification)
+
+**If health checks fail**, an issue will be automatically created with troubleshooting steps. Check the **Actions** tab for health check results.
+
+> **Important:** Make sure `BACKEND_URL` and `FRONTEND_URL` secrets are configured (see Step 2) for automated health checks to work properly.
+
 ---
 
 ## Troubleshooting
+
+### Post-Deployment Health Check Failed
+
+- **Issue:** Automated health check reports backend or frontend as "unhealthy"
+- **Fix:** 
+  1. Verify `BACKEND_URL` and `FRONTEND_URL` secrets are set correctly:
+     - Both should be `https://baynunahhrportal.azurewebsites.net`
+     - Go to Settings → Secrets and variables → Actions
+  2. Test manually by visiting https://baynunahhrportal.azurewebsites.net/health
+     - Should return `{"status": "ok"}`
+  3. If manual test works but automated check fails, verify GitHub Actions can reach the URL (check for IP restrictions)
+  4. Check Azure App Service logs for startup errors:
+     ```bash
+     az webapp log tail --name BaynunahHRPortal --resource-group BaynunahHR
+     ```
 
 ### Workflow Fails at "Validate required secrets"
 
