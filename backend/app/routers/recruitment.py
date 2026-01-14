@@ -13,7 +13,7 @@ from pathlib import Path
 from app.auth.dependencies import require_role
 from app.database import get_session
 from app.routers.auth import get_current_employee_id
-from app.main import limiter
+from app.core.rate_limit import limiter
 from app.schemas.recruitment import (
     RecruitmentRequestCreate, RecruitmentRequestUpdate, RecruitmentRequestResponse,
     CandidateCreate, CandidateUpdate, CandidateResponse, CandidateSelfServiceUpdate,

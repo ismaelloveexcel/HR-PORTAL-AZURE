@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, Query, HTTPException, Body, Header
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import require_role
 from app.database import get_session
 
 router = APIRouter(prefix="/health", tags=["health"])
@@ -19,8 +18,12 @@ SYSTEM_ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 
 @router.get("", summary="API healthcheck")
-async def healthcheck(role: str = Depends(require_role())):
-    return {"status": "ok", "role": role}
+async def healthcheck():
+    """
+    Basic health check endpoint - publicly accessible for monitoring.
+    Returns OK status if the API is running and can process requests.
+    """
+    return {"status": "ok"}
 
 
 @router.post("/reset-admin-password", summary="Reset admin password to default (emergency use)")
